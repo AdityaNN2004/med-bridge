@@ -1,0 +1,126 @@
+/* Global Theme */
+body {
+    font-family: "Poppins", sans-serif;
+    background: #f0f7f1;
+    margin: 0;
+    padding: 0;
+    color:black;
+}
+
+/* Main Container */
+.container1 {
+    width: 65%;
+    margin: 60px auto;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    padding: 35px;
+    border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    min-width: 800px;
+    max-width: 900px;
+}
+
+/* Page Headings */
+h2 {
+    color: #2d5a27;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* Steps Indicator */
+.steps {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.step {
+    width: 25%;
+    padding: 10px 0;
+    text-align: center;
+    border-bottom: 3px solid #c9e7c5;
+    color: #666;
+    font-weight: 500;
+}
+
+.step.active {
+    border-color: #2d5a27;
+    color: #2d5a27;
+    font-weight: 700;
+}
+
+/* Page Animation */
+.page {
+    animation: fade 0.5s ease-in-out;
+}
+
+@keyframes fade {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Labels + Inputs */
+.input-group {
+    margin-bottom: 12px;
+    color: black !important;
+}
+
+label {
+    font-weight: 600;
+    color: #2d5a27;
+}
+
+select {
+  color: #333  !important;  
+}
+
+select option[disabled][hidden] {
+  color: #888  !important;  
+}
+
+select:invalid {
+  color: #888;
+}
+
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: 1px solid #a9d4a3;
+    background: #f8fff9;
+    color: #000 !important;        
+}
+
+/* Two Column Layout */
+.row {
+    display: flex;
+    margin : 4px 40px;
+    gap: 70px;
+}
+.row .input-group {
+   width: 410px;
+}
+
+/* Buttons */
+.btn-area {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+}
+
+button {
+    padding: 12px 28px;
+    background: #2d5a27;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    margin: 0px 20px;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+button:hover {
+    background: #244b1f;
+}

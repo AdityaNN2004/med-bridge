@@ -1,13 +1,12 @@
 import { Route } from "react-router-dom";
 import NGODashBoard from "../Pages/NGO/NGODashBoard";
-import DocumentVerification from "../Pages/NGO/DocumentVerification";
 import InventeroryManagement from "../Pages/NGO/InventeroryManagement";
 import NGOAlert from "../Pages/NGO/NGOAlert";
-import NGORegisteration from "../Pages/NGO/NGORegisteration";
 import NGORequestManagement from "../Pages/NGO/NGORequestManagement";
-import ServiceArea from "../Pages/NGO/ServiceArea";
-import VerifcationUnderReview from "../Pages/NGO/VerifcationUnderReview";
-
+import ServiceArea from "../Pages/NGO/OtherRegistrationProcess/ServiceArea";
+import NGORegisteration from "../Pages/NGO/Registration/NGORegisteration";
+import DocumentVerification from "../Pages/NGO/OtherRegistrationProcess/DocumentVerification";
+import VerifcationUnderReview from "../Pages/NGO/OtherRegistrationProcess/VerifcationUnderReview";
 
 
 export const NGORoutes = (
