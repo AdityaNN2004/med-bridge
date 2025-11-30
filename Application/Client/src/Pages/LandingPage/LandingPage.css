@@ -1,0 +1,65 @@
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #f0f7f1, #d1e7dd);
+}
+
+.landing-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  animation: fadeIn 1s ease-in-out;
+}
+
+.landing-container h1 {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+}
+
+.landing-container p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: #34495e;
+}
+
+.buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.btn {
+  padding: 15px 30px;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn.ngo {
+  background: #27ae60;
+}
+
+.btn.ngo:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(39, 174, 96, 0.4);
+}
+
+.btn.donor {
+  background: #2980b9;
+}
+
+.btn.donor:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(41, 128, 185, 0.4);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px);}
+  to { opacity: 1; transform: translateY(0);}
+}

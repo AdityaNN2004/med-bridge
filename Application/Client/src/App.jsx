@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom"
 import { DonorRoutes } from "./Routes/DonorRoutes"
-import LandingPage from "./Pages/LandingPage"
+import LandingPage from "./Pages/LandingPage/LandingPage"
 import { NGORoutes } from "./Routes/NGORoutes"
 
 function App() {

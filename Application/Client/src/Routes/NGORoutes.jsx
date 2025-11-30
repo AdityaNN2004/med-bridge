@@ -7,7 +7,7 @@ import ServiceArea from "../Pages/NGO/OtherRegistrationProcess/ServiceArea";
 import NGORegisteration from "../Pages/NGO/Registration/NGORegisteration";
 import DocumentVerification from "../Pages/NGO/OtherRegistrationProcess/DocumentVerification";
 import VerifcationUnderReview from "../Pages/NGO/OtherRegistrationProcess/VerifcationUnderReview";
-
+import NGOLogin from "../Pages/NGO/Login/NGOLogin";
 
 export const NGORoutes = (
   <>
@@ -19,5 +19,6 @@ export const NGORoutes = (
     <Route path="/ngo/requests" element={<NGORequestManagement />} />
     <Route path="/ngo/service-area" element={<ServiceArea />} />
     <Route path="/ngo/review" element={<VerifcationUnderReview />} />
+    <Route path="/ngo/login" element={<NGOLogin />} />
   </>
 );

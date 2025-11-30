@@ -15,7 +15,7 @@ body {
 }
 
 /* Main Container */
-.container {
+.registercontainer {
     display: flex;
     flex-direction: row; /* keep side by side */
     width: 100%;
@@ -28,7 +28,7 @@ body {
 }
 
 /* LEFT PANEL */
-.left-panel {
+.regleft-panel {
     flex: 1;
     background: url('https://media.istockphoto.com/id/535555239/photo/happy-indian-school-children.jpg?s=612x612&w=0&k=20&c=fcpTUHiHJuaeRS-xHJy4oOflwKpBooiPecyewzohvhk=') center/cover no-repeat;
     padding: 40px;
@@ -40,32 +40,32 @@ body {
     min-height: 450px;
 }
 
-.left-panel::after {
+.regleft-panel::after {
     content: "";
     position: absolute;
     inset: 0;
     background: rgba(0, 80, 40, 0.45);
 }
 
-.left-panel h1,
-.left-panel p {
+.regleft-panel h1,
+.regleft-panel p {
     z-index: 2;
     margin: 0;
 }
 
-.left-panel h1 {
+.regleft-panel h1 {
     font-size: 30px;
     line-height: 40px;
 }
 
-.left-panel p {
+.regleft-panel p {
     font-size: 16px;
     opacity: 0.9;
     margin-top: 10px;
 }
 
 /* RIGHT PANEL */
-.right-panel {
+.regright-panel {
     flex: 1.2;
     padding: 50px;
     background: #ffffff;
@@ -78,14 +78,14 @@ h2 {
 }
 
 /* Form Styling */
-.form-group {
+.regform-group {
     display: flex;
     gap: 20px;
     margin-bottom: 18px;
     flex-wrap: wrap;
 }
 
-.form-group input {
+.regform-group input {
     flex: 1;
     min-width: 150px;
     padding: 12px 14px;
@@ -96,7 +96,7 @@ h2 {
     font-size: 14px;
 }
 
-.form-group input:focus {
+.regform-group input:focus {
     outline: none;
     border-color: #4caf50;
     background: #ffffff;
@@ -136,14 +136,14 @@ button:hover {
 }
 
 /* Login Text */
-.login-text {
+.reglogin-text {
     text-align: center;
     margin-top: 15px;
     font-size: 14px;
     color: #333;
 }
 
-.login-text a {
+.reglogin-text a {
     color: #4caf50;
     text-decoration: none;
     font-weight: 500;
@@ -159,5 +159,22 @@ button:hover {
     }
     .form-group {
         flex-direction: column;
+    }
+}
+
+/* Fade In Animation */
+.fade-in {
+    opacity: 0;
+    animation: fadeIn 0.9s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

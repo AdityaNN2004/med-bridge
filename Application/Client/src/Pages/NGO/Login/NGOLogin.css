@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+body {
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+    background: #f0f7f1;
+}
+
+/* Full Screen Wrapper */
+.login-wrapper {
+    height: 100vh;
+    width: 600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+
+
+/* Login Card */
+.login-card {
+    /* position: relative; */
+    width: 100%;
+    padding: 40px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    animation: fadeIn 0.8s ease;
+}
+
+.login-card h2 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #2d5a27;
+    text-align: center;
+}
+
+.subtitle {
+    text-align: center;
+    margin-top: 6px;
+    margin-bottom: 25px;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Inputs */
+.input-box {
+    margin-bottom: 18px;
+}
+
+.input-box input {
+    width: 96%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #b7d5b2;
+    background: #f8fff9;
+    font-size: 14px;
+    transition: 0.3s ease;
+}
+
+.input-box input:focus {
+    outline: none;
+    border-color: #4caf50;
+    background: #ffffff;
+    box-shadow: 0 0 6px rgba(76, 175, 80, 0.4);
+}
+
+/* Checkbox */
+.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.checkbox input {
+    width: 18px;
+    height: 18px;
+}
+
+/* Button */
+button.loginbutton {
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    background: #4caf50;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+    margin: 0px;
+}
+
+button:hover {
+    background: #3e8e41;
+}
+
+/* Register Text */
+.register-link {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.register-link a {
+    color: #2d8f35;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(25px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

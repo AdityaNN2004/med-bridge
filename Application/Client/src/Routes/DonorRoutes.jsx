@@ -4,7 +4,7 @@ import AddMedicine from "../Pages/Donar/AddMedicine";
 import DonarAlert from "../Pages/Donar/DonarAlert";
 import FindNGO from "../Pages/Donar/FindNGO";
 import Register from "../Pages/Donar/Register";
-import Login from "../Pages/Login";
+import Login from "../Pages/NGO/Login/NGOLogin";
 
 
 export const DonorRoutes = (
