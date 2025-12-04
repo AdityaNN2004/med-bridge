@@ -4,7 +4,7 @@ import "./NGOLogin.css";
 function NGOLogin() {
 
   const goNext = () => {
-    window.location.href = "/dashboard";
+    window.location.href = "/ngo/inventory";
   };
 
   return (

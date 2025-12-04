@@ -1,0 +1,194 @@
+/* PAGE LAYOUT */
+.dashboard-layout {
+  display: flex;
+  background: #f8fbfc;
+  min-height: 100vh;
+  font-family: "Inter", sans-serif;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 250px;
+  background: #ffffff;
+  padding: 20px;
+  border-right: 1px solid #e7ecef;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.logo-icon {
+  background: #036c72;
+  color: white;
+  padding: 10px;
+  border-radius: 50%;
+  font-size: 22px;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar-menu li {
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: #3b4a54;
+  font-size: 15px;
+  border-radius: 10px;
+}
+
+.sidebar-menu li.active,
+.sidebar-menu li:hover {
+  background: #026f7b;
+  color: white;
+}
+
+/* MAIN CONTENT */
+.main-content {
+  flex: 1;
+  padding: 30px;
+}
+
+/* TOP SECTION */
+.welcome-section {
+  margin-bottom: 30px;
+}
+
+.verified {
+  background: #e0ffe8;
+  color: #1b9132;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+/* TOP CARDS */
+.top-cards {
+  display: flex;
+  gap: 20px;
+}
+
+.card {
+  flex: 1;
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.card-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  font-size: 22px;
+}
+
+.cube { background: #e6f7fa; }
+.clock { background: #fff3d9; }
+.people { background: #e9f7ed; }
+
+.growth {
+  color: #0bb37b;
+  font-size: 13px;
+}
+
+/* QUICK ACTIONS */
+.quick-actions {
+  margin: 30px 0;
+  display: flex;
+  gap: 20px;
+}
+
+.qa-btn {
+  flex: 1;
+  padding: 20px;
+  border: none;
+  background: #ffffff;
+  border-radius: 14px;
+  font-size: 17px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+}
+
+.qa-btn.teal {
+  background: #026f7b;
+  color: white;
+}
+
+/* GRAPHS */
+.graphs-section {
+  display: flex;
+  gap: 20px;
+}
+
+.graph-card {
+  flex: 1;
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.graph-placeholder {
+  height: 250px;
+  background: #f2f6f8;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  opacity: 0.6;
+}
+
+/* RECENT DONATIONS */
+.recent-section {
+  margin-top: 40px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.donation-card {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.status {
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: white;
+}
+
+.pending { background: #ffe5b5; color: #a86800; }
+.confirmed { background: #d8eef4; color: #0089a7; }
+.received { background: #c9f4d2; color: #1b8b3b; }
+
+.accept-btn {
+  background: #026f7b;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}

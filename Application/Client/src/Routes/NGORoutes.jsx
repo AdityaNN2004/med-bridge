@@ -1,7 +1,7 @@
 import { Route } from "react-router-dom";
-import NGODashBoard from "../Pages/NGO/NGODashBoard";
-import InventeroryManagement from "../Pages/NGO/InventeroryManagement";
-import NGOAlert from "../Pages/NGO/NGOAlert";
+import NGODashBoard from "../Pages/NGO/Dashboard/NGODashBoard";
+import InventeroryManagement from "../Pages/NGO/Inventory/InventeroryManagement";
+import NGOAlert from "../Pages/NGO/Alert/NGOAlert";
 import NGORequestManagement from "../Pages/NGO/NGORequestManagement";
 import ServiceArea from "../Pages/NGO/OtherRegistrationProcess/ServiceArea";
 import NGORegisteration from "../Pages/NGO/Registration/NGORegisteration";
