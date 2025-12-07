@@ -95,9 +95,9 @@ button.loginbutton {
     margin: 0px;
 }
 
-button:hover {
-    background: #3e8e41;
-}
+    button:hover {
+        background: #3e8e41;
+    }
 
 /* Register Text */
 .register-link {
