@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, Plus, Activity } from 'lucide-react';
+import { LayoutDashboard, Package, Plus, Activity, LogOut } from 'lucide-react';
 
 const DonorNavbar = () => {
   const navigate = useNavigate();
@@ -8,11 +8,17 @@ const DonorNavbar = () => {
 
   const isActive = (path) => location.pathname === path;
 
+  const handleLogout = () => {
+    // Clear auth data (example)
+    localStorage.removeItem('token'); 
+    navigate('/'); // Redirect to login page
+  };
+
   return (
     <nav className="fixed left-1/2 top-8 flex w-fit -translate-x-1/2 items-center gap-2 rounded-full border border-gray-200 bg-white/80 backdrop-blur-md p-2 shadow-lg z-50">
       <Logo />
-      
-      <div className=" flex items-center gap-1 px-2">
+
+      <div className="flex items-center gap-1 px-2">
         <NavLink 
           icon={<LayoutDashboard className="w-4 h-4" />}
           active={isActive('/donor/dashboard')}
@@ -30,6 +36,15 @@ const DonorNavbar = () => {
         </NavLink>
         
         <AddButton onClick={() => navigate('/donor/add-medicine')} />
+
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-4 py-2 rounded-full border border-red-300 bg-red-50 text-red-600 text-sm font-medium transition-all duration-300 hover:bg-red-600 hover:text-white hover:shadow-lg"
+        >
+          <LogOut className="w-4 h-4" />
+          Logout
+        </button>
       </div>
     </nav>
   );
@@ -44,7 +59,7 @@ const Logo = () => {
         </div>
         <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border-2 border-white"></div>
       </div>
-      <span className="font-bold text-gray-900 text-sm">MediShare</span>
+      <span className="font-bold text-gray-900 text-sm">MediBridge</span>
     </div>
   );
 };

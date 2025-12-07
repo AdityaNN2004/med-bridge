@@ -1,48 +1,118 @@
 import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import "./NGONavbar.css";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Package,
+  Bell,
+  FileCheck,
+  LogOut,
+  HeartHandshake
+} from "lucide-react";
 
 const NGONavbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleLogout = () => {
-    navigate("/ngo/login");
-  };
+  const isActive = (path) => location.pathname === path;
 
   return (
-    <div className="ngo-navbar-container">
+    <nav className="fixed left-1/2 top-6 z-50 flex -translate-x-1/2 items-center gap-2 
+      rounded-full border border-green-200 bg-white/80 backdrop-blur-md p-2 shadow-lg">
 
-      {/* LEFT SIDEBAR */}
-      <aside className="ngo-sidebar">
-        <nav className="ngo-nav-links">
-          <NavLink to="/ngo/dashboard" className="ngo-nav-item">
-            Dashboard
-          </NavLink>
+      {/* Logo */}
+      <Logo />
 
-          <NavLink to="/ngo/inventory" className="ngo-nav-item">
-            Inventory
-          </NavLink>
+      {/* Links */}
+      <div className="flex items-center gap-1 px-2">
+        <NavItem
+          icon={<LayoutDashboard className="w-4 h-4" />}
+          active={isActive("/ngo/dashboard")}
+          onClick={() => navigate("/ngo/dashboard")}
+        >
+          Dashboard
+        </NavItem>
 
-          <NavLink to="/ngo/alert" className="ngo-nav-item">
-            Alerts
-          </NavLink>
+        <NavItem
+          icon={<Package className="w-4 h-4" />}
+          active={isActive("/ngo/inventory")}
+          onClick={() => navigate("/ngo/inventory")}
+        >
+          Inventory
+        </NavItem>
 
-          <NavLink to="/ngo/requests" className="ngo-nav-item">
-            Requests
-          </NavLink>
+        <NavItem
+          icon={<Bell className="w-4 h-4" />}
+          active={isActive("/ngo/alert")}
+          onClick={() => navigate("/ngo/alert")}
+        >
+          Alerts
+        </NavItem>
 
-          <NavLink to="/ngo/review" className="ngo-nav-item">
-            Review Status
-          </NavLink>
-        
-        <button className="ngo-logout-btn" onClick={handleLogout}>
-          Logout
-        </button>
-        </nav>
-   
-      </aside>
-    </div>
+        <NavItem
+          icon={<FileCheck className="w-4 h-4" />}
+          active={isActive("/ngo/requests")}
+          onClick={() => navigate("/ngo/requests")}
+        >
+          Request
+        </NavItem>
+
+        <LogoutButton onClick={() => navigate("/")} />
+      </div>
+    </nav>
   );
 };
+
+/* ------------------- Sub Components ------------------- */
+
+const Logo = () => (
+  <div className="flex items-center gap-2 pl-3 pr-2 border-r border-green-200">
+    <div className="relative">
+      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-600 to-emerald-600 
+        flex items-center justify-center">
+        <HeartHandshake className="w-5 h-5 text-white" />
+      </div>
+      <div className="absolute -top-0.5 -right-0.5 w-2 h-2 
+        bg-green-500 rounded-full border-2 border-white"></div>
+    </div>
+    <span className="text-sm font-bold text-green-900">MediBridge NGO</span>
+  </div>
+);
+
+const NavItem = ({ children, icon, active, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`
+      relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium
+      transition-all duration-300
+      ${active
+        ? "bg-green-600 text-white shadow-md"
+        : "text-green-800 hover:bg-green-100 hover:text-green-900"}
+    `}
+  >
+    <span>{icon}</span>
+    <span>{children}</span>
+
+    {active && (
+      <span className="absolute inset-0 rounded-full bg-green-600 -z-10 animate-pulse"></span>
+    )}
+  </button>
+);
+
+const LogoutButton = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    className="
+      ml-2 flex items-center gap-2 rounded-full border border-red-200
+      bg-red-50 px-4 py-2 text-sm font-semibold text-red-600
+      transition-all duration-300
+
+      hover:scale-105 hover:bg-red-600 hover:text-white hover:shadow-lg
+      active:scale-100
+    "
+  >
+    <LogOut className="w-4 h-4" />
+    Logout
+  </button>
+);
 
 export default NGONavbar;

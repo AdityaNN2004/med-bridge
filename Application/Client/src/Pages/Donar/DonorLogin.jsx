@@ -1,11 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-function NGOLogin() {
+function DonorLogin() {
   const navigate = useNavigate();
 
   const goNext = () => {
-    navigate("/ngo/dashboard");
+    navigate("/donor/dashboard");
   };
 
   return (
@@ -13,8 +13,8 @@ function NGOLogin() {
       {/* LOGIN CARD */}
       <div className="w-full max-w-md p-10 rounded-2xl bg-white/85 backdrop-blur-md shadow-xl animate-fadeIn">
         {/* Title */}
-        <h2 className="text-2xl font-bold text-[#2d5a27] text-center mb-1">
-          NGO Login
+        <h2 className="text-2xl font-bold text-blue-800 text-center mb-1">
+          Donor Login
         </h2>
         <p className="text-center text-gray-600 text-sm mb-6">
           Welcome back! Continue making an impact.
@@ -28,7 +28,7 @@ function NGOLogin() {
               type="email"
               placeholder="Email Address"
               required
-              className="w-full px-4 py-3 rounded-lg border border-[#b7d5b2] bg-[#f8fff9] text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
+              className="w-full px-4 py-3 rounded-lg border border-[#b7d5b2] bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
             />
           </div>
 
@@ -38,7 +38,7 @@ function NGOLogin() {
               type="password"
               placeholder="Password"
               required
-              className="w-full px-4 py-3 rounded-lg border border-[#b7d5b2] bg-[#f8fff9] text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
+              className="w-full px-4 py-3 rounded-lg border border-[#b7d5b2] bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
             />
           </div>
 
@@ -46,7 +46,7 @@ function NGOLogin() {
           <div className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
-              className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
             <label>Remember Me</label>
           </div>
@@ -55,7 +55,7 @@ function NGOLogin() {
           <button
             type="button"
             onClick={goNext}
-            className="w-full py-3 bg-green-600 text-white text-sm font-medium rounded-lg shadow-md hover:bg-green-700 transition"
+            className="w-full py-3 bg-blue-800 text-white text-sm font-medium rounded-lg shadow-md hover:bg-blue-700 transition"
           >
             Login
           </button>
@@ -64,7 +64,7 @@ function NGOLogin() {
         {/* Register Link */}
         <p className="mt-4 text-center text-sm text-gray-600">
           Don't have an account?{" "}
-          <a href="/ngo/register" className="text-green-700 font-semibold hover:underline">
+          <a href="/donor/register" className="text-blue-800 font-semibold hover:underline">
             Register Here
           </a>
         </p>
@@ -84,4 +84,4 @@ function NGOLogin() {
   );
 }
 
-export default NGOLogin;
+export default DonorLogin;
