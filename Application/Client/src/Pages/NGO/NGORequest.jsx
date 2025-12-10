@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   Package,
@@ -10,7 +11,7 @@ import {
   Clock,
   XCircle,
 } from "lucide-react";
-import NGONavbar from "../Navbar/NGONavbar";
+import NGONavbar from "./NGONavbar";
 import { motion } from "framer-motion";
 
 /* ---------------- DATA ---------------- */
@@ -89,6 +90,7 @@ const NGORequest = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedMedicine, setSelectedMedicine] = useState(null);
   const searchRef = useRef(null);
+  const navigate = useNavigate();
 
   /* ✅ Auto focus search on page load */
   useEffect(() => {
@@ -154,7 +156,7 @@ const NGORequest = () => {
           </div>
         </div>
 
-        {/* Medicine Cards with Fade Animation */}
+        {/* Medicine Cards */}
         <div className="space-y-5">
           {filteredMedicines.length === 0 && (
             <div className="text-center py-16">
@@ -207,14 +209,27 @@ const NGORequest = () => {
                 </div>
               </div>
 
-              <span
-                className={`inline-flex items-center gap-1 px-3 py-1.5 h-fit rounded-full text-xs font-medium ${getStatusColor(
-                  med.status
-                )}`}
-              >
-                {getStatusIcon(med.status)}
-                {med.status}
-              </span>
+              {/* ✅ STATUS + VIEW BUTTON */}
+              <div className="flex flex-col items-end gap-2">
+                <span
+                  className={`inline-flex items-center gap-1 px-3 py-1.5 h-fit rounded-full text-xs font-medium ${getStatusColor(
+                    med.status
+                  )}`}
+                >
+                  {getStatusIcon(med.status)}
+                  {med.status}
+                </span>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate("/ngo/viewstatus");
+                  }}
+                  className="text-xs font-medium text-teal-700 border border-teal-700 px-4 py-1.5 rounded-lg hover:bg-teal-700 hover:text-white transition"
+                >
+                  View Status
+                </button>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -241,7 +256,9 @@ const NGORequest = () => {
                 </div>
                 <div>
                   <p className="text-gray-500">Manufacturer</p>
-                  <p className="font-semibold">{selectedMedicine.manufacturer}</p>
+                  <p className="font-semibold">
+                    {selectedMedicine.manufacturer}
+                  </p>
                 </div>
               </div>
             </div>

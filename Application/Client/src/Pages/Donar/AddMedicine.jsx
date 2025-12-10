@@ -187,3 +187,45 @@ function AddMedicine() {
 }
 
 export default AddMedicine;
+
+
+// import java.io.*;
+// import java.net.HttpURLConnection;
+// import java.net.URL;
+
+// public class OCRExample {
+//     public static void main(String[] args) {
+//         try {
+//             String apiKey = "API key";
+//             String url = "https://api.ocr.space/parse/image";
+
+//             URL obj = new URL(url);
+//             HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
+
+//             conn.setRequestMethod("POST");
+//             conn.setRequestProperty("apikey", apiKey);
+//             conn.setDoOutput(true);
+
+//             String data = "url=https://ocr.space/Content/Images/receipt-ocr-original.jpg";
+
+//             conn.getOutputStream().write(data.getBytes("UTF-8"));
+
+//             BufferedReader in = new BufferedReader(
+//                     new InputStreamReader(conn.getInputStream())
+//             );
+//             String inputLine;
+//             StringBuffer response = new StringBuffer();
+
+//             while ((inputLine = in.readLine()) != null) {
+//                 response.append(inputLine);
+//             }
+//             in.close();
+
+//             System.out.println("OCR Output:");
+//             System.out.println(response.toString());
+
+//         } catch (Exception e) {
+//             e.printStackTrace();
+//         }
+//     }
+// }

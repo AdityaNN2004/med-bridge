@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import NGONavbar from "../Navbar/NGONavbar";
+import NGONavbar from "./NGONavbar";
 import { XCircle, Clock, CheckCircle } from "lucide-react";
 import { animate, useInView, motion } from "framer-motion";
 

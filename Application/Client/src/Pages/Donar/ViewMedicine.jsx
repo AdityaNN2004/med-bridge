@@ -1,3 +1,4 @@
+// ViewMedicine.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,12 +13,15 @@ import {
 } from "lucide-react";
 import DonorNavbar from "./DonorNavbar";
 
+// Import react-toastify
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 function ViewMedicine() {
   const navigate = useNavigate();
   const [medicines, setMedicines] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedMedicine, setSelectedMedicine] = useState(null);
-  const [toast, setToast] = useState({ show: false, message: "" });
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const searchRef = useRef(null);
@@ -75,7 +79,7 @@ function ViewMedicine() {
         expiryDate: "2025-09-10",
         numberOfUnits: "60",
         photoUrl:
-          "https://images.unsplash.com/photo-1550572017-4892b2f88d5f?w=400&h=300&fit=crop",
+          "https://digitalcontent.api.tesco.com/v2/media/ghs/c322593f-ea2e-4b4e-adec-cd908a717551/61a7b7b3-e1a0-4335-862d-9dc170dc4511_1042002236.jpeg?h=960&w=960",
         listed: false,
       },
       {
@@ -110,9 +114,11 @@ function ViewMedicine() {
     setMedicines(newMedicines);
     try {
       await window.storage.set("medicines", JSON.stringify(newMedicines));
+      
     } catch (error) {
-      console.error("Error saving medicines:", error);
+     
     }
+    toast.success("Medicine deleted successfully!");
   };
 
   const handleListClick = (medicine) => {
@@ -128,13 +134,14 @@ function ViewMedicine() {
       setMedicines(updatedMedicines);
       try {
         await window.storage.set("medicines", JSON.stringify(updatedMedicines));
+      
       } catch (error) {
-        console.error("Error saving medicines:", error);
+        // console.error("Error saving medicines:", error);
+        // toast.error("Failed to list medicine.");
       }
       setShowConfirm(false);
       setSelectedMedicine(null);
-      setToast({ show: true, message: "Medicine listed successfully!" });
-      setTimeout(() => setToast({ show: false, message: "" }), 3000);
+        toast.success("Medicine listed successfully!");
     }
   };
 
@@ -330,41 +337,10 @@ function ViewMedicine() {
             </div>
           </div>
         )}
-
-        {/* Toast Notification */}
-        {toast.show && (
-          <div className="fixed bottom-8 right-8 z-50 animate-slide-up">
-            <div className="bg-white rounded-lg shadow-2xl p-4 flex items-center gap-3 min-w-[300px]">
-              <div className="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-green-600" />
-              </div>
-              <p className="text-gray-800 font-medium flex-1">{toast.message}</p>
-              <button
-                onClick={() => setToast({ show: false, message: "" })}
-                className="flex-shrink-0 text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        <style>{`
-          @keyframes slide-up {
-            from {
-              transform: translateY(100%);
-              opacity: 0;
-            }
-            to {
-              transform: translateY(0);
-              opacity: 1;
-            }
-          }
-          .animate-slide-up {
-            animation: slide-up 0.3s ease-out;
-          }
-        `}</style>
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
   );
 }

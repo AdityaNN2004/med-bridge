@@ -9,42 +9,50 @@ const DonorNavbar = () => {
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
-    // Clear auth data (example)
     localStorage.removeItem('token'); 
     navigate('/'); // Redirect to login page
   };
 
   return (
-    <nav className="fixed left-1/2 top-8 flex w-fit -translate-x-1/2 items-center gap-2 rounded-full border border-gray-200 bg-white/80 backdrop-blur-md p-2 shadow-lg z-50">
-      <Logo />
-
-      <div className="flex items-center gap-1 px-2">
-        <NavLink 
-          icon={<LayoutDashboard className="w-4 h-4" />}
-          active={isActive('/donor/dashboard')}
-          onClick={() => navigate('/donor/dashboard')}
-        >
-          Dashboard
-        </NavLink>
+    <nav className="fixed top-4 left-1/2 z-50 w-235 max-w-7xl -translate-x-1/2 bg-white/80 backdrop-blur-md border border-gray-200 rounded-full p-2 shadow-lg">
+      <div className="flex items-center justify-center px-4 gap-2 overflow-x-auto scrollbar-hide">
         
-        <NavLink 
-          icon={<Package className="w-4 h-4" />}
-          active={isActive('/donor/view-medicine')}
-          onClick={() => navigate('/donor/view-medicine')}
-        >
-          My Medicines
-        </NavLink>
-        
-        <AddButton onClick={() => navigate('/donor/add-medicine')} />
+        {/* Logo */}
+        <Logo />
 
-        {/* Logout Button */}
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 px-4 py-2 rounded-full border border-red-300 bg-red-50 text-red-600 text-sm font-medium transition-all duration-300 hover:bg-red-600 hover:text-white hover:shadow-lg"
-        >
-          <LogOut className="w-4 h-4" />
-          Logout
-        </button>
+        {/* Center nav items */}
+        <div className="flex items-center gap-2 flex-nowrap overflow-x-auto scrollbar-hide">
+          <NavLink 
+            icon={<LayoutDashboard className="w-4 h-4" />}
+            active={isActive('/donor/dashboard')}
+            onClick={() => navigate('/donor/dashboard')}
+          >
+            Dashboard
+          </NavLink>
+
+          <NavLink 
+            icon={<Package className="w-4 h-4" />}
+            active={isActive('/donor/view-medicine')}
+            onClick={() => navigate('/donor/view-medicine')}
+          >
+            My Medicines
+          </NavLink>
+
+          <NavLink 
+            icon={<Package className="w-4 h-4" />}
+            active={isActive('/donor/listedmedicine')}
+            onClick={() => navigate('/donor/listedmedicine')}
+          >
+            Listed Medicines
+          </NavLink>
+        </div>
+
+        {/* Right buttons */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <AddButton onClick={() => navigate('/donor/add-medicine')} />
+          <LogoutButton onClick={handleLogout} />
+        </div>
+
       </div>
     </nav>
   );
@@ -52,7 +60,7 @@ const DonorNavbar = () => {
 
 const Logo = () => {
   return (
-    <div className="flex items-center gap-2 pl-3 pr-2 border-r border-gray-200">
+    <div className="flex items-center gap-2 pl-3 pr-2 border-r border-gray-200 flex-shrink-0">
       <div className="relative">
         <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
           <Activity className="w-5 h-5 text-white" />
@@ -64,56 +72,37 @@ const Logo = () => {
   );
 };
 
-const NavLink = ({ children, icon, active, onClick }) => {
-  return (
-    <button
-      onClick={onClick}
-      className={`
-        relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-300
-        flex items-center gap-2
-        ${active 
-          ? 'text-white bg-indigo-600 shadow-md' 
-          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-        }
-      `}
-    >
-      <span className={`transition-all ${active ? 'text-white' : 'text-gray-500'}`}>
-        {icon}
-      </span>
-      <span>{children}</span>
-      
-      {active && (
-        <span className="absolute inset-0 rounded-full bg-indigo-600 -z-10 animate-pulse"></span>
-      )}
-    </button>
-  );
-};
+const NavLink = ({ children, icon, active, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`
+      flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex-shrink-0
+      ${active ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}
+    `}
+  >
+    {icon}
+    {children}
+  </button>
+);
 
-const AddButton = ({ onClick }) => {
-  return (
-    <button
-      onClick={onClick}
-      className="
-        relative z-0 flex items-center gap-2 overflow-hidden whitespace-nowrap 
-        rounded-full border border-indigo-200 bg-indigo-50 px-4 py-2 
-        font-medium text-indigo-600 transition-all duration-300 ml-2
-        
-        before:absolute before:inset-0
-        before:-z-10 before:translate-y-[200%]
-        before:scale-[2.5]
-        before:rounded-full before:bg-indigo-600
-        before:transition-transform before:duration-500
-        before:content-['']
+const AddButton = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    className="flex items-center gap-2 px-4 py-2 rounded-full border border-indigo-200 bg-indigo-50 text-indigo-600 font-medium transition-all duration-300 hover:bg-indigo-600 hover:text-white hover:shadow-lg flex-shrink-0"
+  >
+    <Plus className="w-4 h-4" />
+    Add Medicine
+  </button>
+);
 
-        hover:scale-105 hover:border-indigo-600 hover:text-white hover:shadow-lg
-        hover:before:translate-y-[0%]
-        active:scale-100
-      "
-    >
-      <Plus className="w-4 h-4" />
-      <span className="text-sm">Add Medicine</span>
-    </button>
-  );
-};
+const LogoutButton = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    className="flex items-center gap-2 px-4 py-2 rounded-full border border-red-300 bg-red-50 text-red-600 text-sm font-medium transition-all duration-300 hover:bg-red-600 hover:text-white hover:shadow-lg flex-shrink-0"
+  >
+    <LogOut className="w-4 h-4" />
+    Logout
+  </button>
+);
 
 export default DonorNavbar;

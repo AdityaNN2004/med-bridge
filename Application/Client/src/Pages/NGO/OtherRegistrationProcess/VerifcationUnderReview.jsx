@@ -6,7 +6,8 @@ export default function VerificationUnderReview() {
   }
 
   function submitForm() {
-    alert("Registration Submitted Successfully!");
+  
+    window.location.href = "/ngo/login";
   }
 
   return (

@@ -5,7 +5,7 @@ function DonorRegistration() {
   const navigate = useNavigate();
 
   const goNext = () => {
-    navigate("/donor/dashboard"); // redirect after registration
+    navigate("/donor/login"); // redirect after registration
   };
 
   return (

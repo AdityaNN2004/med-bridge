@@ -1,13 +1,16 @@
 import { Route } from "react-router-dom";
 import NGODashboard from "../Pages/NGO/NGODashBoard";
-import InventeroryManagement from "../Pages/NGO/Inventory/InventeroryManagement";
-import NGOAlert from "../Pages/NGO/Alert/NGOAlert";
+import InventeroryManagement from "../Pages/NGO/InventeroryManagement";
+import NGOAlert from "../Pages/NGO/NGOAlert";
 import ServiceArea from "../Pages/NGO/OtherRegistrationProcess/ServiceArea";
 import NGORegisteration from "../Pages/NGO/Registration/NGORegisteration";
 import DocumentVerification from "../Pages/NGO/OtherRegistrationProcess/DocumentVerification";
 import VerifcationUnderReview from "../Pages/NGO/OtherRegistrationProcess/VerifcationUnderReview";
-import NGOLogin from "../Pages/NGO/Login/NGOLogin";
-import NGORequest from "../Pages/NGO/Request/NGORequest";
+import NGOLogin from "../Pages/NGO/NGOLogin";
+import NGORequest from "../Pages/NGO/NGORequest";
+import NGOChatBot from "../Compoments/NGOChatbot";
+
+import NgoViewStatus from "../Pages/NGO/NgoViewStatus";
 export const NGORoutes = (
   <>
     <Route path="/ngo/dashboard" element={<NGODashboard />} />
@@ -19,5 +22,7 @@ export const NGORoutes = (
     <Route path="/ngo/service-area" element={<ServiceArea />} />
     <Route path="/ngo/review" element={<VerifcationUnderReview />} />
     <Route path="/ngo/login" element={<NGOLogin />} />
+     <Route path="/ngo/chatbot" element={<NGOChatBot />} />
+      <Route path="/ngo/viewstatus" element={<NgoViewStatus />} />
   </>
 );

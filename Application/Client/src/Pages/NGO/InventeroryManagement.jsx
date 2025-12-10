@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import NGONavbar from "../Navbar/NGONavbar";
+import NGONavbar from "./NGONavbar";
 import {
   Calendar,
   User,
