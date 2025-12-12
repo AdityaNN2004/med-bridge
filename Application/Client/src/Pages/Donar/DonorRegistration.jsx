@@ -13,14 +13,14 @@ function DonorRegistration() {
       {/* REGISTRATION CARD */}
       <div className="w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row bg-white/85 backdrop-blur-md animate-fadeIn">
 
-        {/* LEFT PANEL: Background Image */}
+        {/* LEFT PANEL */}
         <div
           className="hidden md:flex md:w-1/2 bg-cover bg-center relative"
           style={{
             backgroundImage: "url('https://helplocal.in/blog/wp-content/uploads/2020/12/191286_1.jpg')",
           }}
         >
-          <div className="absolute inset-0 bg-blue-900/40" /> {/* Optional overlay */}
+          <div className="absolute inset-0 bg-blue-900/40" />
           <div className="relative z-10 p-10 flex flex-col justify-end text-white">
             <h2 className="text-3xl font-bold leading-snug mb-2">
               Empowering Donors to Help Local Communities
@@ -31,62 +31,80 @@ function DonorRegistration() {
           </div>
         </div>
 
-        {/* RIGHT PANEL: Form */}
+        {/* RIGHT PANEL: FORM */}
         <div className="w-full md:w-1/2 p-10">
-          {/* Title */}
+
           <h2 className="text-2xl font-bold text-blue-800 text-center mb-1">
-             Registration here
+            Registration here
           </h2>
           <p className="text-center text-gray-600 text-sm mb-6">
             Join our community and start making an impact.
           </p>
 
           <form className="space-y-4">
-            {/* Row 1: First Name & Last Name */}
+
+            {/* Row 1: First + Last Name */}
             <div className="grid sm:grid-cols-2 gap-4">
               <input
                 type="text"
                 placeholder="First Name"
                 required
-                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
               <input
                 type="text"
                 placeholder="Last Name"
                 required
-                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
             </div>
 
-            {/* Row 2: Email & Mobile */}
+            {/* Row 2: Email + Mobile */}
             <div className="grid sm:grid-cols-2 gap-4">
               <input
                 type="email"
                 placeholder="Email Address"
                 required
-                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
               <input
                 type="tel"
                 placeholder="Mobile Number"
                 required
-                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
             </div>
 
-            {/* Row 3: Password & Confirm Password */}
+            {/* Row 3: Password + Confirm Password */}
             <div className="grid sm:grid-cols-2 gap-4">
               <input
                 type="password"
                 placeholder="Password"
                 required
-                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
               <input
                 type="password"
                 placeholder="Confirm Password"
                 required
-                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              />
+            </div>
+
+            {/* NEW FIELD: Full Address */}
+            <div>
+              <input
+                type="text"
+                placeholder="Full Address"
+                required
+                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
             </div>
 
@@ -96,19 +114,22 @@ function DonorRegistration() {
                 type="text"
                 placeholder="City"
                 required
-                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
               <input
                 type="text"
                 placeholder="State"
                 required
-                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
               <input
                 type="text"
                 placeholder="Pincode"
                 required
-                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
             </div>
 
@@ -147,7 +168,7 @@ function DonorRegistration() {
         </div>
       </div>
 
-      {/* Tailwind Animation */}
+      {/* Animation */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(25px); }
