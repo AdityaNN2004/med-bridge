@@ -1,6 +1,13 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, Plus, Activity, LogOut } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Package,
+  Plus,
+  Activity,
+  LogOut,
+  User
+} from 'lucide-react';
 
 const DonorNavbar = () => {
   const navigate = useNavigate();
@@ -9,20 +16,27 @@ const DonorNavbar = () => {
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); 
-    navigate('/'); // Redirect to login page
+    localStorage.removeItem('token');
+    navigate('/');
   };
 
   return (
-    <nav className="fixed top-4 left-1/2 z-50 w-235 max-w-7xl -translate-x-1/2 bg-white/80 backdrop-blur-md border border-gray-200 rounded-full p-2 shadow-lg">
+    <nav className="fixed top-4 left-1/2 z-50 w-260 max-w-7xl -translate-x-1/2 bg-white/80 backdrop-blur-md border border-gray-200 rounded-full p-2 shadow-lg">
       <div className="flex items-center justify-center px-4 gap-2 overflow-x-auto scrollbar-hide">
-        
-        {/* Logo */}
+
+        {/* LOGO */}
         <Logo />
 
-        {/* Center nav items */}
+        {/* CENTER NAV */}
         <div className="flex items-center gap-2 flex-nowrap overflow-x-auto scrollbar-hide">
-          <NavLink 
+         <NavLink
+            icon={<User className="w-4 h-4" />}
+            active={isActive('/donor/profile')}
+            onClick={() => navigate('/donor/viewprofile')}
+          >
+            Profile
+          </NavLink>
+          <NavLink
             icon={<LayoutDashboard className="w-4 h-4" />}
             active={isActive('/donor/dashboard')}
             onClick={() => navigate('/donor/dashboard')}
@@ -30,7 +44,10 @@ const DonorNavbar = () => {
             Dashboard
           </NavLink>
 
-          <NavLink 
+          {/* 🔥 PROFILE BUTTON */}
+          
+
+          <NavLink
             icon={<Package className="w-4 h-4" />}
             active={isActive('/donor/view-medicine')}
             onClick={() => navigate('/donor/view-medicine')}
@@ -38,7 +55,7 @@ const DonorNavbar = () => {
             My Medicines
           </NavLink>
 
-          <NavLink 
+          <NavLink
             icon={<Package className="w-4 h-4" />}
             active={isActive('/donor/listedmedicine')}
             onClick={() => navigate('/donor/listedmedicine')}
@@ -47,17 +64,19 @@ const DonorNavbar = () => {
           </NavLink>
         </div>
 
-        {/* Right buttons */}
+        {/* RIGHT ACTIONS */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <AddButton onClick={() => navigate('/donor/add-medicine')} />
           <LogoutButton onClick={handleLogout} />
         </div>
-
+         
       </div>
+      
     </nav>
   );
 };
 
+/* ================= LOGO ================= */
 const Logo = () => {
   return (
     <div className="flex items-center gap-2 pl-3 pr-2 border-r border-gray-200 flex-shrink-0">
@@ -65,19 +84,24 @@ const Logo = () => {
         <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
           <Activity className="w-5 h-5 text-white" />
         </div>
-        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border-2 border-white"></div>
+        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border-2 border-white" />
       </div>
       <span className="font-bold text-gray-900 text-sm">MediBridge</span>
     </div>
   );
 };
 
+/* ================= NAV LINK ================= */
 const NavLink = ({ children, icon, active, onClick }) => (
   <button
     onClick={onClick}
     className={`
       flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex-shrink-0
-      ${active ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}
+      ${
+        active
+          ? 'bg-indigo-600 text-white shadow-md'
+          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+      }
     `}
   >
     {icon}
@@ -85,6 +109,7 @@ const NavLink = ({ children, icon, active, onClick }) => (
   </button>
 );
 
+/* ================= ADD BUTTON ================= */
 const AddButton = ({ onClick }) => (
   <button
     onClick={onClick}
@@ -95,6 +120,7 @@ const AddButton = ({ onClick }) => (
   </button>
 );
 
+/* ================= LOGOUT ================= */
 const LogoutButton = ({ onClick }) => (
   <button
     onClick={onClick}

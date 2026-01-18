@@ -2,75 +2,60 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera, Calendar, Package, Plus } from "lucide-react";
 import DonorNavbar from "./DonorNavbar";
+import { toast } from "react-toastify";
+import { addMedicine } from "../../Services/MedicineService";
 
 function AddMedicine() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    medicineName: "",
-    expiryDate: "",
-    numberOfUnits: "",
-    photoUrl: "",
-  });
+
+  // 🔹 Separate states
+  const [medicineName, setMedicineName] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
+  const [numberOfUnits, setNumberOfUnits] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
+
   const [errors, setErrors] = useState({});
-  const [medicines, setMedicines] = useState([]); // Initialize empty
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
-
-  const isValidUrl = (string) => {
-    try {
-      new URL(string);
-      return true;
-    } catch (_) {
-      return false;
-    }
-  };
-
+  // 🔹 Validation
   const validate = () => {
     const newErrors = {};
-    if (!formData.medicineName.trim()) newErrors.medicineName = "Medicine name is required";
-    if (!formData.expiryDate) newErrors.expiryDate = "Expiry date is required";
-    else {
-      const today = new Date();
-      const expiry = new Date(formData.expiryDate);
-      if (expiry < today) newErrors.expiryDate = "Expiry date cannot be in the past";
-    }
-    if (!formData.numberOfUnits || formData.numberOfUnits <= 0)
-      newErrors.numberOfUnits = "Please enter a valid number of units";
-    if (!formData.photoUrl.trim()) newErrors.photoUrl = "Photo URL is required";
-    else if (!isValidUrl(formData.photoUrl)) newErrors.photoUrl = "Please enter a valid URL";
-    return newErrors;
+
+    if (!medicineName.trim())
+      newErrors.medicineName = "Medicine name is required";
+
+    if (!expiryDate)
+      newErrors.expiryDate = "Expiry date is required";
+
+    if (!numberOfUnits || numberOfUnits <= 0)
+      newErrors.numberOfUnits = "Enter valid units";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
+  // 🔹 Submit handler
   const handleSubmit = async () => {
-    const newErrors = validate();
-    if (Object.keys(newErrors).length === 0) {
-      const newMedicine = {
-        ...formData,
-        id: Date.now(),
-        donor: "You",
-        location: "Your Location",
-        status: "available",
-        manufacturer: "Unknown",
-        description: "No description",
-      };
+    if (!validate()) return;
 
-      const updatedMedicines = [newMedicine, ...medicines];
-      setMedicines(updatedMedicines);
+    const payload = {
+      medicineName,
+      expiry_date: expiryDate,
+      quantity: numberOfUnits,
+      medicineImage: null, 
+      medicinecategory: "ANTIBIOTIC",
+    };
 
-      // Save to storage for ViewMedicine page
-      try {
-        await window.storage.set("medicines", JSON.stringify(updatedMedicines));
-      } catch (error) {
-        console.error("Error saving medicines:", error);
-      }
-
+    try {
+      setLoading(true);
+      await addMedicine( medicineName, expiryDate, numberOfUnits, null,  "ANTIBIOTIC",);
+      toast.success("Medicine added successfully");
       navigate("/donor/view-medicine");
-    } else {
-      setErrors(newErrors);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to add medicine");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,6 +76,7 @@ function AddMedicine() {
           </div>
 
           <div className="space-y-4">
+            {/* Medicine Name */}
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
                 <Package className="w-4 h-4" />
@@ -98,17 +84,20 @@ function AddMedicine() {
               </label>
               <input
                 type="text"
-                name="medicineName"
-                value={formData.medicineName}
-                onChange={handleChange}
-                placeholder="e.g., Paracetamol 500mg"
-                className={`w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-sm ${
+                value={medicineName}
+                onChange={(e) => setMedicineName(e.target.value)}
+                className={`w-full px-3 py-2 border rounded-xl ${
                   errors.medicineName ? "border-red-500" : "border-gray-200"
                 }`}
               />
-              {errors.medicineName && <p className="text-red-500 text-xs mt-1">{errors.medicineName}</p>}
+              {errors.medicineName && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.medicineName}
+                </p>
+              )}
             </div>
 
+            {/* Expiry Date */}
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
                 <Calendar className="w-4 h-4" />
@@ -116,16 +105,20 @@ function AddMedicine() {
               </label>
               <input
                 type="date"
-                name="expiryDate"
-                value={formData.expiryDate}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-sm ${
+                value={expiryDate}
+                onChange={(e) => setExpiryDate(e.target.value)}
+                className={`w-full px-3 py-2 border rounded-xl ${
                   errors.expiryDate ? "border-red-500" : "border-gray-200"
                 }`}
               />
-              {errors.expiryDate && <p className="text-red-500 text-xs mt-1">{errors.expiryDate}</p>}
+              {errors.expiryDate && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.expiryDate}
+                </p>
+              )}
             </div>
 
+            {/* Number of Units */}
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
                 <Package className="w-4 h-4" />
@@ -133,51 +126,40 @@ function AddMedicine() {
               </label>
               <input
                 type="number"
-                name="numberOfUnits"
-                value={formData.numberOfUnits}
-                onChange={handleChange}
-                placeholder="e.g., 10"
                 min="1"
-                className={`w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-sm ${
+                value={numberOfUnits}
+                onChange={(e) => setNumberOfUnits(e.target.value)}
+                className={`w-full px-3 py-2 border rounded-xl ${
                   errors.numberOfUnits ? "border-red-500" : "border-gray-200"
                 }`}
               />
-              {errors.numberOfUnits && <p className="text-red-500 text-xs mt-1">{errors.numberOfUnits}</p>}
+              {errors.numberOfUnits && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.numberOfUnits}
+                </p>
+              )}
             </div>
 
+            {/* Photo URL (optional – not sent) */}
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
                 <Camera className="w-4 h-4" />
-                Photo URL
+                Photo URL (optional)
               </label>
               <input
                 type="text"
-                name="photoUrl"
-                value={formData.photoUrl}
-                onChange={handleChange}
-                placeholder="https://example.com/medicine-photo.jpg"
-                className={`w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-sm ${
-                  errors.photoUrl ? "border-red-500" : "border-gray-200"
-                }`}
+                value={photoUrl}
+                onChange={(e) => setPhotoUrl(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-xl"
               />
-              {errors.photoUrl && <p className="text-red-500 text-xs mt-1">{errors.photoUrl}</p>}
-              {formData.photoUrl && !errors.photoUrl && (
-                <div className="mt-2">
-                  <img
-                    src={formData.photoUrl}
-                    alt="Preview"
-                    className="w-full h-32 object-cover rounded-xl shadow-sm"
-                    onError={(e) => (e.target.style.display = "none")}
-                  />
-                </div>
-              )}
             </div>
 
             <button
               onClick={handleSubmit}
-              className="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm"
+              disabled={loading}
+              className="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-all"
             >
-              Add Medicine
+              {loading ? "Adding..." : "Add Medicine"}
             </button>
           </div>
         </div>
@@ -187,45 +169,3 @@ function AddMedicine() {
 }
 
 export default AddMedicine;
-
-
-// import java.io.*;
-// import java.net.HttpURLConnection;
-// import java.net.URL;
-
-// public class OCRExample {
-//     public static void main(String[] args) {
-//         try {
-//             String apiKey = "API key";
-//             String url = "https://api.ocr.space/parse/image";
-
-//             URL obj = new URL(url);
-//             HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
-
-//             conn.setRequestMethod("POST");
-//             conn.setRequestProperty("apikey", apiKey);
-//             conn.setDoOutput(true);
-
-//             String data = "url=https://ocr.space/Content/Images/receipt-ocr-original.jpg";
-
-//             conn.getOutputStream().write(data.getBytes("UTF-8"));
-
-//             BufferedReader in = new BufferedReader(
-//                     new InputStreamReader(conn.getInputStream())
-//             );
-//             String inputLine;
-//             StringBuffer response = new StringBuffer();
-
-//             while ((inputLine = in.readLine()) != null) {
-//                 response.append(inputLine);
-//             }
-//             in.close();
-
-//             System.out.println("OCR Output:");
-//             System.out.println(response.toString());
-
-//         } catch (Exception e) {
-//             e.printStackTrace();
-//         }
-//     }
-// }
