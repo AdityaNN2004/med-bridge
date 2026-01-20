@@ -4,7 +4,12 @@ const BASE_URL = 'http://localhost:9090/donar';
 
 export const getAllMedicines = () =>
 {
-   return axios.get(`${BASE_URL}/viewmedicines`);
+   return axios.get(`${BASE_URL}/getallmedicines/1`);
+}
+
+export const getAllUnListedMedicines = () =>
+{
+   return axios.get(`${BASE_URL}/getunlistedmedicines/1`);
 }
 
 

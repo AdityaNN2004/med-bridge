@@ -1,6 +1,6 @@
 // ViewMedicine.jsx
 import React, { useState, useEffect, useRef } from "react";
-import { getAllMedicines } from "../../Services/MedicineService";
+import { getAllMedicines, getAllUnListedMedicines } from "../../Services/MedicineService";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -23,7 +23,7 @@ function ViewMedicine() {
 
   const loadMedicines = async () => {
     try {
-      const result = await getAllMedicines();
+      const result = await getAllUnListedMedicines();
       if (result && result.data) {
         const mappedMedicines = result.data.map((med) => ({
           ...med,
