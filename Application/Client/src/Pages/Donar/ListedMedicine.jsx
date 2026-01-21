@@ -7,7 +7,7 @@ import {
   changelistingstatusmedicine,
 } from "../../Services/MedicineServices";
 
-// Default image
+// Default fallback image
 const DEFAULT_MEDICINE_IMAGE =
   "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=300&fit=crop";
 
@@ -17,16 +17,24 @@ function ListedMedicine() {
   const [medicines, setMedicines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [unlistingId, setUnlistingId] = useState(null); // ✅ track API call
+  const [unlistingId, setUnlistingId] = useState(null);
 
   useEffect(() => {
     fetchListedMedicines();
   }, []);
 
+  // ================= FETCH LISTED MEDICINES =================
   const fetchListedMedicines = async () => {
     try {
       const response = await getAllListedMedicines();
-      setMedicines(response.data);
+
+      // ✅ FIX: map backend fields properly
+      const mapped = response.data.map((med) => ({
+        ...med,
+        expiryDate: med.expiry_date, // FIXED
+      }));
+
+      setMedicines(mapped);
     } catch (err) {
       console.error(err);
       setError("Failed to load listed medicines");
@@ -35,29 +43,26 @@ function ListedMedicine() {
     }
   };
 
-  // Expiry calculation
+  // ================= EXPIRY CALCULATION =================
   const getDaysUntilExpiry = (expiryDate) => {
     if (!expiryDate) return 0;
 
-    const expiry = new Date(expiryDate.split("T")[0]);
+    const expiry = new Date(expiryDate);
     const today = new Date();
 
     expiry.setHours(0, 0, 0, 0);
     today.setHours(0, 0, 0, 0);
 
-    const diffTime = expiry - today;
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
   };
 
-  // ✅ FIXED: ACTUAL API CALL
+  // ================= UNLIST MEDICINE =================
   const handleUnlist = async (medicineId) => {
     try {
       setUnlistingId(medicineId);
-
-      // ✅ CALL BACKEND
       await changelistingstatusmedicine(medicineId);
 
-      // ✅ Update UI only AFTER success
+      // remove from UI after success
       setMedicines((prev) =>
         prev.filter((m) => m.id !== medicineId)
       );
@@ -113,11 +118,7 @@ function ListedMedicine() {
                 >
                   <div className="relative">
                     <img
-                      src={
-                        med.photoUrl && med.photoUrl.trim() !== ""
-                          ? med.photoUrl
-                          : DEFAULT_MEDICINE_IMAGE
-                      }
+                      src={med.photoUrl || DEFAULT_MEDICINE_IMAGE}
                       alt={med.medicineName}
                       className="w-full h-40 object-cover"
                       onError={(e) => {
@@ -139,8 +140,9 @@ function ListedMedicine() {
                       {med.medicineName}
                     </h3>
 
+                    {/* ✅ FIXED UNITS */}
                     <p className="text-xs text-gray-500 mb-4">
-                      {med.numberOfUnits} units available
+                      {med.quantity}
                     </p>
 
                     <div className="flex gap-3">

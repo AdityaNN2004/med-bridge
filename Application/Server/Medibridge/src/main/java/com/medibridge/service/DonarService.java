@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ApiResponse;
+import com.medibridge.dtos.DonarDashboardDto;
 import com.medibridge.dtos.DonarDto;
 import com.medibridge.entities.User;
 import com.medibridge.*;
@@ -53,5 +54,6 @@ public interface DonarService {
 		
 		ApiResponse ChangeListingStatusOfMedicine(Long donar_id);
 		
+		DonarDashboardDto donardashboardstats();
 		
 }

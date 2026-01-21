@@ -29,19 +29,15 @@ public interface MedicineRepository extends JpaRepository<Medicine, Long>{
 	 @Query(value = "UPDATE medicne SET listing_status = 'NotListed' WHERE donar_id = :donarId", nativeQuery = true)
 	 void ChangeMedicneStatusToNotListed(@Param("donarId") Long donarId);
 	 
-//	 @Query(value = "DELETE FROM medicne WHERE medicine_id = :medicineId", nativeQuery = true)
-//	 void deleteMedicine(@Param("medicineId") Long medicineId);
+	 @Query(value = "SELECT * FROM medicine WHERE donar_id = :donarId AND expiry_date < CURRENT_DATE", nativeQuery = true)
+	 List<Medicine> findExpiredMedicines(@Param("donarId") Long donarId);
 	 
-	 @Query("""
-			    SELECT m
-			    FROM Medicine m
-			    WHERE m.donar.id = :donarId
-			      AND m.expiry_date BETWEEN :today AND :threeMonthsLater
-			""")
-		List<Medicine> findMedicinesExpiringSoon( @Param("donarId") Long donar_id,
-		        @Param("today") LocalDate today,
-		        @Param("threeMonthsLater") LocalDate threeMonthsLater);
-	
+	 @Query(value = "SELECT * FROM medicine WHERE donar_id = :donarId AND expiry_date > DATE_ADD(CURRENT_DATE, INTERVAL 3 MONTH)", nativeQuery = true)
+	 List<Medicine> findActiveMedicines(@Param("donarId") Long donarId);
+
+	 @Query(value = "SELECT * FROM medicine WHERE donar_id = :donarId AND expiry_date BETWEEN :today AND :threeMonthsLater", nativeQuery = true)
+	 List<Medicine> findMedicinesExpiringSoon(@Param("donarId") Long donarId, @Param("today") LocalDate today, @Param("threeMonthsLater") LocalDate threeMonthsLater);
+
 
 }
 

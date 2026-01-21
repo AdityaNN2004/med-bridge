@@ -19,23 +19,29 @@ export const getAllListedMedicines = () =>
 
 export const getExpiredMedicines = () =>
 {
-   return axios.get(`${BASE_URL}/getlistedmedicines/1`);
+   return axios.get(`${BASE_URL}/getexpiredmedicines/1`);
 }
 
 export const getCloseToExpiredMedicines = () =>
 {
-   return axios.get(`${BASE_URL}/getlistedmedicines/1`);
+   return axios.get(`${BASE_URL}/getclosetoexpiredmedicines/1`);
 }
 
 export const getActiveMedicines = () =>
 {
-   return axios.get(`${BASE_URL}/getlistedmedicines/1`);
+   return axios.get(`${BASE_URL}/getactivemedicines/1`);
 }
 
 export const getMedicineDetails = (medicine_id) =>
 {
    return axios.get(`${BASE_URL}/getmedicinedetails/${medicine_id}`);
 }
+
+export const deleteMedicine = (medicine_id) =>
+{
+   return axios.get(`${BASE_URL}/deletemedicine/${medicine_id}`);
+}
+
 
 export const changelistingstatusmedicine = (medicne_id) =>
 {

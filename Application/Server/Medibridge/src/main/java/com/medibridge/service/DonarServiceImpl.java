@@ -16,6 +16,7 @@ import com.medibridge.custom_exceptions.ApiException;
 import com.medibridge.custom_exceptions.ResourceNotFoundException;
 import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ApiResponse;
+import com.medibridge.dtos.DonarDashboardDto;
 import com.medibridge.dtos.DonarDto;
 import com.medibridge.entities.User;
 import com.medibridge.entities.donar.Address;
@@ -160,8 +161,15 @@ public class DonarServiceImpl implements DonarService{
 
 	@Override
 	public List<MedicineDto> getExpiredMedicines(Long donar_id) {
-		// TODO Auto-generated method stub
-		return null;
+		List<Medicine> medicineList= medicineRepository.findExpiredMedicines(donar_id);
+		List<MedicineDto> medicineDtoList  = new ArrayList<>();
+			
+		for(Medicine medicine : medicineList)
+		{
+			medicineDtoList.add(modelMapper.map(medicine, MedicineDto.class));
+		}
+			
+		return medicineDtoList;
 	}
 
 	LocalDate today = LocalDate.now();
@@ -183,8 +191,15 @@ public class DonarServiceImpl implements DonarService{
 
 	@Override
 	public List<MedicineDto> getActiveMedicine(Long donar_id) {
-		// TODO Auto-generated method stub
-		return null;
+		List<Medicine> medicineList= medicineRepository.findActiveMedicines(donar_id);
+		List<MedicineDto> medicineDtoList  = new ArrayList<>();
+			
+		for(Medicine medicine : medicineList)
+		{
+			medicineDtoList.add(modelMapper.map(medicine, MedicineDto.class));
+		}
+			
+		return medicineDtoList;
 	}
 
 	@Override
@@ -214,6 +229,12 @@ public class DonarServiceImpl implements DonarService{
 		Medicine medicine =  medicineRepository.getById(medicine_id);
 	    medicineRepository.delete(medicine);
 	    return  new ApiResponse("Medicine deleted", "Success");
+	}
+
+	@Override
+	public DonarDashboardDto donardashboardstats() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
