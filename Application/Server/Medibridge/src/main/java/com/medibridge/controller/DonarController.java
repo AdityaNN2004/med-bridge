@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,7 @@ import com.medibridge.service.DonarService;
 import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.DonarDto;
+import com.medibridge.dtos.MedicineCategoryPercentageDto;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
@@ -195,25 +197,30 @@ public class DonarController {
 	  return ResponseEntity.ok(donarService.signUp(donar));
   }
   
-  @GetMapping("/medicine/closetoexpiry/{donar_id}")
-  public ResponseEntity<?> getCloseToExpiryMedicines(
-          @PathVariable Long donar_id) {
+  @GetMapping("/medicine/categorypercentage/{donarId}")
+  public ResponseEntity<?> getMedicineCategoryPercentageByDonar(@PathVariable Long donarId) {
+      
+      List<MedicineCategoryPercentageDto> result =  donarService.getMedicineCategoryPercentageByDonar(donarId);
+             
+      if (result.isEmpty()) {
+          return ResponseEntity.noContent().build();
+       }
 
-      try {
-          List<MedicineDto> medicines =
-                  donarService.getCloseToExpiryMedicine(donar_id);
-
-          if (medicines.isEmpty()) {
-              return ResponseEntity.noContent().build(); // 204
-          }
-                
-          return ResponseEntity.ok(medicines); // 200
-
-      } catch (RuntimeException e) {
-          return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                  .body(new ApiResponse(e.getMessage(), "Failed"));
-      }
+      return ResponseEntity.ok(result);
   }
+  
+  @DeleteMapping("/delete/{userId}")
+  public ResponseEntity<?> deleteDonarDetails(@PathVariable Long userId){
+	  
+	  String message=donarService.deleteDonarDetails(userId);
+	  if(message.isEmpty()) {
+		  return ResponseEntity.noContent().build();
+	  }
+	 return ResponseEntity.ok(message);
+	  
+  }
+  
 
 
+  
 }

@@ -38,6 +38,18 @@ public interface MedicineRepository extends JpaRepository<Medicine, Long>{
 	 @Query(value = "SELECT * FROM medicine WHERE donar_id = :donarId AND expiry_date BETWEEN :today AND :threeMonthsLater", nativeQuery = true)
 	 List<Medicine> findMedicinesExpiringSoon(@Param("donarId") Long donarId, @Param("today") LocalDate today, @Param("threeMonthsLater") LocalDate threeMonthsLater);
 
+	 @Query(value=" SELECT medicinecategory, COUNT(*) FROM Medicine WHERE donar_id = :donarId GROUP BY medicinecategory",nativeQuery=true)
+	 List<Object[]> countMedicinesByCategoryForDonar(Long donarId);   
+			   
+	 @Query(value = "SELECT COUNT(*) FROM Medicine WHERE donar_id = :donarId",nativeQuery = true)
+	 Long countByDonar_Id(@Param("donarId") Long donarId);   
+			  
+			
+
+	
+
+	
+
 
 }
 

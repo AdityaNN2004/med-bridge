@@ -18,6 +18,7 @@ import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.DonarDashboardDto;
 import com.medibridge.dtos.DonarDto;
+import com.medibridge.dtos.MedicineCategoryPercentageDto;
 import com.medibridge.entities.User;
 import com.medibridge.entities.donar.Address;
 import com.medibridge.entities.donar.Donar;
@@ -51,8 +52,16 @@ public class DonarServiceImpl implements DonarService{
 
 	@Override
 	public Donar getDonarDetails(Long user_id) {
-		return donarRepository.findByUser_Id(user_id).orElseThrow(() -> new ResourceNotFoundException("Invalid user id !!!"));
+		//return donarRepository.findByUser_Id(user_id).orElseThrow(() -> new ResourceNotFoundException("Invalid user id !!!"));
+		Donar donar= donarRepository.getAllUsers(user_id);
+		if(donar==null) {
+			throw new ResourceNotFoundException("Donar not found for user id: " + user_id);
+		}
+		System.out.println(donar);
+		return donar;
+		
 	}
+
 	@Override
 	public String changePassword(String email, String oldPassword, String newPassword) {
 		// TODO Auto-generated method stub
@@ -68,8 +77,17 @@ public class DonarServiceImpl implements DonarService{
 	@Override
 	public String deleteDonarDetails(Long donar_id) {
 		// TODO Auto-generated method stub
-		return null;
+		try {
+			Donar donar=donarRepository.findById(donar_id).orElseThrow(()->new ResourceNotFoundException("Invalid donar_id"));
+			   donar.getUser().setActive(false);
+				return "Deleted Donar Succesfully";
+		}
+		catch(Exception e) {
+			return "Unable to Delete Donar";
+		}
+	
 	}
+
 
 	@Override
 	public List<MedicineDto> getAllMedicines(Long donar_id) {
@@ -176,16 +194,11 @@ public class DonarServiceImpl implements DonarService{
 	LocalDate threeMonthsLater = today.plusMonths(3);
 	@Override
 	public List<MedicineDto> getCloseToExpiryMedicine(Long donar_id) {
-		// TODO Auto-generated method stub
-		List<Medicine> medicines =
-	            medicineRepository.findMedicinesExpiringSoon(
-	                    donar_id,
-	                    today,
-	                    threeMonthsLater
-	            );
-		return medicines.stream()
-                .map(medicine -> modelMapper.map(medicine, MedicineDto.class))
-                .toList();
+		
+		List<Medicine> medicines = medicineRepository.findMedicinesExpiringSoon(donar_id,today, threeMonthsLater);
+	           
+		return medicines.stream().map(medicine -> modelMapper.map(medicine, MedicineDto.class)).toList();
+              
 	}
 
 
@@ -236,5 +249,26 @@ public class DonarServiceImpl implements DonarService{
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public List<MedicineCategoryPercentageDto> getMedicineCategoryPercentageByDonar(Long donarId) {
+		
+	    Long totalMedicines =  medicineRepository.countByDonar_Id(donarId);
+        
+	    if (totalMedicines == 0) {
+	        return List.of();
+	     }
+
+	    List<Object[]> results =  medicineRepository.countMedicinesByCategoryForDonar(donarId);
+	          
+	    return results.stream().map(row -> {  
+	                String category = row[0].toString();
+	                Long count = (Long) row[1];
+	                double percentage =  (count * 100.0) / totalMedicines;
+                    return new MedicineCategoryPercentageDto( category, Math.round(percentage * 100.0) / 100.0);
+	                 }) .toList();
+	           
+	}
+
 
 }

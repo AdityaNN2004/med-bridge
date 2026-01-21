@@ -9,6 +9,7 @@ import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.DonarDashboardDto;
 import com.medibridge.dtos.DonarDto;
+import com.medibridge.dtos.MedicineCategoryPercentageDto;
 import com.medibridge.entities.User;
 import com.medibridge.*;
 import com.medibridge.entities.donar.Address;
@@ -56,4 +57,5 @@ public interface DonarService {
 		
 		DonarDashboardDto donardashboardstats();
 		
+		List<MedicineCategoryPercentageDto> getMedicineCategoryPercentageByDonar(Long donarId);
 }
