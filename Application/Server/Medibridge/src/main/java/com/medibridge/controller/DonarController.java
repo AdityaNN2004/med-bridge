@@ -196,7 +196,6 @@ public class DonarController {
   {
 	  return ResponseEntity.ok(donarService.signUp(donar));
   }
-  
 
   @GetMapping("/medicine/categorypercentage/{donarId}")
   public ResponseEntity<?> getMedicineCategoryPercentageByDonar(@PathVariable Long donarId) {
@@ -210,6 +209,7 @@ public class DonarController {
       return ResponseEntity.ok(result);
   }
   
+
   @DeleteMapping("/delete/{userId}")
   public ResponseEntity<?> deleteDonarDetails(@PathVariable Long userId){
 	  
@@ -220,6 +220,27 @@ public class DonarController {
 	 return ResponseEntity.ok(message);
 	  
   }
+
+  @GetMapping("/medicine/categorypercentage/{donarId}")
+  public ResponseEntity<?> getMedicineCategoryPercentageByDonar(@PathVariable Long donarId) {
+      
+      List<MedicineCategoryPercentageDto> result =  donarService.getMedicineCategoryPercentageByDonar(donarId);
+             
+      if (result.isEmpty()) {
+          return ResponseEntity.noContent().build();
+       }
+      return ResponseEntity.ok(result);
+  }
   
-  
+  @DeleteMapping("/delete/{userId}")
+  public ResponseEntity<?> deleteDonarDetails(@PathVariable Long userId){
+	  
+	  String message=donarService.deleteDonarDetails(userId);
+	  if(message.isEmpty()) {
+		  return ResponseEntity.noContent().build();
+	  }
+	 return ResponseEntity.ok(message);
+	  
+  }
+
 }
