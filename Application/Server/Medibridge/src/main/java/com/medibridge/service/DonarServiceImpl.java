@@ -15,6 +15,7 @@ import jakarta.transaction.Transactional;
 import com.medibridge.custom_exceptions.ApiException;
 import com.medibridge.custom_exceptions.ResourceNotFoundException;
 import com.medibridge.dtos.MedicineDto;
+import com.medibridge.dtos.AddressDto;
 import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.DonarDashboardDto;
 import com.medibridge.dtos.DonarDto;
@@ -268,6 +269,27 @@ public class DonarServiceImpl implements DonarService{
                     return new MedicineCategoryPercentageDto( category, Math.round(percentage * 100.0) / 100.0);
 	                 }) .toList();
 	           
+	}
+
+	@Override
+	public AddressDto getActiveDonarAddress(Long donar_id) {
+	   Address address = donarRepository.findActiveAddressByDonarId(donar_id);
+	   AddressDto addressdto = modelMapper.map(address, AddressDto.class);
+	   System.out.println(addressdto);
+	   return addressdto;
+	}
+
+	@Override
+	public void switchAddress(Long address_id) {
+		//public void switchAddress(Long address_id, Long donar_id) {
+		//int inactive=donarRepository.inActiveAddress(donar_id);
+		int inactive=donarRepository.inActiveAddress();
+		
+	    int active=donarRepository.setActiveAddress(address_id);
+	
+	    if (active == 0) {
+            throw new RuntimeException("Address not found or not activated");
+        }
 	}
 
 

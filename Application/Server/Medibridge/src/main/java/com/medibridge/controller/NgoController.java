@@ -7,6 +7,8 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.medibridge.dtos.AddressDto;
+import com.medibridge.dtos.ServiceAreaDto;
 import com.medibridge.entities.ngo.Ngo;
 import com.medibridge.entities.ngo.ServiceArea;
 
@@ -51,4 +53,17 @@ public class NgoController {
         ngoService.saveServiceArea(ngoId, serviceArea);
         return ResponseEntity.ok("Service area saved successfully");
     }
+    
+    @GetMapping("/getservicearea/{ngoId}")
+    public ResponseEntity<?> getActiveAddressByDonar(@PathVariable Long ngoId) {
+        
+        ServiceAreaDto result =  ngoService.getServiceAreaOfNgo(ngoId);
+               
+        if (result == null) {
+            return ResponseEntity.noContent().build();
+         }
+
+        return ResponseEntity.ok(result);
+    }
+    
 }

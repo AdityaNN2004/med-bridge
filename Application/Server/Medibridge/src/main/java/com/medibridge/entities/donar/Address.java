@@ -25,6 +25,8 @@ public class Address extends BaseEntity{
     private String state;
 	@Column(length = 50)
     private int pincode;
+	@Column(name="is_active",nullable=false)
+	private boolean isActive = false;
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name= "donar_id",nullable = false)
 	private Donar donar;

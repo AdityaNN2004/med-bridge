@@ -22,7 +22,11 @@ import com.medibridge.entities.User;
 import com.medibridge.entities.donar.Address;
 import com.medibridge.entities.donar.Medicine;
 import com.medibridge.service.DonarService;
+
+import io.micrometer.core.ipc.http.HttpSender.Response;
+
 import com.medibridge.dtos.MedicineDto;
+import com.medibridge.dtos.AddressDto;
 import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.DonarDto;
 import com.medibridge.dtos.MedicineCategoryPercentageDto;
@@ -197,18 +201,7 @@ public class DonarController {
 	  return ResponseEntity.ok(donarService.signUp(donar));
   }
 
-  @GetMapping("/medicine/categorypercentage/{donarId}")
-  public ResponseEntity<?> getMedicineCategoryPercentageByDonar(@PathVariable Long donarId) {
-      
-      List<MedicineCategoryPercentageDto> result =  donarService.getMedicineCategoryPercentageByDonar(donarId);
-             
-      if (result.isEmpty()) {
-          return ResponseEntity.noContent().build();
-       }
 
-      return ResponseEntity.ok(result);
-  }
-  
 
   @DeleteMapping("/delete/{userId}")
   public ResponseEntity<?> deleteDonarDetails(@PathVariable Long userId){
@@ -231,16 +224,26 @@ public class DonarController {
        }
       return ResponseEntity.ok(result);
   }
+
+  @GetMapping("/getactiveaddress/{donarId}")
+  public ResponseEntity<?> getActiveAddressByDonar(@PathVariable Long donarId) {
+      
+      AddressDto result =  donarService.getActiveDonarAddress(donarId);
+             
+      if (result == null) {
+          return ResponseEntity.noContent().build();
+       }
+
+      return ResponseEntity.ok(result);
+  }
   
-  @DeleteMapping("/delete/{userId}")
-  public ResponseEntity<?> deleteDonarDetails(@PathVariable Long userId){
-	  
-	  String message=donarService.deleteDonarDetails(userId);
-	  if(message.isEmpty()) {
-		  return ResponseEntity.noContent().build();
-	  }
-	 return ResponseEntity.ok(message);
-	  
+  @PutMapping("/switchaddress/{address_id}")
+  // @PutMapping("/switchaddress/{address_id}/{donar_id}")
+  public ResponseEntity<?> switchaddress(@PathVariable Long address_id){
+	 // public ResponseEntity<?> switchaddress(@PathVariable Long address_id,@PathVariable Long donar_id){
+	//donarService.switchAddress(address_id, donar_id);
+	  donarService.switchAddress(address_id);
+    return ResponseEntity.ok("Address switched successfully");
   }
 
 }

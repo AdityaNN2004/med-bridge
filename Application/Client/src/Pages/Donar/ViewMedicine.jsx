@@ -5,6 +5,7 @@ import {
   getCloseToExpiredMedicines,
   getActiveMedicines,
   deleteMedicine,
+  getAllMedicines,
   changelistingstatusmedicine,
 } from "../../Services/MedicineServices";
 import { useNavigate } from "react-router-dom";
@@ -51,7 +52,7 @@ function ViewMedicine() {
           break;
         case "all":
         default:
-          response = await getAllUnListedMedicines();
+          response = await getAllMedicines();
       }
 
       const mapped =

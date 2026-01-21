@@ -1,8 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
+
+
+
 function DonorRegistration() {
+  
   const navigate = useNavigate();
+
+const [firstName, setFirstName] = useState("");
+const [lastName, setLastName] = useState("");
+const [email, setEmail] = useState("");
+const [mobile, setMobile] = useState("");
+const [password, setPassword] = useState("");
+const [confirmPassword, setConfirmPassword] = useState("");
+const [address, setAddress] = useState("");
+const [city, setCity] = useState("");
+const [state, setState] = useState("");
+const [pincode, setPincode] = useState("");
+const [termsAccepted, setTermsAccepted] = useState(false);
 
   const goNext = () => {
     navigate("/donor/login"); // redirect after registration
@@ -49,6 +66,7 @@ function DonorRegistration() {
                 type="text"
                 placeholder="First Name"
                 required
+                onChange={(e)=>setFirstName(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
@@ -56,6 +74,7 @@ function DonorRegistration() {
                 type="text"
                 placeholder="Last Name"
                 required
+                onChange={(e)=>setLastName(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
@@ -67,6 +86,7 @@ function DonorRegistration() {
                 type="email"
                 placeholder="Email Address"
                 required
+                onChange={(e)=>setEmail(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
@@ -74,6 +94,7 @@ function DonorRegistration() {
                 type="tel"
                 placeholder="Mobile Number"
                 required
+                onChange={(e)=>setMobile(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
@@ -85,6 +106,7 @@ function DonorRegistration() {
                 type="password"
                 placeholder="Password"
                 required
+                onChange={(e)=>setPassword(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
@@ -92,6 +114,7 @@ function DonorRegistration() {
                 type="password"
                 placeholder="Confirm Password"
                 required
+                onChange={(e)=>setConfirmPassword(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
@@ -103,6 +126,7 @@ function DonorRegistration() {
                 type="text"
                 placeholder="Full Address"
                 required
+                onChange={(e)=>setAddress(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
@@ -114,6 +138,7 @@ function DonorRegistration() {
                 type="text"
                 placeholder="City"
                 required
+                onChange={(e)=>setCity(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
@@ -121,6 +146,7 @@ function DonorRegistration() {
                 type="text"
                 placeholder="State"
                 required
+                onChange={(e)=>setState(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
@@ -128,6 +154,7 @@ function DonorRegistration() {
                 type="text"
                 placeholder="Pincode"
                 required
+                onChange={(e)=>setPincode(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 text-sm 
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
@@ -138,6 +165,7 @@ function DonorRegistration() {
               <input
                 type="checkbox"
                 required
+                onChange={(e)=>setTermsAccepted(e.target.checked)}
                 className="mt-1 h-4 w-4 accent-blue-600"
               />
               <span>

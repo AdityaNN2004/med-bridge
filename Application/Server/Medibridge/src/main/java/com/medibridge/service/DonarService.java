@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.medibridge.dtos.MedicineDto;
+import com.medibridge.dtos.AddressDto;
 import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.DonarDashboardDto;
 import com.medibridge.dtos.DonarDto;
@@ -58,4 +59,11 @@ public interface DonarService {
 		DonarDashboardDto donardashboardstats();
 		
 		List<MedicineCategoryPercentageDto> getMedicineCategoryPercentageByDonar(Long donarId);
+		
+		AddressDto getActiveDonarAddress(Long donar_id);
+
+	//	void switchAddress(Long address_id, Long donar_id);
+		void switchAddress(Long address_id);
+		
+		
 }
