@@ -168,6 +168,27 @@ public class DonarController {
   {
 	  return ResponseEntity.ok(donarService.signUp(donar));
   }
+  
+  @GetMapping("/medicine/closetoexpiry/{donar_id}")
+  public ResponseEntity<?> getCloseToExpiryMedicines(
+          @PathVariable Long donar_id) {
+
+      try {
+          List<MedicineDto> medicines =
+                  donarService.getCloseToExpiryMedicine(donar_id);
+
+          if (medicines.isEmpty()) {
+              return ResponseEntity.noContent().build(); // 204
+          }
+                
+          return ResponseEntity.ok(medicines); // 200
+
+      } catch (RuntimeException e) {
+          return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                  .body(new ApiResponse(e.getMessage(), "Failed"));
+      }
+  }
+
 
 }
 

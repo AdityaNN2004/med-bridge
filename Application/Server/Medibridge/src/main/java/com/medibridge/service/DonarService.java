@@ -33,7 +33,8 @@ public interface DonarService {
 		
 		List<MedicineDto> getExpiredMedicines(Long donar_id);
 		
-		List<MedicineDto> getCloseToExpiryMedicines(Long donar_id);
+		List<MedicineDto> getCloseToExpiryMedicine(Long donar_id);
+
 		
 		List<MedicineDto> getActiveMedicine(Long donar_id);
 	    

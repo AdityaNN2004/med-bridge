@@ -164,11 +164,22 @@ public class DonarServiceImpl implements DonarService{
 		return null;
 	}
 
+	LocalDate today = LocalDate.now();
+	LocalDate threeMonthsLater = today.plusMonths(3);
 	@Override
-	public List<MedicineDto> getCloseToExpiryMedicines(Long donar_id) {
+	public List<MedicineDto> getCloseToExpiryMedicine(Long donar_id) {
 		// TODO Auto-generated method stub
-		return null;
+		List<Medicine> medicines =
+	            medicineRepository.findMedicinesExpiringSoon(
+	                    donar_id,
+	                    today,
+	                    threeMonthsLater
+	            );
+		return medicines.stream()
+                .map(medicine -> modelMapper.map(medicine, MedicineDto.class))
+                .toList();
 	}
+
 
 	@Override
 	public List<MedicineDto> getActiveMedicine(Long donar_id) {
