@@ -1,8 +1,68 @@
-import React from "react";
+import React, { useState } from "react";
 
 export default function DocumentVerification() {
-  const goNext = () => {
-    window.location.href = "service-area";
+  const ngoId = localStorage.getItem("ngoId"); // saved after registration
+
+  const [files, setFiles] = useState({
+    registrationCertificate: null,
+    taxExemptionCertificate: null,
+    contactIdProof: null,
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleFileChange = (e) => {
+    setFiles({
+      ...files,
+      [e.target.name]: e.target.files[0],
+    });
+  };
+
+  const handleUpload = async () => {
+    setError("");
+    setSuccess("");
+
+    if (!files.registrationCertificate ||
+        !files.taxExemptionCertificate ||
+        !files.contactIdProof) {
+      setError("Please upload all required documents");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("registrationCertificate", files.registrationCertificate);
+    formData.append("taxExemptionCertificate", files.taxExemptionCertificate);
+    formData.append("contactIdProof", files.contactIdProof);
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(
+        `http://localhost:9090/ngo/${ngoId}/documents`,
+        {
+          method: "POST",
+          body: formData, // ❗ DO NOT set Content-Type manually
+        }
+      );
+
+      if (!response.ok) {
+        const msg = await response.text();
+        throw new Error(msg || "Upload failed");
+      }
+
+      setSuccess("Documents uploaded successfully!");
+
+      setTimeout(() => {
+        window.location.href = `/ngo/service-area`;
+      }, 1200);
+
+    } catch (err) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const goBack = () => {
@@ -11,12 +71,9 @@ export default function DocumentVerification() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-4xl bg-white rounded-3xl shadow-xl border border-gray-200 p-8 md:p-10">
 
-      {/* Card */}
-      <div className="w-full max-w-4xl bg-white rounded-3xl shadow-xl border border-gray-200 p-8 md:p-10 animate-in fade-in duration-700">
-
-        {/* Heading */}
-        <h2 className="text-3xl font-bold text-center text-gray-900 mb-6">
+        <h2 className="text-3xl font-bold text-center mb-6">
           NGO Registration Process
         </h2>
 
@@ -37,43 +94,48 @@ export default function DocumentVerification() {
           ))}
         </div>
 
-        {/* Content */}
-        <div className="animate-in slide-in-from-bottom-6 duration-500">
+        {error && <p className="text-red-600 mb-4">{error}</p>}
+        {success && <p className="text-green-600 mb-4">{success}</p>}
 
-          <h3 className="text-xl font-semibold text-gray-800 mb-6">
-            Upload Documents
-          </h3>
+        {/* Upload Fields */}
+        <div className="space-y-5">
+          <UploadField
+            label="NGO Registration Certificate"
+            name="registrationCertificate"
+            onChange={handleFileChange}
+          />
+          <UploadField
+            label="Tax Exemption Certificate"
+            name="taxExemptionCertificate"
+            onChange={handleFileChange}
+          />
+          <UploadField
+            label="ID Proof of Contact Person"
+            name="contactIdProof"
+            onChange={handleFileChange}
+          />
+        </div>
 
-          {/* Upload Fields */}
-          <div className="space-y-5">
+        {/* Buttons */}
+        <div className="flex justify-between mt-10">
+          <button
+            onClick={goBack}
+            className="px-8 py-3 rounded-xl font-semibold
+                       bg-gray-100 text-gray-700 hover:bg-gray-200"
+          >
+            Back
+          </button>
 
-            <UploadField label="NGO Registration Certificate" />
-            <UploadField label="Tax Exemption Certificate" />
-            <UploadField label="ID Proof of Contact Person" />
-
-          </div>
-
-          {/* Buttons */}
-          <div className="flex justify-between mt-10">
-            <button
-              onClick={goBack}
-              className="px-8 py-3 rounded-xl font-semibold
-                         bg-gray-100 text-gray-700
-                         hover:bg-gray-200 transition"
-            >
-              Back
-            </button>
-
-            <button
-              onClick={goNext}
-              className="px-8 py-3 rounded-xl font-semibold text-white
-                         bg-gradient-to-r from-blue-600 to-purple-600
-                         hover:shadow-lg hover:scale-105
-                         transition-all"
-            >
-              Next
-            </button>
-          </div>
+          <button
+            onClick={handleUpload}
+            disabled={loading}
+            className="px-8 py-3 rounded-xl font-semibold text-white
+                       bg-gradient-to-r from-blue-600 to-purple-600
+                       hover:shadow-lg hover:scale-105
+                       transition-all disabled:opacity-50"
+          >
+            {loading ? "Uploading..." : "Next"}
+          </button>
         </div>
       </div>
     </div>
@@ -81,20 +143,19 @@ export default function DocumentVerification() {
 }
 
 /* Reusable Upload Field */
-function UploadField({ label }) {
+function UploadField({ label, name, onChange }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        {label}
-      </label>
+      <label className="block text-sm font-medium mb-2">{label}</label>
       <input
         type="file"
+        name={name}
+        onChange={onChange}
         className="w-full rounded-xl border border-gray-300 bg-gray-50
                    file:mr-4 file:py-2 file:px-4
                    file:rounded-lg file:border-0
                    file:bg-blue-600 file:text-white
-                   hover:file:bg-blue-700
-                   focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   hover:file:bg-blue-700"
       />
     </div>
   );

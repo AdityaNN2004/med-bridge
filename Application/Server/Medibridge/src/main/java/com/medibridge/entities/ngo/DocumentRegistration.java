@@ -21,13 +21,13 @@ import lombok.ToString;
 @ToString
 public class DocumentRegistration extends BaseEntity{
  @Column(name="registration_certificate", length = 300)
- private byte[] RegistrationCertificate;
+ private String RegistrationCertificate;
  @Column(name="tax_exemption_certificate", length = 300)
- private byte[] taxExemptionCertificate;
+ private String  taxExemptionCertificate;
  @Column(name="contact_person_id_proof", length = 300)
- private byte[] contactPersonIdProof;
+ private String contactPersonIdProof;
  
- public DocumentRegistration(byte[] registrationCertificate, byte[] taxExemptionCertificate,byte[] contactPersonIdProof) {
+ public DocumentRegistration(String registrationCertificate, String taxExemptionCertificate,String contactPersonIdProof) {
 	super();
 	RegistrationCertificate = registrationCertificate;
 	this.taxExemptionCertificate = taxExemptionCertificate;
