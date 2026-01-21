@@ -2,63 +2,71 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Clock } from "lucide-react";
 import DonorNavbar from "./DonorNavbar";
+import {
+  getAllListedMedicines,
+  changelistingstatusmedicine,
+} from "../../Services/MedicineServices";
+
+// Default image
+const DEFAULT_MEDICINE_IMAGE =
+  "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=300&fit=crop";
 
 function ListedMedicine() {
   const navigate = useNavigate();
+
   const [medicines, setMedicines] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [unlistingId, setUnlistingId] = useState(null); // ✅ track API call
 
   useEffect(() => {
-    const dummyMedicines = [
-      {
-        id: 1,
-        medicineName: "Paracetamol 500mg",
-        expiryDate: "2025-12-31",
-        numberOfUnits: 20,
-        photoUrl:
-          "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=300&fit=crop",
-        listed: true,
-      },
-      {
-        id: 2,
-        medicineName: "Ibuprofen 400mg",
-        expiryDate: "2025-06-15",
-        numberOfUnits: 15,
-        photoUrl:
-          "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400&h=300&fit=crop",
-        listed: true,
-      },
-      {
-        id: 3,
-        medicineName: "Amoxicillin 250mg",
-        expiryDate: "2026-03-20",
-        numberOfUnits: 30,
-        photoUrl:
-          "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=400&h=300&fit=crop",
-        listed: true,
-      },
-      {
-        id: 4,
-        medicineName: "Vitamin D3 1000 IU",
-        expiryDate: "2025-09-10",
-        numberOfUnits: 60,
-        photoUrl:
-          "https://images.unsplash.com/photo-1550572017-4892b2f88d5f?w=400&h=300&fit=crop",
-        listed: true,
-      },
-    ];
-    setMedicines(dummyMedicines);
+    fetchListedMedicines();
   }, []);
 
-  const getDaysUntilExpiry = (expiryDate) => {
-    const today = new Date();
-    const expiry = new Date(expiryDate);
-    return Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+  const fetchListedMedicines = async () => {
+    try {
+      const response = await getAllListedMedicines();
+      setMedicines(response.data);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load listed medicines");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleUnlist = (id) => {
-    setMedicines((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, listed: false } : m))
-    );
+  // Expiry calculation
+  const getDaysUntilExpiry = (expiryDate) => {
+    if (!expiryDate) return 0;
+
+    const expiry = new Date(expiryDate.split("T")[0]);
+    const today = new Date();
+
+    expiry.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    const diffTime = expiry - today;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  // ✅ FIXED: ACTUAL API CALL
+  const handleUnlist = async (medicineId) => {
+    try {
+      setUnlistingId(medicineId);
+
+      // ✅ CALL BACKEND
+      await changelistingstatusmedicine(medicineId);
+
+      // ✅ Update UI only AFTER success
+      setMedicines((prev) =>
+        prev.filter((m) => m.id !== medicineId)
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to unlist medicine. Please try again.");
+    } finally {
+      setUnlistingId(null);
+    }
   };
 
   return (
@@ -66,7 +74,6 @@ function ListedMedicine() {
       <DonorNavbar />
 
       <div className="mt-24 max-w-7xl mx-auto px-6 pb-10">
-        {/* Back */}
         <button
           className="flex items-center gap-2 text-indigo-600 mb-6 font-medium hover:underline"
           onClick={() => navigate("/donor/dashboard")}
@@ -78,14 +85,22 @@ function ListedMedicine() {
           Listed Medicines
         </h1>
 
-        {medicines.length === 0 ? (
+        {loading && <p className="text-gray-500">Loading medicines...</p>}
+        {error && <p className="text-red-500">{error}</p>}
+
+        {!loading && medicines.length === 0 && (
           <p className="text-gray-500">No listed medicines available.</p>
-        ) : (
+        )}
+
+        {!loading && medicines.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {medicines.map((med) => {
               const daysLeft = getDaysUntilExpiry(med.expiryDate);
+
               const expiryColor =
-                daysLeft <= 30
+                daysLeft <= 0
+                  ? "bg-gray-200 text-gray-600"
+                  : daysLeft <= 30
                   ? "bg-red-100 text-red-600"
                   : daysLeft <= 90
                   ? "bg-yellow-100 text-yellow-600"
@@ -94,28 +109,31 @@ function ListedMedicine() {
               return (
                 <div
                   key={med.id}
-                  className="group bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+                  className="bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition"
                 >
-                  {/* Image */}
                   <div className="relative">
                     <img
-                      src={med.photoUrl}
+                      src={
+                        med.photoUrl && med.photoUrl.trim() !== ""
+                          ? med.photoUrl
+                          : DEFAULT_MEDICINE_IMAGE
+                      }
                       alt={med.medicineName}
                       className="w-full h-40 object-cover"
-                      onError={(e) =>
-                        (e.target.src =
-                          "https://via.placeholder.com/400x300?text=Medicine")
-                      }
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = DEFAULT_MEDICINE_IMAGE;
+                      }}
                     />
+
                     <span
                       className={`absolute top-2 right-2 px-3 py-1 rounded-full text-xs font-semibold ${expiryColor}`}
                     >
                       <Clock className="inline w-3 h-3 mr-1" />
-                      {daysLeft} days left
+                      {daysLeft > 0 ? `${daysLeft} days left` : "Expired"}
                     </span>
                   </div>
 
-                  {/* Content */}
                   <div className="p-4">
                     <h3 className="font-semibold text-gray-900 text-sm mb-1 truncate">
                       {med.medicineName}
@@ -125,22 +143,27 @@ function ListedMedicine() {
                       {med.numberOfUnits} units available
                     </p>
 
-                    {/* Actions */}
                     <div className="flex gap-3">
                       <button
                         onClick={() =>
                           navigate(`/donor/viewstatus/${med.id}`)
                         }
-                        className="flex-1 bg-indigo-50 text-indigo-600 py-2 rounded-lg text-xs font-semibold hover:bg-indigo-100 transition"
+                        className="flex-1 bg-indigo-50 text-indigo-600 py-2 rounded-lg text-xs font-semibold hover:bg-indigo-100"
                       >
                         View Status
                       </button>
 
                       <button
                         onClick={() => handleUnlist(med.id)}
-                        className="flex-1 bg-red-50 text-red-600 py-2 rounded-lg text-xs font-semibold hover:bg-red-100 transition"
+                        disabled={unlistingId === med.id}
+                        className={`flex-1 py-2 rounded-lg text-xs font-semibold
+                          ${
+                            unlistingId === med.id
+                              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                              : "bg-red-50 text-red-600 hover:bg-red-100"
+                          }`}
                       >
-                        Unlist
+                        {unlistingId === med.id ? "Unlisting..." : "Unlist"}
                       </button>
                     </div>
                   </div>

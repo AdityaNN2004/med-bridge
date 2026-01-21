@@ -30,6 +30,7 @@ public class User extends BaseEntity  implements UserDetails{
   @Column(length = 15)
   private String mobile;
   
+  private boolean isActive = true;
   
   public User(String email, String password, com.medibridge.entities.userRole userRole, String mobile) {
 	super();

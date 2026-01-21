@@ -32,6 +32,16 @@ export const getActiveMedicines = () =>
    return axios.get(`${BASE_URL}/getlistedmedicines/1`);
 }
 
+export const getMedicineDetails = (medicine_id) =>
+{
+   return axios.get(`${BASE_URL}/getmedicinedetails/${medicine_id}`);
+}
+
+export const changelistingstatusmedicine = (medicne_id) =>
+{
+   return axios.get(`${BASE_URL}/changelistingstatusmedicine/${medicne_id}`);
+}
+
 
 export const addMedicine = ( medicineName,  expiry_date,  quantity, medicineImage,  medicinecategory) => {
    const body =

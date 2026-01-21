@@ -13,9 +13,10 @@ import com.medibridge.entities.donar.Medicine;
 @Repository
 public interface MedicineRepository extends JpaRepository<Medicine, Long>{
      List<Medicine> findByDonarId(Long id);
+     
 	 boolean existsBymedicineName(String medicineName);
 	
-	
+     	
 	 @Query(value = "SELECT * FROM medicine WHERE donar_id = :donarId AND listing_status = 'NotListed'", nativeQuery = true)
 	List<Medicine> findUnlistedMedicinesByDonar(@Param("donarId") Long donarId);
 
@@ -23,10 +24,13 @@ public interface MedicineRepository extends JpaRepository<Medicine, Long>{
 	 List<Medicine> findlistedMedicinesByDonar(@Param("donarId") Long donarId);
 	
 	 @Query(value = "UPDATE medicne SET listing_status = 'isListed' WHERE donar_id = :donarId", nativeQuery = true)
-	 List<Medicine> ChangeMedicneStatusToListed(@Param("donarId") Long donarId);
+	 void ChangeMedicneStatusToListed(@Param("donarId") Long donarId);
 	 
 	 @Query(value = "UPDATE medicne SET listing_status = 'NotListed' WHERE donar_id = :donarId", nativeQuery = true)
-	 List<Medicine> ChangeMedicneStatusToNotListed(@Param("donarId") Long donarId);
+	 void ChangeMedicneStatusToNotListed(@Param("donarId") Long donarId);
+	 
+//	 @Query(value = "DELETE FROM medicne WHERE medicine_id = :medicineId", nativeQuery = true)
+//	 void deleteMedicine(@Param("medicineId") Long medicineId);
 	 
 	 @Query("""
 			    SELECT m
@@ -37,6 +41,7 @@ public interface MedicineRepository extends JpaRepository<Medicine, Long>{
 		List<Medicine> findMedicinesExpiringSoon( @Param("donarId") Long donar_id,
 		        @Param("today") LocalDate today,
 		        @Param("threeMonthsLater") LocalDate threeMonthsLater);
+	
 
 }
 

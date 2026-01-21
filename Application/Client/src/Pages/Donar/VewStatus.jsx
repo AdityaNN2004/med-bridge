@@ -4,30 +4,68 @@ import { ArrowLeft, Phone, MapPin, Building } from "lucide-react";
 import DonorNavbar from "./DonorNavbar";
 import DonorChatBot from "../../Compoments/DonarChatbot";
 import RoutesMap from "../../Compoments/RoutesMap";
+import { getMedicineDetails } from "../../Services/MedicineServices";
 
 function ViewStatus() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [medicine, setMedicine] = useState(null);
   const [status, setStatus] = useState("Pending");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const dummyMedicines = [
-      { id: 1, medicineName: "Paracetamol 500mg", numberOfUnits: 20, expiryDate: "2025-12-31" },
-      { id: 2, medicineName: "Ibuprofen 400mg", numberOfUnits: 15, expiryDate: "2025-06-15" },
-      { id: 3, medicineName: "Amoxicillin 250mg", numberOfUnits: 30, expiryDate: "2026-03-20" },
-      { id: 4, medicineName: "Vitamin D3 1000 IU", numberOfUnits: 60, expiryDate: "2025-09-10" },
-    ];
-
-    const med = dummyMedicines.find((m) => m.id === parseInt(id));
-    setMedicine(med);
-
-    if (med?.id === 1) setStatus("Accepted");
-    else if (med?.id === 2) setStatus("Pending");
-    else setStatus("Not Accepted");
+    fetchMedicineDetails();
+    // eslint-disable-next-line
   }, [id]);
 
-  if (!medicine) return <p className="text-center mt-24">Loading...</p>;
+  const fetchMedicineDetails = async () => {
+    try {
+      const response = await getMedicineDetails(id);
+      const data = response.data;
+
+      setMedicine(data);
+
+      // 🔹 Map backend status → UI status
+      if (data?.donationStatus === "ACCEPTED") {
+        setStatus("Accepted");
+      } else if (data?.donationStatus === "REJECTED") {
+        setStatus("Not Accepted");
+      } else {
+        setStatus("Pending");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load medicine details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center mt-24 text-gray-500">
+        Loading medicine details...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center mt-24 text-red-500">
+        {error}
+      </div>
+    );
+  }
+
+  if (!medicine) {
+    return (
+      <div className="text-center mt-24 text-gray-500">
+        Medicine not found
+      </div>
+    );
+  }
 
   const statusColor = {
     Accepted: "bg-green-100 text-green-700",
@@ -40,7 +78,6 @@ function ViewStatus() {
       <DonorNavbar />
 
       <div className="mt-24 max-w-7xl mx-auto px-6 py-6">
-
         {/* Back */}
         <button
           className="flex items-center gap-2 text-indigo-600 font-medium mb-6 hover:underline"
@@ -58,7 +95,8 @@ function ViewStatus() {
                 {medicine.medicineName}
               </h1>
               <p className="text-sm text-gray-500 mt-1">
-                {medicine.numberOfUnits} units • Expires {medicine.expiryDate}
+                {medicine.quantity || medicine.numberOfUnits} units • Expires{" "}
+                {medicine.expiryDate}
               </p>
             </div>
 
@@ -72,7 +110,6 @@ function ViewStatus() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
           {/* Map Section */}
           <div className="bg-white rounded-2xl shadow-sm p-5">
             <div className="flex justify-between items-center mb-4">
@@ -91,12 +128,10 @@ function ViewStatus() {
               </span>
             </div>
 
-            {/* Map */}
             <div className="h-[340px] rounded-xl overflow-hidden shadow-inner">
               <RoutesMap />
             </div>
 
-            {/* Distance & ETA */}
             <div className="flex justify-between items-center mt-4 px-2">
               <div className="bg-gray-100 rounded-xl px-4 py-2 text-sm">
                 <p className="font-semibold text-gray-800">Distance</p>
@@ -112,7 +147,6 @@ function ViewStatus() {
 
           {/* Right Section */}
           <div className="space-y-6">
-
             {/* NGO Details */}
             <div className="bg-white rounded-2xl shadow-sm p-6">
               <h3 className="text-lg font-semibold mb-4 text-gray-800">
@@ -121,13 +155,16 @@ function ViewStatus() {
 
               <div className="space-y-3 text-gray-700">
                 <p className="flex items-center gap-2">
-                  <Building size={16} /> Helping Hands NGO
+                  <Building size={16} />{" "}
+                  {medicine.ngoName || "Helping Hands NGO"}
                 </p>
                 <p className="flex items-center gap-2">
-                  <Phone size={16} /> +91 98765 43210
+                  <Phone size={16} />{" "}
+                  {medicine.ngoContact || "+91 98765 43210"}
                 </p>
                 <p className="flex items-center gap-2">
-                  <MapPin size={16} /> Pune, Maharashtra
+                  <MapPin size={16} />{" "}
+                  {medicine.ngoAddress || "Pune, Maharashtra"}
                 </p>
               </div>
             </div>
@@ -139,7 +176,6 @@ function ViewStatus() {
               </h3>
               <DonorChatBot />
             </div>
-
           </div>
         </div>
       </div>

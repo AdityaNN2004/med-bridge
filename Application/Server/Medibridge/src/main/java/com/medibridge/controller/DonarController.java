@@ -69,6 +69,32 @@ public class DonarController {
 	return ResponseEntity.ok(medicinelist);
    }
   
+  @GetMapping("/getmedicinedetails/{medicine_id}")
+  public ResponseEntity<?> getMedicinedetails(@PathVariable Long medicine_id)
+  {
+	MedicineDto medicine = donarService.getMedicineDetails(medicine_id);
+	if(medicine == null )
+	{
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+	return ResponseEntity.ok(medicine);
+   }
+  
+  @GetMapping("/deletemedicine/{medicine_id}")
+  public ResponseEntity<?> deleteMedicine(@PathVariable Long medicine_id)
+  {
+	donarService.deleteMedicine(medicine_id);
+	
+	return ResponseEntity.ok("successfully deleted");
+   }
+  
+  @GetMapping("/changelistingstatusmedicine/{medicine_id}")
+  public ResponseEntity<?> ChangeListingStatusOfMedicine(@PathVariable Long medicine_id)
+  {
+	ApiResponse medicinelist = donarService.ChangeListingStatusOfMedicine(medicine_id);
+	return ResponseEntity.ok(medicinelist);
+   }
+  
   @GetMapping("/getexpiredmedicines/{donar_id}")
   public ResponseEntity<?> getExpiredMedicines(@PathVariable Long donar_id)
   {
@@ -85,7 +111,7 @@ public class DonarController {
   public ResponseEntity<?> getCloseToExpiredMedicines(@PathVariable Long donar_id)
   {
 	 System.out.println("donar id controller"+donar_id);
-	List<MedicineDto> medicinelist = donarService.getCloseToExpiryMedicines(donar_id);
+	List<MedicineDto> medicinelist = donarService.getCloseToExpiryMedicine(donar_id);
 	if(medicinelist.isEmpty())
 	{
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

@@ -29,13 +29,16 @@ public interface DonarService {
 		
 		ApiResponse addMedicine(MedicineDto medicinedto);
 		
+		MedicineDto getMedicineDetails(Long medicne_id);	
+		
+		ApiResponse deleteMedicine(Long medicne_id);	
+		
 		List<MedicineDto> getAllMedicines(Long doanr_id);
 		
 		List<MedicineDto> getExpiredMedicines(Long donar_id);
 		
 		List<MedicineDto> getCloseToExpiryMedicine(Long donar_id);
-
-		
+	
 		List<MedicineDto> getActiveMedicine(Long donar_id);
 	    
 		List<Address> getAllDonarAddress(Long donar_id);
@@ -47,6 +50,8 @@ public interface DonarService {
 		List<MedicineDto> getUnListedMedicine(Long donar_id);
 		
 		List<MedicineDto> getListedMedicine(Long donar_id);
+		
+		ApiResponse ChangeListingStatusOfMedicine(Long donar_id);
 		
 		
 }

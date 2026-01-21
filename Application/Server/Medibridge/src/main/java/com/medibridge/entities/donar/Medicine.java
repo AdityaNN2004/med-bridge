@@ -5,6 +5,7 @@ import lombok.*;
 import java.time.LocalDate;
 import java.util.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.medibridge.entities.BaseEntity;
 @Entity
 @Table(name = "medicine")
@@ -31,7 +32,8 @@ public class Medicine extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private DonationStatus donationStatus = DonationStatus.NotAccepted;
   
-  @ManyToOne(cascade = CascadeType.ALL)
+  @JsonIgnore
+  @ManyToOne
   @JoinColumn(name= "donar_id",nullable = false)
   private Donar donar;
   

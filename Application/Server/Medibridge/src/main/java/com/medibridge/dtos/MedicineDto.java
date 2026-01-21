@@ -16,6 +16,7 @@ import lombok.*;
 @Setter
 public class MedicineDto {
 
+	private Long id;
     private String medicineName;
     private LocalDate expiry_date;
     private String quantity;

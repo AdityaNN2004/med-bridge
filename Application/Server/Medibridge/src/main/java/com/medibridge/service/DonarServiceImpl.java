@@ -187,4 +187,33 @@ public class DonarServiceImpl implements DonarService{
 		return null;
 	}
 
+	@Override
+	public ApiResponse ChangeListingStatusOfMedicine(Long medicine_id) {
+		Medicine medicine =  medicineRepository.getById(medicine_id);
+		if(medicine.getListingStatus() == ListingStatus.NotListed)
+		{
+			medicine.setListingStatus(ListingStatus.IsListed);
+		}
+		else
+		{
+			medicine.setListingStatus(ListingStatus.NotListed);
+		}		
+		medicineRepository.save(medicine);
+		return  new ApiResponse("Medicine ListingStatus Changed", "Success");
+	}
+
+	@Override
+	public MedicineDto getMedicineDetails(Long medicine_id) {
+		Medicine medicine =  medicineRepository.getById(medicine_id);
+		MedicineDto medicinedto = modelMapper.map(medicine, MedicineDto.class); 
+		return medicinedto;
+	}
+
+	@Override
+	public ApiResponse deleteMedicine(Long medicine_id) {
+		Medicine medicine =  medicineRepository.getById(medicine_id);
+	    medicineRepository.delete(medicine);
+	    return  new ApiResponse("Medicine deleted", "Success");
+	}
+
 }
