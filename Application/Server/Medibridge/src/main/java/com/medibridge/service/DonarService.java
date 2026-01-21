@@ -31,12 +31,21 @@ public interface DonarService {
 		
 		List<MedicineDto> getAllMedicines(Long doanr_id);
 		
-		List<Medicine> getExpiredMedicine(Long donar_id);
+		List<MedicineDto> getExpiredMedicines(Long donar_id);
 		
-		List<Medicine> getCloseToExpiryMedicine(Long donar_id);
+		List<MedicineDto> getCloseToExpiryMedicines(Long donar_id);
+		
+		List<MedicineDto> getActiveMedicine(Long donar_id);
 	    
 		List<Address> getAllDonarAddress(Long donar_id);
 		
 		ApiResponse updateDonarDetails(Long user_id, DonarDto donar);
+		
+		ApiResponse ListMedicine(Long medicine_id);
+		
+		List<MedicineDto> getUnListedMedicine(Long donar_id);
+		
+		List<MedicineDto> getListedMedicine(Long donar_id);
+		
 		
 }

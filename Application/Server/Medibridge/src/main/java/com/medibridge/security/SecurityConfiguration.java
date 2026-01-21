@@ -31,27 +31,34 @@ public class SecurityConfiguration {
   {
 	  httpSecurity.csrf(csrf -> csrf.disable());
 	  
+	  httpSecurity.authorizeHttpRequests(auth -> auth
+	            .anyRequest().permitAll()
+		        );
 	  
 	  httpSecurity.sessionManagement(
 			  sessionConfig ->
 			  sessionConfig.sessionCreationPolicy
 			  (SessionCreationPolicy.STATELESS));
 	  
-	  httpSecurity.authorizeHttpRequests( request ->
-	  request.requestMatchers("/swagger-ui/**",
-			  "/v3/api-docs/**",
-			  "/user/sign-in",
-			  "/admin/**",
-			  "/donar/sign-up",
-			  "/users/pwd-encryption"
-			  ).permitAll()
-	           .requestMatchers(HttpMethod.OPTIONS).permitAll()
-	           .requestMatchers("/donar/**").hasRole("DONAR")
-               .requestMatchers("/ngo/**").hasRole("NGO")
-               .requestMatchers("/admin/**").hasRole("ADMIN")
-	           .anyRequest().authenticated())
-	           .addFilterBefore(customJwtFilter, UsernamePasswordAuthenticationFilter.class);
+//	  httpSecurity.httpBasic(httpBasic -> httpBasic.disable())
+//      .formLogin(form -> form.disable());
+//  
 	  
+//	  httpSecurity.authorizeHttpRequests( request ->
+//	  request.requestMatchers("/swagger-ui/**",
+//			  "/v3/api-docs/**",
+//			  "/user/sign-in",
+//			  "/admin/**",
+//			  "/donar/sign-up",
+//			  "/users/pwd-encryption"
+//			  ).permitAll()
+//	           .requestMatchers(HttpMethod.OPTIONS).permitAll()
+//	           .requestMatchers("/donar/**").hasRole("DONAR")
+//               .requestMatchers("/ngo/**").hasRole("NGO")
+//               .requestMatchers("/admin/**").hasRole("ADMIN")
+//	           .anyRequest().authenticated())
+//	           .addFilterBefore(customJwtFilter, UsernamePasswordAuthenticationFilter.class);
+//	  
 	           return httpSecurity.build();  
   }
   

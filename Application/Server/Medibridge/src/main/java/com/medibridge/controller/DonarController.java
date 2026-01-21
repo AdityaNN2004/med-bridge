@@ -33,17 +33,42 @@ public class DonarController {
 	@Autowired
   private DonarService donarService;
   
-  @GetMapping("/viewmedicines/{donar_id}")
+  @GetMapping("/getallmedicines/{donar_id}")
   public ResponseEntity<?> getAllMedicine(@PathVariable Long donar_id)
   {
 	 System.out.println("donar id controller"+donar_id);
-	List<MedicineDto> addresslist = donarService.getAllMedicines(donar_id);
-	if(addresslist.isEmpty())
+	List<MedicineDto> medicinelist = donarService.getAllMedicines(donar_id);
+	if(medicinelist.isEmpty())
 	{
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
-	return ResponseEntity.ok(addresslist);
+	return ResponseEntity.ok(medicinelist);
    }
+  
+  @GetMapping("/getunlistedmedicines/{donar_id}")
+  public ResponseEntity<?> getUnListedMedicines(@PathVariable Long donar_id)
+  {
+	 System.out.println("donar id controller"+donar_id);
+	List<MedicineDto> medicinelist = donarService.getUnListedMedicine(donar_id);
+	if(medicinelist.isEmpty())
+	{
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+	return ResponseEntity.ok(medicinelist);
+   }
+  
+  @GetMapping("/getlistedmedicines/{donar_id}")
+  public ResponseEntity<?> getListedMedicines(@PathVariable Long donar_id)
+  {
+	 System.out.println("donar id controller"+donar_id);
+	List<MedicineDto> medicinelist = donarService.getListedMedicine(donar_id);
+	if(medicinelist.isEmpty())
+	{
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+	return ResponseEntity.ok(medicinelist);
+   }
+  
   @GetMapping("/addresses")
   public ResponseEntity<?> getAllDonarAddresses()
   {

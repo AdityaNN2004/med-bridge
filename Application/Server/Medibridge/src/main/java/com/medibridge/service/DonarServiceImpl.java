@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import com.medibridge.dtos.DonarDto;
 import com.medibridge.entities.User;
 import com.medibridge.entities.donar.Address;
 import com.medibridge.entities.donar.Donar;
+import com.medibridge.entities.donar.ListingStatus;
 import com.medibridge.entities.donar.Medicine;
 import com.medibridge.entities.donar.MedicineCategory;
 import com.medibridge.repository.DonarAddressRepository;
@@ -82,17 +84,6 @@ public class DonarServiceImpl implements DonarService{
 		 return medicineDtoList;
 	}
 
-	@Override
-	public List<Medicine> getExpiredMedicine(Long donar_id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<Medicine> getCloseToExpiryMedicine(Long donar_id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public ApiResponse addMedicine(MedicineDto medicinedto) {
@@ -109,7 +100,7 @@ public class DonarServiceImpl implements DonarService{
 		medicine.setMedicinecategory(medicinedto.getMedicinecategory());
 		medicine.setMedicineName(medicinedto.getMedicineName());
 		medicine.setMedicineImage(medicinedto.getMedicineImage());
-		
+		medicine.setListingStatus(ListingStatus.NotListed);
 		Medicine medicineSave = medicineRepository.save(medicine);
 		return new ApiResponse("New medicne added with ID=" + medicineSave.getId(), "Success");
 	}
@@ -129,6 +120,60 @@ public class DonarServiceImpl implements DonarService{
 		donarDetails.getUser().setMobile(dto.getMobile());
 		donarRepository.save(donarDetails);
 		return new ApiResponse("User details updated ...", "Succeess");
+	}
+
+	@Override
+	public ApiResponse ListMedicine(Long medicine_id) {
+		Medicine medicine =  medicineRepository.getById(medicine_id);
+		medicine.setListingStatus(ListingStatus.IsListed);
+		medicineRepository.save(medicine);
+		return new ApiResponse("Medicine Listed !!", "Succeess");
+		
+	}
+
+	@Override
+	public List<MedicineDto> getUnListedMedicine(Long donar_id) {
+		
+	 	List<Medicine> medicineList= medicineRepository.findUnlistedMedicinesByDonar(donar_id);
+		List<MedicineDto> medicineDtoList  = new ArrayList<>();
+			
+		for(Medicine medicine : medicineList)
+		{
+			medicineDtoList.add(modelMapper.map(medicine, MedicineDto.class));
+		}
+			
+		return medicineDtoList;
+	}
+
+	@Override
+	public List<MedicineDto> getListedMedicine(Long donar_id) {
+		List<Medicine> medicineList= medicineRepository.findlistedMedicinesByDonar(donar_id);
+		List<MedicineDto> medicineDtoList  = new ArrayList<>();
+			
+		for(Medicine medicine : medicineList)
+		{
+			medicineDtoList.add(modelMapper.map(medicine, MedicineDto.class));
+		}
+			
+		return medicineDtoList;
+	}
+
+	@Override
+	public List<MedicineDto> getExpiredMedicines(Long donar_id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<MedicineDto> getCloseToExpiryMedicines(Long donar_id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<MedicineDto> getActiveMedicine(Long donar_id) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

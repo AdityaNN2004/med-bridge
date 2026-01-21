@@ -21,12 +21,20 @@ public class Medicine extends BaseEntity {
   private String quantity;
   @Lob
   private byte[] medicineImage;
+  
   @Enumerated(EnumType.STRING)
   private MedicineCategory medicinecategory;
+  
+  @Enumerated(EnumType.STRING)
+  private ListingStatus listingStatus = ListingStatus.NotListed;
+  
+  @Enumerated(EnumType.STRING)
+  private DonationStatus donationStatus = DonationStatus.NotAccepted;
   
   @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name= "donar_id",nullable = false)
   private Donar donar;
+  
   public Medicine(String medicineName, LocalDate expiry_date, String quantity, byte[] medicineImage,
 		MedicineCategory medicinecategory, Donar donar) {
 	super();
@@ -37,6 +45,5 @@ public class Medicine extends BaseEntity {
 	this.medicinecategory = medicinecategory;
 	this.donar = donar;
   }
-  
-  
+   
 }

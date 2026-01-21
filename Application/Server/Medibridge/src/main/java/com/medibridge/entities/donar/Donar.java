@@ -30,12 +30,6 @@ public class Donar extends BaseEntity{
 		this.lastName = lastName;
 		this.confirmPassword = confirmPassword;
 		
-	}
-//	update profile fields 
-//	dob
-//	profilePhoto
-//	phoneNo
-//	govtIdproof
-	
+	}	
 	
 }
