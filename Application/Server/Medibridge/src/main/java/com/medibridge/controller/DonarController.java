@@ -69,6 +69,43 @@ public class DonarController {
 	return ResponseEntity.ok(medicinelist);
    }
   
+  @GetMapping("/getexpiredmedicines/{donar_id}")
+  public ResponseEntity<?> getExpiredMedicines(@PathVariable Long donar_id)
+  {
+	 System.out.println("donar id controller"+donar_id);
+	List<MedicineDto> medicinelist = donarService.getExpiredMedicines(donar_id);
+	if(medicinelist.isEmpty())
+	{
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+	return ResponseEntity.ok(medicinelist);
+   }
+  
+  @GetMapping("/getclosetoexpiredmedicines/{donar_id}")
+  public ResponseEntity<?> getCloseToExpiredMedicines(@PathVariable Long donar_id)
+  {
+	 System.out.println("donar id controller"+donar_id);
+	List<MedicineDto> medicinelist = donarService.getCloseToExpiryMedicines(donar_id);
+	if(medicinelist.isEmpty())
+	{
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+	return ResponseEntity.ok(medicinelist);
+   }
+  
+  @GetMapping("/getactivemedicines/{donar_id}")
+  public ResponseEntity<?> getActiveMedicines(@PathVariable Long donar_id)
+  {
+	 System.out.println("donar id controller"+donar_id);
+	List<MedicineDto> medicinelist = donarService.getActiveMedicine(donar_id);
+	if(medicinelist.isEmpty())
+	{
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+	return ResponseEntity.ok(medicinelist);
+   }
+  
+  
   @GetMapping("/addresses")
   public ResponseEntity<?> getAllDonarAddresses()
   {

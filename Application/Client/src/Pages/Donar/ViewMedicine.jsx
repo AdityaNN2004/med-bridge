@@ -1,6 +1,6 @@
 // ViewMedicine.jsx
 import React, { useState, useEffect, useRef } from "react";
-import { getAllMedicines, getAllUnListedMedicines } from "../../Services/MedicineService";
+import { getAllMedicines, getAllUnListedMedicines } from "../../Services/MedicineServices";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

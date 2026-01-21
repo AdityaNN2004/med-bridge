@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Camera, Calendar, Package, Plus } from "lucide-react";
 import DonorNavbar from "./DonorNavbar";
 import { toast } from "react-toastify";
-import { addMedicine } from "../../Services/MedicineService";
+import { addMedicine } from "../../Services/MedicineServices";
 
 function AddMedicine() {
   const navigate = useNavigate();
