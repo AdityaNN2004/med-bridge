@@ -53,14 +53,7 @@ public class DonarServiceImpl implements DonarService{
 
 	@Override
 	public Donar getDonarDetails(Long user_id) {
-		//return donarRepository.findByUser_Id(user_id).orElseThrow(() -> new ResourceNotFoundException("Invalid user id !!!"));
-		Donar donar= donarRepository.getAllUsers(user_id);
-		if(donar==null) {
-			throw new ResourceNotFoundException("Donar not found for user id: " + user_id);
-		}
-		System.out.println(donar);
-		return donar;
-		
+		return donarRepository.findByUser_Id(user_id).orElseThrow(() -> new ResourceNotFoundException("Invalid user id !!!"));
 	}
 
 	@Override

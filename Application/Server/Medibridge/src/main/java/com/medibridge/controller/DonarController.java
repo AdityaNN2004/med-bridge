@@ -165,7 +165,7 @@ public class DonarController {
 	}
   }
   
-  @GetMapping("/{user_id}")
+  @GetMapping("/getdonardetails/{user_id}")
   public ResponseEntity<?> getDonarDetails(@PathVariable Long user_id)
   {	  
 	  try
@@ -184,6 +184,7 @@ public class DonarController {
 					.body(new ApiResponse(e.getMessage(), "Failed"));
 	  }
    }
+  
   @PutMapping("/{user_id}")
   public ResponseEntity<?> updateDonarDetails(@PathVariable Long user_id, @RequestBody DonarDto donardto)
   {
@@ -237,12 +238,11 @@ public class DonarController {
       return ResponseEntity.ok(result);
   }
   
-  @PutMapping("/switchaddress/{address_id}")
-  // @PutMapping("/switchaddress/{address_id}/{donar_id}")
-  public ResponseEntity<?> switchaddress(@PathVariable Long address_id){
-	 // public ResponseEntity<?> switchaddress(@PathVariable Long address_id,@PathVariable Long donar_id){
-	//donarService.switchAddress(address_id, donar_id);
-	  donarService.switchAddress(address_id);
+
+  @PutMapping("/makeaddressactive/{address_id}")
+
+  public ResponseEntity<?> switchaddress(@PathVariable Long address_id){ 
+	donarService.switchAddress(address_id);
     return ResponseEntity.ok("Address switched successfully");
   }
 

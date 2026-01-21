@@ -1,30 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
-import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 
-// ---------- API FUNCTIONS ----------
-const getDonor = async (donorId) => {
-  return axios.get(`http://localhost:9090/donar/${donorId}`);
-};
-
-const updateDonor = async (donorId, payload) => {
-  return axios.put(`http://localhost:9090/donar/${donorId}`, payload);
-};
-
-const getAddresses = async () => {
-  return axios.get(`http://localhost:9090/donar/addresses`);
-};
-
-const updateAddress = async (addressId, payload) => {
-  return axios.put(`http://localhost:9090/donar/address/${addressId}`, payload);
-};
+import {
+  getDonor,
+  updateDonor,
+  getAddresses,
+  updateAddress,
+  makeAddressActive,
+} from "../../Services/DonarServices";
 
 // ---------- COMPONENT ----------
 function DonorProfile() {
   const navigate = useNavigate();
-  const donorId = 4; // replace with dynamic value
+  const donorId = 4; // TODO: make dynamic later
 
   const [donor, setDonor] = useState(null);
   const [addresses, setAddresses] = useState([]);
@@ -58,6 +48,7 @@ function DonorProfile() {
       try {
         const donorRes = await getDonor(donorId);
         const donorData = donorRes.data;
+
         setDonor(donorData);
         setEditProfileForm({
           firstName: donorData.firstName,
@@ -68,7 +59,9 @@ function DonorProfile() {
 
         const addressesRes = await getAddresses();
         setAddresses(addressesRes.data);
-        setSelectedAddress(addressesRes.data[0] || null);
+        setSelectedAddress(
+          addressesRes.data.find((a) => a.active) || addressesRes.data[0] || null
+        );
       } catch (error) {
         console.error(error);
         toast.error("Failed to fetch donor data");
@@ -76,14 +69,21 @@ function DonorProfile() {
         setLoading(false);
       }
     };
+
     fetchData();
   }, [donorId]);
 
   // ---------- HANDLERS ----------
-  const handleSwitchAddress = (address) => {
-    setSelectedAddress(address);
-    
-    setShowAddressModal(false);
+  const handleSwitchAddress = async (address) => {
+    try {
+      await makeAddressActive(address.id);
+      setSelectedAddress(address);
+      setShowAddressModal(false);
+      toast.success("Address switched successfully!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to switch address!");
+    }
   };
 
   const handleEditAddressClick = (address) => {
@@ -94,12 +94,12 @@ function DonorProfile() {
   const saveEditedProfile = async () => {
     try {
       const payload = {
-        ...donor,
         firstName: editProfileForm.firstName,
         lastName: editProfileForm.lastName,
         email: editProfileForm.email,
         mobile: editProfileForm.mobile,
       };
+
       await updateDonor(donorId, payload);
       setDonor({ ...donor, ...payload });
       setShowEditProfileModal(false);
@@ -113,15 +113,25 @@ function DonorProfile() {
   const saveEditedAddress = async () => {
     try {
       const { id, fullAddress, city, state, pincode } = editAddressForm;
+
       await updateAddress(id, { fullAddress, city, state, pincode });
-      
+
       const updatedAddresses = addresses.map((addr) =>
-        addr.id === id ? { ...addr, fullAddress, city, state, pincode } : addr
+        addr.id === id
+          ? { ...addr, fullAddress, city, state, pincode }
+          : addr
       );
+
       setAddresses(updatedAddresses);
 
       if (selectedAddress?.id === id) {
-        setSelectedAddress({ ...selectedAddress, fullAddress, city, state, pincode });
+        setSelectedAddress({
+          ...selectedAddress,
+          fullAddress,
+          city,
+          state,
+          pincode,
+        });
       }
 
       setShowEditAddressModal(false);
@@ -132,7 +142,8 @@ function DonorProfile() {
     }
   };
 
-  if (loading || !donor) return <div className="p-10 text-center">Loading...</div>;
+  if (loading || !donor)
+    return <div className="p-10 text-center">Loading...</div>;
 
   const email = donor.user?.email || "";
   const mobile = donor.user?.mobile || "";
@@ -183,7 +194,6 @@ function DonorProfile() {
             </div>
           </div>
 
-          {/* Info Grid */}
           <div className="grid sm:grid-cols-2 gap-6 mt-10">
             <ProfileItem label="First Name" value={donor.firstName} />
             <ProfileItem label="Last Name" value={donor.lastName} />
@@ -191,14 +201,18 @@ function DonorProfile() {
             <ProfileItem label="Mobile" value={mobile} />
           </div>
 
-          {/* Current Address */}
           {selectedAddress && (
             <div className="mt-12">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Current Address</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Current Address
+              </h3>
               <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
-                <p className="font-semibold text-gray-800">{selectedAddress.fullAddress}</p>
+                <p className="font-semibold text-gray-800">
+                  {selectedAddress.fullAddress}
+                </p>
                 <p className="text-gray-600 mt-1">
-                  {selectedAddress.city}, {selectedAddress.state} - {selectedAddress.pincode}
+                  {selectedAddress.city}, {selectedAddress.state} -{" "}
+                  {selectedAddress.pincode}
                 </p>
               </div>
 
@@ -211,7 +225,6 @@ function DonorProfile() {
             </div>
           )}
 
-          {/* Edit Profile Button */}
           <div className="mt-12 text-center">
             <button
               onClick={() => setShowEditProfileModal(true)}
@@ -224,59 +237,36 @@ function DonorProfile() {
       </div>
 
       {/* ---------- MODALS ---------- */}
-
-      {/* Edit Profile Modal */}
       {showEditProfileModal && (
         <Modal>
           <h3 className="text-lg font-semibold mb-4">Edit Profile</h3>
           <div className="space-y-3">
-            <input
-              type="text"
-              placeholder="First Name"
-              value={editProfileForm.firstName}
-              onChange={(e) =>
-                setEditProfileForm({ ...editProfileForm, firstName: e.target.value })
-              }
-              className="w-full p-2 border rounded"
-            />
-            <input
-              type="text"
-              placeholder="Last Name"
-              value={editProfileForm.lastName}
-              onChange={(e) =>
-                setEditProfileForm({ ...editProfileForm, lastName: e.target.value })
-              }
-              className="w-full p-2 border rounded"
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              value={editProfileForm.email}
-              onChange={(e) =>
-                setEditProfileForm({ ...editProfileForm, email: e.target.value })
-              }
-              className="w-full p-2 border rounded"
-            />
-            <input
-              type="text"
-              placeholder="Mobile"
-              value={editProfileForm.mobile}
-              onChange={(e) =>
-                setEditProfileForm({ ...editProfileForm, mobile: e.target.value })
-              }
-              className="w-full p-2 border rounded"
-            />
+            {["firstName", "lastName", "email", "mobile"].map((field) => (
+              <input
+                key={field}
+                type="text"
+                placeholder={field}
+                value={editProfileForm[field]}
+                onChange={(e) =>
+                  setEditProfileForm({
+                    ...editProfileForm,
+                    [field]: e.target.value,
+                  })
+                }
+                className="w-full p-2 border rounded"
+              />
+            ))}
           </div>
           <div className="mt-5 flex justify-end gap-3">
             <button
               onClick={() => setShowEditProfileModal(false)}
-              className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition"
+              className="px-4 py-2 bg-gray-400 text-white rounded-lg"
             >
               Cancel
             </button>
             <button
               onClick={saveEditedProfile}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition"
+              className="px-4 py-2 bg-green-600 text-white rounded-lg"
             >
               Save
             </button>
@@ -284,7 +274,6 @@ function DonorProfile() {
         </Modal>
       )}
 
-      {/* Switch Address Modal */}
       {showAddressModal && (
         <Modal>
           <h3 className="text-lg font-semibold mb-4">Select Address</h3>
@@ -292,7 +281,7 @@ function DonorProfile() {
             {addresses.map((addr) => (
               <div
                 key={addr.id}
-                className="border rounded-xl p-4 flex justify-between items-center hover:bg-gray-50 hover:shadow-sm transition"
+                className="border rounded-xl p-4 flex justify-between items-center"
               >
                 <div className="text-sm">
                   <p className="font-medium">{addr.fullAddress}</p>
@@ -300,17 +289,16 @@ function DonorProfile() {
                     {addr.city}, {addr.state} - {addr.pincode}
                   </p>
                 </div>
-
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleSwitchAddress(addr)}
-                    className="text-xs px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition"
+                    className="text-xs px-3 py-1 bg-blue-600 text-white rounded-lg"
                   >
                     Select
                   </button>
                   <button
                     onClick={() => handleEditAddressClick(addr)}
-                    className="text-xs px-3 py-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-400 transition"
+                    className="text-xs px-3 py-1 bg-yellow-500 text-white rounded-lg"
                   >
                     Edit
                   </button>
@@ -318,18 +306,10 @@ function DonorProfile() {
               </div>
             ))}
           </div>
-
-          <div className="mt-5 flex justify-between">
-            <button
-              onClick={() => navigate("/donor/add-address")}
-              className="px-4 py-2 bg-green-700 text-white text-sm rounded-lg hover:bg-green-600 transition"
-            >
-              + Add New Address
-            </button>
-
+          <div className="mt-5 flex justify-end">
             <button
               onClick={() => setShowAddressModal(false)}
-              className="px-4 py-2 bg-gray-400 text-white text-sm rounded-lg hover:bg-gray-500 transition"
+              className="px-4 py-2 bg-gray-400 text-white rounded-lg"
             >
               Close
             </button>
@@ -337,59 +317,36 @@ function DonorProfile() {
         </Modal>
       )}
 
-      {/* Edit Address Modal */}
       {showEditAddressModal && (
         <Modal>
           <h3 className="text-lg font-semibold mb-4">Edit Address</h3>
           <div className="space-y-3">
-            <input
-              type="text"
-              placeholder="Full Address"
-              value={editAddressForm.fullAddress}
-              onChange={(e) =>
-                setEditAddressForm({ ...editAddressForm, fullAddress: e.target.value })
-              }
-              className="w-full p-2 border rounded"
-            />
-            <input
-              type="text"
-              placeholder="City"
-              value={editAddressForm.city}
-              onChange={(e) =>
-                setEditAddressForm({ ...editAddressForm, city: e.target.value })
-              }
-              className="w-full p-2 border rounded"
-            />
-            <input
-              type="text"
-              placeholder="State"
-              value={editAddressForm.state}
-              onChange={(e) =>
-                setEditAddressForm({ ...editAddressForm, state: e.target.value })
-              }
-              className="w-full p-2 border rounded"
-            />
-            <input
-              type="text"
-              placeholder="Pincode"
-              value={editAddressForm.pincode}
-              onChange={(e) =>
-                setEditAddressForm({ ...editAddressForm, pincode: e.target.value })
-              }
-              className="w-full p-2 border rounded"
-            />
+            {["fullAddress", "city", "state", "pincode"].map((field) => (
+              <input
+                key={field}
+                type="text"
+                placeholder={field}
+                value={editAddressForm[field]}
+                onChange={(e) =>
+                  setEditAddressForm({
+                    ...editAddressForm,
+                    [field]: e.target.value,
+                  })
+                }
+                className="w-full p-2 border rounded"
+              />
+            ))}
           </div>
-
           <div className="mt-5 flex justify-end gap-3">
             <button
               onClick={() => setShowEditAddressModal(false)}
-              className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition"
+              className="px-4 py-2 bg-gray-400 text-white rounded-lg"
             >
               Cancel
             </button>
             <button
               onClick={saveEditedAddress}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition"
+              className="px-4 py-2 bg-green-600 text-white rounded-lg"
             >
               Save
             </button>
@@ -397,23 +354,24 @@ function DonorProfile() {
         </Modal>
       )}
 
-      {/* Toast */}
       <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
   );
 }
 
-// ---------- REUSABLE MODAL ----------
+// ---------- MODAL ----------
 const Modal = ({ children }) => (
   <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-    <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl">{children}</div>
+    <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl">
+      {children}
+    </div>
   </div>
 );
 
-// ---------- PROFILE ITEM COMPONENT ----------
+// ---------- PROFILE ITEM ----------
 function ProfileItem({ label, value }) {
   return (
-    <div className="bg-gray-50 p-4 rounded-xl hover:shadow-sm transition">
+    <div className="bg-gray-50 p-4 rounded-xl">
       <p className="text-xs text-gray-500">{label}</p>
       <p className="text-sm font-medium text-gray-800">{value}</p>
     </div>
