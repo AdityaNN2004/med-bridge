@@ -32,13 +32,14 @@ function NGORegistration() {
     }
 
     const payload = {
-      name: formData.name,
+      organizationName: formData.name,
       registrationNumber: formData.registrationNumber,
       contactNumber: formData.contactNumber,
       confirmPassword: formData.confirmPassword,
       user: {
         email: formData.email,
         password: formData.password,
+        mobile: formData.contactNumber 
       },
     };
 

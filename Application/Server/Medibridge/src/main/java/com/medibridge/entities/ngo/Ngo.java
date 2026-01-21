@@ -18,7 +18,7 @@ public class Ngo extends BaseEntity {
   private String organizationName;
   @Column(name ="registration_number",length= 50)
   private String registrationNumber;
-  private byte[] organizatioInfo;
+
   @Transient
   private String ConfirmPassword;
   @OneToOne(cascade = CascadeType.ALL)
@@ -33,12 +33,12 @@ public class Ngo extends BaseEntity {
   @JoinColumn(name="document_registration_id")
   private DocumentRegistration documentRegistration;
 
-   public Ngo(String organizationName, String registrationNumber, byte[] organizatioInfo, String confirmPassword,
+   public Ngo(String organizationName, String registrationNumber, String confirmPassword,
 		User user, ServiceArea serviceArea, DocumentRegistration documentRegistration) {
 	super();
 	this.organizationName = organizationName;
 	this.registrationNumber = registrationNumber;
-	this.organizatioInfo = organizatioInfo;
+
 	ConfirmPassword = confirmPassword;
 	this.user = user;
 	this.serviceArea = serviceArea;

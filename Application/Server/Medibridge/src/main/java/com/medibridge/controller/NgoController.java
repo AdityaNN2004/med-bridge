@@ -12,7 +12,7 @@ import com.medibridge.entities.ngo.ServiceArea;
 
 import com.medibridge.service.NgoService;
 //http://localhost:5173/ngo/register
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5174")
 @RestController
 @RequestMapping("/ngo")
 public class NgoController {
