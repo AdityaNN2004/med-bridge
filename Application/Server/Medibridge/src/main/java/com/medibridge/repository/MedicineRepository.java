@@ -1,5 +1,6 @@
 package com.medibridge.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,4 +27,16 @@ public interface MedicineRepository extends JpaRepository<Medicine, Long>{
 	 
 	 @Query(value = "UPDATE medicne SET listing_status = 'NotListed' WHERE donar_id = :donarId", nativeQuery = true)
 	 List<Medicine> ChangeMedicneStatusToNotListed(@Param("donarId") Long donarId);
+	 
+	 @Query("""
+			    SELECT m
+			    FROM Medicine m
+			    WHERE m.donar.id = :donarId
+			      AND m.expiry_date BETWEEN :today AND :threeMonthsLater
+			""")
+		List<Medicine> findMedicinesExpiringSoon( @Param("donarId") Long donar_id,
+		        @Param("today") LocalDate today,
+		        @Param("threeMonthsLater") LocalDate threeMonthsLater);
+
 }
+
