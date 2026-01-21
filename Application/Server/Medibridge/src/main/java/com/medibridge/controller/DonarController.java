@@ -197,6 +197,7 @@ public class DonarController {
 	  return ResponseEntity.ok(donarService.signUp(donar));
   }
   
+
   @GetMapping("/medicine/categorypercentage/{donarId}")
   public ResponseEntity<?> getMedicineCategoryPercentageByDonar(@PathVariable Long donarId) {
       
@@ -220,7 +221,5 @@ public class DonarController {
 	  
   }
   
-
-
   
 }

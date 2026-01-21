@@ -7,9 +7,8 @@ import NGORegisteration from "../Pages/NGO/Registration/NGORegisteration";
 import DocumentVerification from "../Pages/NGO/OtherRegistrationProcess/DocumentVerification";
 import VerifcationUnderReview from "../Pages/NGO/OtherRegistrationProcess/VerifcationUnderReview";
 import NGOLogin from "../Pages/NGO/NGOLogin";
-import NGORequest from "../Pages/NGO/NGORequest";
 import NGOChatBot from "../Compoments/NGOChatbot";
-
+import NGOListedMedicineInArea from "../Pages/NGO/NGOListedMedicineInArea";
 import NgoViewStatus from "../Pages/NGO/NgoViewStatus";
 export const NGORoutes = (
   <>
@@ -18,7 +17,7 @@ export const NGORoutes = (
     <Route path="/ngo/inventory" element={<InventeroryManagement />} />
     <Route path="/ngo/alert" element={<NGOAlert />} />
     <Route path="/ngo/register" element={<NGORegisteration />} />
-    <Route path="/ngo/requests" element={<NGORequest />} />
+    <Route path="/ngo/listedmedicineinarea" element={<NGOListedMedicineInArea />} />
     <Route path="/ngo/service-area" element={<ServiceArea />} />
     <Route path="/ngo/review" element={<VerifcationUnderReview />} />
     <Route path="/ngo/login" element={<NGOLogin />} />

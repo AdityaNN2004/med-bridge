@@ -50,10 +50,10 @@ const NGONavbar = () => {
 
         <NavItem
           icon={<FileCheck className="w-4 h-4" />}
-          active={isActive("/ngo/requests")}
-          onClick={() => navigate("/ngo/requests")}
+          active={isActive("/ngo/listedmedicineinarea")}
+          onClick={() => navigate("/ngo/listedmedicineinarea")}
         >
-          Request
+          Listed Medicines in Area
         </NavItem>
 
         <LogoutButton onClick={() => navigate("/")} />
@@ -78,18 +78,20 @@ const Logo = () => (
   </div>
 );
 
-const NavItem = ({ children, icon, active, onClick }) => (
+const NavItem = ({ children, icon, active, onClick, title }) => (
   <button
     onClick={onClick}
+    title={title}
     className={`
       relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium
+      whitespace-nowrap
       transition-all duration-300
       ${active
         ? "bg-green-600 text-white shadow-md"
         : "text-green-800 hover:bg-green-100 hover:text-green-900"}
     `}
   >
-    <span>{icon}</span>
+    {icon}
     <span>{children}</span>
 
     {active && (
