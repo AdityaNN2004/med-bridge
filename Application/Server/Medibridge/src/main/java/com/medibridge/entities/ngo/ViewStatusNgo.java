@@ -26,7 +26,7 @@ import lombok.ToString;
 @ToString
 public class ViewStatusNgo extends BaseEntity {
 	
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name = "medicine_id")
 	private Medicine medicine;
 	

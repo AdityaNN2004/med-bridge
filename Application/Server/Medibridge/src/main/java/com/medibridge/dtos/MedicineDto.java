@@ -14,6 +14,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString
 public class MedicineDto {
 
 	private Long id;

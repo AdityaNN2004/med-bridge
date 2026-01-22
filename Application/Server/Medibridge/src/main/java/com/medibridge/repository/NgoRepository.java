@@ -32,5 +32,12 @@ public interface NgoRepository extends JpaRepository<Ngo, Long> {
     @Query(value = "SELECT DISTINCT m.* FROM medicine m JOIN viewstatus_ngo v ON v.medicine_id = m.medicine_id WHERE v.ngo_id = :ngoId AND m.donar_id = :donarId AND v.donarapproval = 'Donar_Approved' AND v.donation_status_ngo = 'DonationProcessStarted'", nativeQuery = true)
     List<Medicine> findOnGoingRequestMedicines(@Param("ngoId") Long ngoId, @Param("donarId") Long donarId);
 
+
+    @Query(value="SELECT m.medicinecategory,COUNT(*) FROM donations d INNER JOIN medicine m WHERE m.medicine_id = d.medicine_id AND d.donationstatus=\"completed\" AND d.ngo_id=:ngoId  GROUP BY medicinecategory;",nativeQuery = true)
+       List<Object[]> countMedicinesByCategoryForNgo(@Param("ngoId") Long ngo_id);
+       
+       @Query(value="SELECT COUNT(*)  FROM donations WHERE donationstatus=\"completed\" AND ngo_id=:ngoId ",nativeQuery = true)
+       int getTotalMedicines(@Param("ngoId") Long ngo_id);
+
 }
 

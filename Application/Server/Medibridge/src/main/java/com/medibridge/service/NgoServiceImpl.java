@@ -9,14 +9,18 @@ import java.util.Map;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.medibridge.dtos.AddressDto;
 import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.ListedMedicineInAreaDto;
+import com.medibridge.dtos.MedicineCategoryPercentageDto;
 import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ServiceAreaDto;
 import com.medibridge.dtos.ViewStatusDtoDonarId;
@@ -46,10 +50,11 @@ public class NgoServiceImpl implements NgoService{
 
     @Autowired
     private NgoRepository ngoRepository;
-
+    
     @Autowired
     private ViewStatusNgoRepository viewStatusNgoRepository;
     
+   
     @Autowired
    	private MedicineRepository medicineRepository ;
     
@@ -77,84 +82,9 @@ public class NgoServiceImpl implements NgoService{
 		return null;
 	}
 
-	@Override
-	public ApiResponse changeDonarApprovalToApproved(Long donarId) {
-		List<Medicine> medicines = medicineRepository.findByDonarId(donarId);
+	
 
-	    if (medicines == null || medicines.isEmpty()) {
-	        return new ApiResponse(
-	                "No medicines found for donor id: " + donarId,
-	                "FAILED"
-	        );
-	    }
-
-	    // ✅ Only collect medicines that must be updated
-	    List<Medicine> medicinesToApprove = new ArrayList<>();
-
-	    for (Medicine medicine : medicines) {
-
-	        if (medicine.getListingStatus() == ListingStatus.IsListed &&
-	            medicine.getDonationStatus() != DonationStatus.Accepted) {
-
-	            medicine.setDonationStatus(DonationStatus.Accepted);
-	            medicinesToApprove.add(medicine);
-	        }
-	    }
-
-	    if (medicinesToApprove.isEmpty()) {
-	        return new ApiResponse(
-	                "No LISTED medicines found to approve for donor id: " + donarId,
-	                "FAILED"
-	        );
-	    }
-
-	  
-	    medicineRepository.saveAll(medicinesToApprove);
-
-	    return new ApiResponse(
-	            "Donation status updated to ACCEPTED for donor id: " + donarId,
-	            "SUCCESS"
-	    );
-	}
-
-	@Override
-	public ApiResponse changeDonarApprovalToNotApproved(Long donarId) {
-		 List<Medicine> medicines = medicineRepository.findByDonarId(donarId);
-
-		    if (medicines == null || medicines.isEmpty()) {
-		        return new ApiResponse(
-		                "No medicines found for donor id: " + donarId,
-		                "FAILED"
-		        );
-		    }
-
-		    boolean updated = false;
-
-		    for (Medicine medicine : medicines) {
-
-		        // ✅ STRICT condition
-		        if (medicine.getListingStatus() == ListingStatus.IsListed) {
-
-		            medicine.setListingStatus(ListingStatus.NotListed);
-		            updated = true;
-		        }
-		    }
-
-		    if (!updated) {
-		        return new ApiResponse(
-		                "No listed medicines found for donor id: " + donarId,
-		                "FAILED"
-		        );
-		    }
-
-		    medicineRepository.saveAll(medicines);
-
-		    return new ApiResponse(
-		            "Listing status changed to NOT_LISTED for donor id: " + donarId,
-		            "SUCCESS"
-		    );
-	}
-
+	
 	@Override
 	public ApiResponse changeDonationStatusNgoToDonationProcessStarted(Long medicineId, Long ngoId) {
 		ViewStatusNgo viewStatusNgo = viewStatusNgoRepository.findByMedicineIdAndNgoId(medicineId, ngoId) .orElseThrow(() ->
@@ -506,11 +436,41 @@ public class NgoServiceImpl implements NgoService{
 	    return medicineDtolist;
 	}
 
+	@Override
+	public List<MedicineDto> getAllDonatedMedicinesByNgoId(Long Ngo_id) {
+		List<Medicine> medicinelist = donationsRepository.getAllCompletedMedicinesByNgoId(Ngo_id);
+		List<MedicineDto> meddtolist = new ArrayList();
+		for(Medicine medicine : medicinelist)
+		{
+			meddtolist.add(modelMapper.map(medicine, MedicineDto.class));
+		}
+		
+		return meddtolist;
+	}
+
+	@Override
+	public List<MedicineCategoryPercentageDto> getMedicineCategoryByPercentage(Long ngo_id) {
+		
+		int totalMedicines=ngoRepository.getTotalMedicines(ngo_id);
+		System.out.println(totalMedicines);
+	    List<Object[]> result=ngoRepository.countMedicinesByCategoryForNgo(ngo_id);
+	    return result.stream()
+	            .map(row -> {
+	                String medicineCategory = row[0].toString();
+
+	                double categoryQuantity = ((Number) row[1]).doubleValue();
+
+	                double percentage = (categoryQuantity * 100.0) / totalMedicines;
+	                percentage = Math.round(percentage * 100.0) / 100.0;
+
+	                return new MedicineCategoryPercentageDto(medicineCategory, percentage);
+	            })
+	            .toList();	
+	}
+
 
 
 	
-
-
 
 
 }

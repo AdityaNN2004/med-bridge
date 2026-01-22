@@ -10,6 +10,7 @@ import DonarChatbot from "../Compoments/DonarChatbot.jsx";
 import ViewStatus from "../Pages/Donar/VewStatus.jsx";
 import ListedMedicine from "../Pages/Donar/ListedMedicine.jsx";
 import DonorProfile from "../Pages/Donar/DonarProfile.jsx";
+import MapWithRadius from "../Compoments/MapWithRadius.jsx";
 export const DonorRoutes = (
   <>
     <Route path="/donor/dashboard" element={<DonarDashboard/>} />
@@ -22,5 +23,6 @@ export const DonorRoutes = (
     <Route path="/donor/viewstatus/:id" element={<ViewStatus />} />
     <Route path="/donor/listedmedicine" element={<ListedMedicine />} />
     <Route path="/donor/viewprofile" element={<DonorProfile />} />
+    <Route path="/mapwithradius" element={<MapWithRadius />} />
   </>
 );

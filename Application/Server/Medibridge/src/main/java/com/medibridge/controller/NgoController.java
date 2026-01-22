@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.medibridge.dtos.AddressDto;
 import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.ListedMedicineInAreaDto;
+import com.medibridge.dtos.MedicineCategoryPercentageDto;
 import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ServiceAreaDto;
 import com.medibridge.dtos.ViewStatusDtoDonarId;
@@ -74,25 +75,6 @@ public class NgoController {
     }
     
   
-    @PutMapping("/donor/{donarId}/approve")
-    public ResponseEntity<ApiResponse> approveDonor(@PathVariable Long donarId) {
-
-        ApiResponse response =
-                ngoService.changeDonarApprovalToApproved(donarId);
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-    
-    @PutMapping("/donor/{donarId}/reject")
-    public ResponseEntity<ApiResponse> rejectDonor(  @PathVariable Long donarId) {
-
-        ApiResponse response =
-                ngoService.changeDonarApprovalToNotApproved(donarId);
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    
     @PutMapping("/donation/startprocess")
     public ResponseEntity<ApiResponse> startDonationProcess(@RequestParam Long medicineId, @RequestParam Long ngoId) {
 
@@ -156,6 +138,27 @@ public class NgoController {
         return ResponseEntity.ok(result);
     }
     
+    @GetMapping("/getalldonatedmedicinesbyngoid/{ngoId}")
+    public ResponseEntity<?> getAllDonatedMedicinesByNgoId(@PathVariable Long ngoId) {
+        
+        List<MedicineDto> result =  ngoService.getAllDonatedMedicinesByNgoId(ngoId);
+        System.out.println(result);
+        if (result == null) {
+            return ResponseEntity.noContent().build();
+         }
+      
+        return ResponseEntity.ok(result);
+    }
     
+    @GetMapping("/getMedicineCategoryByPercentage/{ngo_id}")
+    public ResponseEntity<?> getMedicineCategoryByPercentage(@PathVariable Long ngo_id){
+   	   
+    List<MedicineCategoryPercentageDto> medicinecategory=ngoService.getMedicineCategoryByPercentage(ngo_id);
+    
+    return ResponseEntity.ok(medicinecategory);
+    }
+
+   
+
     
 }

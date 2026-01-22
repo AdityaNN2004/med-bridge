@@ -5,8 +5,7 @@ import {
   getCloseToExpiredMedicines,
   getActiveMedicines,
   deleteMedicine,
-  getAllMedicines,
-  changelistingstatusmedicine,
+  ChangeListingStatusToListed
 } from "../../Services/MedicineServices";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -33,9 +32,9 @@ function ViewMedicine() {
   const [filter, setFilter] = useState("all");
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedMedicine, setSelectedMedicine] = useState(null);
-  const [listingId, setListingId] = useState(null); // ✅ NEW
+  const [listingId, setListingId] = useState(null);
 
-  // ================= LOAD MEDICINES =================
+  /* ================= LOAD MEDICINES ================= */
   const loadMedicines = async (selectedFilter = "all") => {
     try {
       let response;
@@ -74,7 +73,7 @@ function ViewMedicine() {
     loadMedicines(filter);
   }, [filter]);
 
-  // ================= DELETE =================
+  /* ================= DELETE ================= */
   const handleDeleteMedicine = async (id) => {
     try {
       await deleteMedicine(id);
@@ -85,7 +84,7 @@ function ViewMedicine() {
     }
   };
 
-  // ================= LIST / UNLIST =================
+  /* ================= LIST ================= */
   const handleListClick = (medicine) => {
     setSelectedMedicine(medicine);
     setShowConfirm(true);
@@ -97,18 +96,18 @@ function ViewMedicine() {
     try {
       setListingId(selectedMedicine.id);
 
-      // ✅ CALL UNLIST/LIST API
-      await changelistingstatusmedicine(selectedMedicine.id);
+      // ✅ CORRECT API
+      await ChangeListingStatusToListed(selectedMedicine.id);
 
-      toast.success("Medicine listing status updated!");
+      toast.success("Medicine listed successfully!");
 
-      // ✅ Remove from current view after success
+      // remove from unlisted view
       setMedicines((prev) =>
         prev.filter((m) => m.id !== selectedMedicine.id)
       );
     } catch (error) {
       console.error(error);
-      toast.error("Failed to update listing status");
+      toast.error("Failed to list medicine");
     } finally {
       setListingId(null);
       setShowConfirm(false);
@@ -121,12 +120,12 @@ function ViewMedicine() {
     setSelectedMedicine(null);
   };
 
-  // ================= SEARCH =================
+  /* ================= SEARCH ================= */
   const searchedMedicines = medicines.filter((med) =>
     med.medicineName.toLowerCase().includes(search.toLowerCase())
   );
 
-  // ================= EXPIRY HELPERS =================
+  /* ================= EXPIRY HELPERS ================= */
   const getDaysUntilExpiry = (expiryDate) => {
     if (!expiryDate) return -1;
     const today = new Date();

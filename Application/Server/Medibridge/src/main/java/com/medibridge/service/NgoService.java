@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.ListedMedicineInAreaDto;
+import com.medibridge.dtos.MedicineCategoryPercentageDto;
 import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ServiceAreaDto;
 import com.medibridge.dtos.ViewStatusDtoDonarId;
@@ -19,13 +20,6 @@ public interface NgoService {
 
     List<Medicine> getAllListedMedicines();
     
-    ApiResponse changeDonarApprovalToApproved(Long donar_id);
-    
-    ApiResponse changeDonarApprovalToNotApproved(Long donar_id);
-    
-    ApiResponse changeDonationStatusNgoToDonationProcessStarted(Long medicineId, Long ngoId);
-    
-    ApiResponse changeDonationStatusNgoToDonationProcessNotStarted(Long medicineId, Long ngoId);
     
     ApiResponse addToViewStatusNgo(ViewStatusDtoDonarId viewstatusdto);
 
@@ -44,5 +38,14 @@ public interface NgoService {
 	List<ListedMedicineInAreaDto> findRejectedRequestMedicines(Long Ngo_id);
 	
 	List<ListedMedicineInAreaDto> findOnGoingRequestMedicines(Long Ngo_id);
+	
+	List<MedicineDto>  getAllDonatedMedicinesByNgoId(Long Ngo_id);
+
+	List<MedicineCategoryPercentageDto> getMedicineCategoryByPercentage(Long ngo_id);
+	
+	ApiResponse changeDonationStatusNgoToDonationProcessStarted(Long medicineId, Long ngoId);
+    
+	ApiResponse changeDonationStatusNgoToDonationProcessNotStarted(Long medicineId, Long ngoId);
+
 	
 }

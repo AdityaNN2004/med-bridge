@@ -43,10 +43,22 @@ export const deleteMedicine = (medicine_id) =>
 }
 
 
-export const changelistingstatusmedicine = (medicne_id) =>
+export const ChangeListingStatusToListed = (medicne_id) =>
 {
-   return axios.get(`${BASE_URL}/changelistingstatusmedicine/${medicne_id}`);
+   return axios.get(`${BASE_URL}/changelistingstatustoislistedmedicine/${medicne_id}`);
 }
+export const ChangeListingStatusNotListed = (medicne_id) =>
+{
+   return axios.get(`${BASE_URL}/changelistingstatustonotlisted/${medicne_id}`);
+}
+
+export const getRequestedNgosForMedicine = (medicineId) => {
+  return axios.get(`${BASE_URL}/getrequestedngosformedicine/${medicineId}`);
+};
+
+export const isMedicineDonationInProgress = (medicine_id) => {
+  return axios.get(`${BASE_URL}/ismedicinedonationinprogress/${medicine_id}`);
+};
 
 
 export const addMedicine = ( medicineName,  expiry_date,  quantity, medicineImage,  medicinecategory) => {

@@ -15,6 +15,7 @@ import jakarta.transaction.Transactional;
 import com.medibridge.custom_exceptions.ApiException;
 import com.medibridge.custom_exceptions.ResourceNotFoundException;
 import com.medibridge.dtos.MedicineDto;
+import com.medibridge.dtos.RequestedNgos;
 import com.medibridge.dtos.AddressDto;
 import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.DonarDashboardDto;
@@ -29,6 +30,7 @@ import com.medibridge.entities.donar.MedicineCategory;
 import com.medibridge.repository.DonarAddressRepository;
 import com.medibridge.repository.DonarRepository;
 import com.medibridge.repository.MedicineRepository;
+import com.medibridge.repository.ViewStatusNgoRepository;
 @Service
 @Transactional
 public class DonarServiceImpl implements DonarService{
@@ -43,6 +45,10 @@ public class DonarServiceImpl implements DonarService{
     private  PasswordEncoder passwordEncoder;
     @Autowired
     private ModelMapper modelMapper;
+    
+    @Autowired
+    private ViewStatusNgoRepository viewStatusNgoRepository;
+    
 	@Override
 	public String signUp(Donar donar) {
 		donar.getUser().setPassword(passwordEncoder.encode(
@@ -209,20 +215,7 @@ public class DonarServiceImpl implements DonarService{
 		return medicineDtoList;
 	}
 
-	@Override
-	public ApiResponse ChangeListingStatusOfMedicine(Long medicine_id) {
-		Medicine medicine =  medicineRepository.getById(medicine_id);
-		if(medicine.getListingStatus() == ListingStatus.NotListed)
-		{
-			medicine.setListingStatus(ListingStatus.IsListed);
-		}
-		else
-		{
-			medicine.setListingStatus(ListingStatus.NotListed);
-		}		
-		medicineRepository.save(medicine);
-		return  new ApiResponse("Medicine ListingStatus Changed", "Success");
-	}
+	
 
 	@Override
 	public MedicineDto getMedicineDetails(Long medicine_id) {
@@ -295,9 +288,97 @@ public class DonarServiceImpl implements DonarService{
 			addressdtolist.add(modelMapper.map(address, AddressDto.class));
 		}
 		 return addressdtolist;
+	}
 	
-	  
+	@Override
+	public List<RequestedNgos> getRequestedNgoByMedicineid(Long medicine_id) {
+		
+		List<RequestedNgos> ngodetails = donarRepository.fetchRequestedNgoByMedicineid(medicine_id);
+		if(ngodetails==null) {
+			throw  new RuntimeException("No Ngos Requested");
+		}
+		return ngodetails;
 	}
 
+	@Override
+	public int getMedicineCount(Long donar_id) {
+		int count=donarRepository.getAllMedicineCount(donar_id);
+		return count;
+	}
+
+	@Override
+	public int getListedMedicineCount(Long donar_id) {
+		int listedCount=medicineRepository.getListedMedicinesCount(donar_id);
+		return  listedCount;
+	}
+
+	@Override
+	public int getUnListedMedicineCount(Long donar_id) {
+		int unListedCount=medicineRepository.getUnListedMedicinesCount(donar_id);
+		return unListedCount;
+	}
+
+	@Override
+	public int getExpiredMedicineCount(Long donar_id) {
+		int expiredCount=medicineRepository.getExpiredMedicinesCount(donar_id);
+		return expiredCount;
+	}
+
+	@Override
+	public int getExpiringSoonMedicineCount(Long donar_id) {
+		// TODO Auto-generated method stub
+		LocalDate today = LocalDate.now();
+		LocalDate threeMonthsLater = today.plusMonths(3);
+	int getExpiringSoonMedicineCount=medicineRepository.getMedicinesExpiringSoon(donar_id, today, threeMonthsLater);
+		return getExpiringSoonMedicineCount;
+	}
+
+	@Override
+	public ApiResponse changeDonarApprovalToApproved(Long medicine_id , Long ngo_id) {
+		int res = viewStatusNgoRepository.updateDonationStatusToApproved(medicine_id, ngo_id);
+		if (res == 1) {
+			return new ApiResponse("Changes are done" , "Success");
+		}
+		else {
+			return new ApiResponse("Changes are not done" , "Failure");
+		}
+		
+	}
+
+	@Override
+	public ApiResponse changeDonarApprovalToNotApproved(Long medicine_id , Long ngo_id) {
+		int res = viewStatusNgoRepository.updateDonationStatusNotApproved(medicine_id, ngo_id);
+		if (res == 1) {
+			return new ApiResponse("Changes are done" , "Success");
+		}
+		else {
+			return new ApiResponse("Changes are not done" , "Failure");
+		}
+		 
+	}
+
+	@Override
+	public Long isMedicineDonationInProgress(Long medicine_id) {
+		
+		return medicineRepository.isMedicineDonationInProgress(medicine_id);
+	}
+
+	@Override
+	public ApiResponse ChangeListingStatusNotListed(Long medicine_id) {
+		Medicine medicine =  medicineRepository.getById(medicine_id);
+		medicine.setListingStatus(ListingStatus.NotListed);
+		medicineRepository.save(medicine);
+		return  new ApiResponse("Medicine ListingStatus Changed", "Success");
+	}
+
+	@Override
+	public ApiResponse ChangeListingStatusToisListed(Long medicine_id) {
+		// TODO Auto-generated method stub
+		Medicine medicine =  medicineRepository.getById(medicine_id);
+		medicine.setListingStatus(ListingStatus.IsListed);
+		medicineRepository.save(medicine);
+		return  new ApiResponse("Medicine ListingStatus Changed", "Success");
+	}
+	
 
 }

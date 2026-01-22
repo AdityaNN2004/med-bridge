@@ -47,9 +47,22 @@ public interface MedicineRepository extends JpaRepository<Medicine, Long>{
 	 @Query(value = "SELECT COUNT(*) FROM Medicine WHERE donar_id = :donarId",nativeQuery = true)
 	 Long countByDonar_Id(@Param("donarId") Long donarId);   
 			  
-			
+		
+	 @Query(value="SELECT COUNT(*) FROM medicine WHERE donar_id = :donarId AND listing_status = 'isListed'",nativeQuery=true)
+		 int getListedMedicinesCount(@Param("donarId") Long donar_id);
+		 
+		 @Query(value = "SELECT COUNT(*) FROM medicine WHERE donar_id = :donarId AND listing_status = 'NotListed'", nativeQuery = true)
+		 int getUnListedMedicinesCount(@Param("donarId") Long donar_id);
+				  		
+		 @Query(value = "SELECT COUNT(*) FROM medicine WHERE donar_id = :donarId AND expiry_date < CURRENT_DATE", nativeQuery = true)
+		 int getExpiredMedicinesCount(@Param("donarId") Long donarId);
+		 
+		 @Query(value = "SELECT COUNT(*) FROM medicine WHERE donar_id = :donarId AND expiry_date BETWEEN :today AND :threeMonthsLater", nativeQuery = true)
+		 int getMedicinesExpiringSoon(@Param("donarId") Long donar_id, @Param("today") LocalDate today, @Param("threeMonthsLater") LocalDate threeMonthsLater);	
 
 	
+		 @Query(value = "SELECT COUNT(*) > 0 FROM viewstatus_ngo WHERE medicine_id = :medicineId AND donarapproval = 'Donar_Approved' AND donation_status_ngo = 'DonationProcessStarted'", nativeQuery = true)
+		 Long isMedicineDonationInProgress(@Param("medicineId") Long medicineId);
 
 	
 

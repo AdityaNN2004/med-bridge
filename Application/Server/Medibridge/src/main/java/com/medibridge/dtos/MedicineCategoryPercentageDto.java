@@ -8,6 +8,6 @@ import lombok.*;
 @NoArgsConstructor
 public class MedicineCategoryPercentageDto {
 
-    private String category;
+    private String medicineCategory;
     private Double percentage;
 }

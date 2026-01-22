@@ -5,7 +5,7 @@ import {
   RequestMedicine,
   FindOnGoingRequestMedicines,
   FindPendingRequestMedicinesByNgoId,
-  FindRejectedRequestMedicines,
+  FindRejectedRequestMedicines
 } from "../../Services/NgoServices";
 import {
   Search,

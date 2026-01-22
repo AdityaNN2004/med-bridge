@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Clock } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle, XCircle } from "lucide-react";
 import DonorNavbar from "./DonorNavbar";
 import {
   getAllListedMedicines,
-  changelistingstatusmedicine,
+  ChangeListingStatusNotListed,
+  getRequestedNgosForMedicine,
+  isMedicineDonationInProgress
 } from "../../Services/MedicineServices";
+import { RejectNgo, ApproveNgo } from "../../Services/DonarServices";
 
-// Default fallback image
 const DEFAULT_MEDICINE_IMAGE =
   "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=300&fit=crop";
 
@@ -19,22 +21,45 @@ function ListedMedicine() {
   const [error, setError] = useState(null);
   const [unlistingId, setUnlistingId] = useState(null);
 
+  // popup state
+  const [activeMedicine, setActiveMedicine] = useState(null);
+  const [requestedNgos, setRequestedNgos] = useState([]);
+
   useEffect(() => {
     fetchListedMedicines();
   }, []);
 
-  // ================= FETCH LISTED MEDICINES =================
+  /* ================= FETCH LISTED MEDICINES ================= */
   const fetchListedMedicines = async () => {
     try {
       const response = await getAllListedMedicines();
 
-      // ✅ FIX: map backend fields properly
-      const mapped = response.data.map((med) => ({
-        ...med,
-        expiryDate: med.expiry_date, // FIXED
-      }));
+      const updated = await Promise.all(
+        response.data.map(async (med) => {
+          try {
+            const [ngoRes, processRes] = await Promise.all([
+              getRequestedNgosForMedicine(med.id),
+              isMedicineDonationInProgress(med.id)
+            ]);
 
-      setMedicines(mapped);
+            return {
+              ...med,
+              expiryDate: med.expiry_date,
+              hasRequests: ngoRes.data && ngoRes.data.length > 0,
+              donationInProgress: Number(processRes.data) === 1
+            };
+          } catch {
+            return {
+              ...med,
+              expiryDate: med.expiry_date,
+              hasRequests: false,
+              donationInProgress: false
+            };
+          }
+        })
+      );
+
+      setMedicines(updated);
     } catch (err) {
       console.error(err);
       setError("Failed to load listed medicines");
@@ -43,34 +68,59 @@ function ListedMedicine() {
     }
   };
 
-  // ================= EXPIRY CALCULATION =================
+  /* ================= EXPIRY CALC ================= */
   const getDaysUntilExpiry = (expiryDate) => {
     if (!expiryDate) return 0;
-
     const expiry = new Date(expiryDate);
     const today = new Date();
-
     expiry.setHours(0, 0, 0, 0);
     today.setHours(0, 0, 0, 0);
-
     return Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
   };
 
-  // ================= UNLIST MEDICINE =================
+  /* ================= UNLIST ================= */
   const handleUnlist = async (medicineId) => {
     try {
       setUnlistingId(medicineId);
-      await changelistingstatusmedicine(medicineId);
-
-      // remove from UI after success
-      setMedicines((prev) =>
-        prev.filter((m) => m.id !== medicineId)
-      );
+      await ChangeListingStatusNotListed(medicineId);
+      setMedicines((prev) => prev.filter((m) => m.id !== medicineId));
     } catch (err) {
       console.error(err);
-      alert("Failed to unlist medicine. Please try again.");
+      alert("Failed to unlist medicine");
     } finally {
       setUnlistingId(null);
+    }
+  };
+
+  /* ================= OPEN NGO REQUEST POPUP ================= */
+  const openRequestPopup = async (medicine) => {
+    const res = await getRequestedNgosForMedicine(medicine.id);
+    setRequestedNgos(res.data || []);
+    setActiveMedicine(medicine);
+  };
+
+  /* ================= APPROVE NGO ================= */
+  const handleApproveNgo = async (ngoId) => {
+    try {
+      await ApproveNgo(activeMedicine.id, ngoId);
+      alert("NGO Approved ✅");
+      setActiveMedicine(null);
+      fetchListedMedicines();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to approve NGO ❌");
+    }
+  };
+
+  /* ================= REJECT NGO ================= */
+  const handleRejectNgo = async (ngoId) => {
+    try {
+      await RejectNgo(activeMedicine.id, ngoId);
+      alert("NGO Rejected ❌");
+      setRequestedNgos((prev) => prev.filter((n) => n.ngo_id !== ngoId));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to reject NGO ❌");
     }
   };
 
@@ -86,87 +136,72 @@ function ListedMedicine() {
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </button>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">
-          Listed Medicines
-        </h1>
+        <h1 className="text-3xl font-bold mb-8">Listed Medicines</h1>
 
-        {loading && <p className="text-gray-500">Loading medicines...</p>}
+        {loading && <p>Loading medicines...</p>}
         {error && <p className="text-red-500">{error}</p>}
-
-        {!loading && medicines.length === 0 && (
-          <p className="text-gray-500">No listed medicines available.</p>
-        )}
 
         {!loading && medicines.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {medicines.map((med) => {
               const daysLeft = getDaysUntilExpiry(med.expiryDate);
 
-              const expiryColor =
-                daysLeft <= 0
-                  ? "bg-gray-200 text-gray-600"
-                  : daysLeft <= 30
-                  ? "bg-red-100 text-red-600"
-                  : daysLeft <= 90
-                  ? "bg-yellow-100 text-yellow-600"
-                  : "bg-green-100 text-green-600";
-
               return (
                 <div
                   key={med.id}
-                  className="bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition"
+                  className="relative bg-white border rounded-xl shadow-sm hover:shadow-xl transition"
                 >
-                  <div className="relative">
-                    <img
-                      src={med.photoUrl || DEFAULT_MEDICINE_IMAGE}
-                      alt={med.medicineName}
-                      className="w-full h-40 object-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = DEFAULT_MEDICINE_IMAGE;
-                      }}
-                    />
-
-                    <span
-                      className={`absolute top-2 right-2 px-3 py-1 rounded-full text-xs font-semibold ${expiryColor}`}
-                    >
-                      <Clock className="inline w-3 h-3 mr-1" />
-                      {daysLeft > 0 ? `${daysLeft} days left` : "Expired"}
-                    </span>
-                  </div>
+                  <img
+                    src={med.photoUrl || DEFAULT_MEDICINE_IMAGE}
+                    alt={med.medicineName}
+                    className="w-full h-40 object-cover"
+                  />
 
                   <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 text-sm mb-1 truncate">
+                    <h3 className="font-semibold text-sm truncate">
                       {med.medicineName}
                     </h3>
 
-                    {/* ✅ FIXED UNITS */}
-                    <p className="text-xs text-gray-500 mb-4">
+                    <p className="text-xs text-gray-500 mb-3">
                       {med.quantity}
                     </p>
 
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() =>
-                          navigate(`/donor/viewstatus/${med.id}`)
-                        }
-                        className="flex-1 bg-indigo-50 text-indigo-600 py-2 rounded-lg text-xs font-semibold hover:bg-indigo-100"
-                      >
-                        View Status
-                      </button>
+                    <span className="text-xs flex items-center gap-1 mb-3">
+                      <Clock className="w-3 h-3" />
+                      {daysLeft > 0 ? `${daysLeft} days left` : "Expired"}
+                    </span>
 
-                      <button
-                        onClick={() => handleUnlist(med.id)}
-                        disabled={unlistingId === med.id}
-                        className={`flex-1 py-2 rounded-lg text-xs font-semibold
-                          ${
-                            unlistingId === med.id
-                              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                              : "bg-red-50 text-red-600 hover:bg-red-100"
-                          }`}
-                      >
-                        {unlistingId === med.id ? "Unlisting..." : "Unlist"}
-                      </button>
+                    {/* ================= BUTTON LOGIC ================= */}
+                    <div className="flex gap-2">
+                      {med.donationInProgress && (
+                        <button
+                          onClick={() =>
+                            navigate(`/donor/viewstatus/${med.id}`)
+                          }
+                          className="w-full bg-indigo-50 text-indigo-600 py-2 rounded-lg text-xs font-semibold"
+                        >
+                          View Status
+                        </button>
+                      )}
+
+                      {!med.donationInProgress && med.hasRequests && (
+                        <button
+                          onClick={() => openRequestPopup(med)}
+                          className="flex-1 bg-emerald-50 text-emerald-600 py-2 rounded-lg text-xs font-semibold"
+                        >
+                          NGO Request
+                        </button>
+                      )}
+
+                      {!med.donationInProgress && (
+                        <button
+                          onClick={() => handleUnlist(med.id)}
+                          disabled={unlistingId === med.id}
+                          className="flex-1 bg-red-50 text-red-600 py-2 rounded-lg text-xs font-semibold"
+                        >
+                          Unlist
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -175,6 +210,59 @@ function ListedMedicine() {
           </div>
         )}
       </div>
+
+      {/* ================= NGO REQUEST POPUP ================= */}
+      {activeMedicine && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-md rounded-xl p-6">
+            <h2 className="text-lg font-bold mb-4">
+              NGO Requests for {activeMedicine.medicineName}
+            </h2>
+
+            {requestedNgos.length === 0 && (
+              <p className="text-sm text-gray-500">No pending NGO requests</p>
+            )}
+
+            {requestedNgos.map((ngo) => (
+              <div
+                key={ngo.ngo_id}
+                className="flex justify-between items-center border p-3 rounded-lg mb-2"
+              >
+                <div>
+                  <p className="font-semibold text-sm">
+                    {ngo.organizationName}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Service Radius: {ngo.serviceRadius} km
+                  </p>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleApproveNgo(ngo.ngo_id)}
+                    className="text-green-600 hover:scale-110"
+                  >
+                    <CheckCircle />
+                  </button>
+                  <button
+                    onClick={() => handleRejectNgo(ngo.ngo_id)}
+                    className="text-red-600 hover:scale-110"
+                  >
+                    <XCircle />
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <button
+              onClick={() => setActiveMedicine(null)}
+              className="mt-4 w-full bg-gray-100 py-2 rounded-lg text-sm"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

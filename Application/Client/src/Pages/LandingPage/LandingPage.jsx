@@ -16,11 +16,8 @@ const LandingPage = () => {
         <button className="btn donor" onClick={() => navigate("/donar/login")}>
           Donor
         </button>
-        <button className="btn ngo" onClick={() => navigate("/ngo/chatbot")}>
-          NGo chat 
-        </button>
-        <button className="btn donor" onClick={() => navigate("/donor/chatbot")}>
-          Donor chat
+        <button className="btn donor" onClick={() => navigate("/mapwithradius")}>
+          map with radius test
         </button>
       </div>
     </div>

@@ -1,59 +1,51 @@
-import React, { useEffect, useState } from "react";
-import {
-  GoogleMap,
-  DirectionsRenderer,
-  useJsApiLoader,
-} from "@react-google-maps/api";
-
-const containerStyle = {
-  width: "100%",
-  height: "100%",
-};
-
-const center = {
-  lat: 17.385044,
-  lng: 78.486671,
-};
+import React, { useEffect } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import "leaflet-routing-machine";
+import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 
 const RoutesMap = () => {
-  const [directions, setDirections] = useState(null);
-
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: "AIzaSyCz5BYROEEeoaccHJLX0agc13U_JE6jgbE",
-    libraries: ["places"],
-  });
-
   useEffect(() => {
-    if (!isLoaded) return; // 🔑 IMPORTANT
+    // ✅ Direct coordinates (Nagpur)
+    const origin = L.latLng(21.1458, 79.0882);      // Gandhi Nagar (approx)
+    const destination = L.latLng(21.1239, 79.0706); // Parsodi IT Park (approx)
 
-    const directionsService = new window.google.maps.DirectionsService();
+    const map = L.map("map").setView(origin, 13);
 
-    directionsService.route(
-      {
-        origin: "123 Gandhi Nagar,Nagpur, Maharashtra 440013",
-        destination: "5th Floor, IT Park Parsodi,Nagpur Maharashtra 440553 ",
-        travelMode: window.google.maps.TravelMode.DRIVING,
-      },
-      (result, status) => {
-        if (status === "OK") {
-          setDirections(result);
-        } else {
-          console.error("Directions error:", status);
-        }
-      }
-    );
-  }, [isLoaded]);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors",
+    }).addTo(map);
 
-  if (!isLoaded) return <p>Loading Map...</p>;
+    L.Routing.control({
+      waypoints: [origin, destination],
+      routeWhileDragging: false,
+      addWaypoints: false,
+      draggableWaypoints: false,
+      show: false,
+      createMarker: (i, wp) =>
+        L.marker(wp.latLng).bindPopup(
+          i === 0 ? "Origin" : "Destination"
+        ),
+    })
+      .on("routesfound", function (e) {
+        const route = e.routes[0];
+        const distanceKm = (route.summary.totalDistance / 1000).toFixed(2);
+        const durationMin = Math.round(route.summary.totalTime / 60);
+
+        console.log("Distance:", distanceKm, "km");
+        console.log("Duration:", durationMin, "minutes");
+      })
+      .addTo(map);
+
+    return () => {
+      map.remove();
+    };
+  }, []);
 
   return (
-    <GoogleMap
-      mapContainerStyle={containerStyle}
-      center={center}
-      zoom={7}
-    >
-      {directions && <DirectionsRenderer directions={directions} />}
-    </GoogleMap>
+    <div style={{ width: "100%", height: "500px" }}>
+      <div id="map" style={{ width: "100%", height: "100%" }} />
+    </div>
   );
 };
 

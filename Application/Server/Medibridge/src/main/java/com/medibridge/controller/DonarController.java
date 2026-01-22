@@ -26,6 +26,7 @@ import com.medibridge.service.DonarService;
 import io.micrometer.core.ipc.http.HttpSender.Response;
 
 import com.medibridge.dtos.MedicineDto;
+import com.medibridge.dtos.RequestedNgos;
 import com.medibridge.dtos.AddressDto;
 import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.DonarDto;
@@ -94,10 +95,16 @@ public class DonarController {
 	return ResponseEntity.ok("successfully deleted");
    }
   
-  @GetMapping("/changelistingstatusmedicine/{medicine_id}")
-  public ResponseEntity<?> ChangeListingStatusOfMedicine(@PathVariable Long medicine_id)
+  @GetMapping("/changelistingstatustoislistedmedicine/{medicine_id}")
+  public ResponseEntity<?> ChangeListingStatusToisListed(@PathVariable Long medicine_id)
   {
-	ApiResponse medicinelist = donarService.ChangeListingStatusOfMedicine(medicine_id);
+	ApiResponse medicinelist = donarService.ChangeListingStatusToisListed(medicine_id);
+	return ResponseEntity.ok(medicinelist);
+   }
+  @GetMapping("/changelistingstatustonotlisted/{medicine_id}")
+  public ResponseEntity<?> ChangeListingStatusNotListed(@PathVariable Long medicine_id)
+  {
+	ApiResponse medicinelist = donarService.ChangeListingStatusNotListed(medicine_id);
 	return ResponseEntity.ok(medicinelist);
    }
   
@@ -245,5 +252,85 @@ public class DonarController {
 	donarService.switchAddress(address_id);
     return ResponseEntity.ok("Address switched successfully");
   }
+  
+  @GetMapping("/getrequestedngosformedicine/{medicine_id}")
+  public ResponseEntity<?> getRequestedNgos(@PathVariable Long medicine_id){
+ 	List<RequestedNgos> requestedngos= donarService.getRequestedNgoByMedicineid(medicine_id);
+ 	if(requestedngos==null) {
+ 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No Requested Ngos");
+ 	}
+ 	return ResponseEntity.ok(requestedngos);
+  }
+  
 
+  @GetMapping("/getAllMedicinesCount/{donar_id}")
+  public ResponseEntity<?> getAllMedcinesCount(@PathVariable Long donar_id){
+ 	int count= donarService.getMedicineCount(donar_id);
+ 	if(count==0) {
+ 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+ 	}
+ 	return ResponseEntity.ok(count);
+  }
+  
+  @GetMapping("/getListedMedicinesCount/{donar_id}")
+  public ResponseEntity<?> getListedMedcinesCount(@PathVariable Long donar_id){
+ 		int count= donarService.getListedMedicineCount(donar_id);
+ 		if(count==0) {
+ 			return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+ 		}
+ 		return ResponseEntity.ok(count);
+ 	 }
+  
+  @GetMapping("/getUnListedMedicinesCount/{donar_id}")
+  public ResponseEntity<?> getUnListedMedcinesCount(@PathVariable Long donar_id){
+ 		int count= donarService.getUnListedMedicineCount(donar_id);
+ 		if(count==0) {
+ 			return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+ 		}
+ 		return ResponseEntity.ok(count);
+ 	 }
+  
+  @GetMapping("/getExpiredMedicinesCount/{donar_id}")
+  public ResponseEntity<?> getExpiredMedcinesCount(@PathVariable Long donar_id){
+ 		int count= donarService.getExpiredMedicineCount(donar_id);
+ 		if(count==0) {
+ 			return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+ 		}
+ 		return ResponseEntity.ok(count);
+ 	 }
+  @GetMapping("/getExpiringSoonMedicinesCount/{donar_id}")
+  public ResponseEntity<?> getExpiringSoonMedcinesCount(@PathVariable Long donar_id){
+ 		int count= donarService.getExpiringSoonMedicineCount(donar_id);
+ 		if(count==0) {
+ 			return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+ 		}
+ 		return ResponseEntity.ok(count);
+ 	 }
+
+  @PutMapping("/{medicine_id}/{ngo_id}/approve")
+  public ResponseEntity<ApiResponse> approveDonor(@PathVariable Long medicine_id , @PathVariable Long ngo_id ) {
+
+      ApiResponse response =
+    		  donarService.changeDonarApprovalToApproved( medicine_id ,  ngo_id);
+
+      return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+  
+  @PutMapping("/{medicine_id}/{ngo_id}/reject")
+  public ResponseEntity<ApiResponse> rejectDonor(  @PathVariable Long medicine_id , @PathVariable Long ngo_id) {
+
+      ApiResponse response =
+    		  donarService.changeDonarApprovalToNotApproved( medicine_id ,  ngo_id);
+
+      return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+  
+  @GetMapping("ismedicinedonationinprogress/{medicine_id}")
+  public ResponseEntity<?> isMedicineDonationInProgress(  @PathVariable Long medicine_id) {
+
+      Long response = donarService.isMedicineDonationInProgress( medicine_id );
+
+      return ResponseEntity.ok(response);
+  }
+  
 }

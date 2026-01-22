@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.medibridge.dtos.MedicineDto;
+import com.medibridge.dtos.RequestedNgos;
 import com.medibridge.dtos.AddressDto;
 import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.DonarDashboardDto;
@@ -54,7 +55,9 @@ public interface DonarService {
 		
 		List<MedicineDto> getListedMedicine(Long donar_id);
 		
-		ApiResponse ChangeListingStatusOfMedicine(Long donar_id);
+		ApiResponse ChangeListingStatusNotListed(Long medicine_id);
+		
+		ApiResponse ChangeListingStatusToisListed(Long medicine_id);
 		
 		DonarDashboardDto donardashboardstats();
 		
@@ -66,5 +69,21 @@ public interface DonarService {
 		
 		void switchAddress(Long address_id);
 		
+		List<RequestedNgos> getRequestedNgoByMedicineid(Long medicine_id);
 		
+		int getMedicineCount(Long donar_id);
+
+		int getListedMedicineCount(Long donar_id);
+
+		int getUnListedMedicineCount(Long donar_id);
+
+		int getExpiredMedicineCount(Long donar_id);
+
+		int getExpiringSoonMedicineCount(Long donar_id);
+		
+		 ApiResponse changeDonarApprovalToApproved(Long medicine_id , Long ngo_id);
+		    
+		 ApiResponse changeDonarApprovalToNotApproved(Long medicine_id , Long ngo_id);
+		
+		 Long isMedicineDonationInProgress(Long medicine_id);
 }

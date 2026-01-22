@@ -9,70 +9,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { animate, useInView, motion } from "framer-motion";
-
-/* ---------------- DEMO DATA ---------------- */
-const demoInventory = [
-  {
-    id: 1,
-    name: "Paracetamol 500mg",
-    description: "Pain & fever relief",
-    batch: "B-001",
-    stock: 120,
-    total: 150,
-    donor: "City Hospital",
-    expiryDate: "2025-12-15",
-    location: "Mumbai",
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Amoxicillin 250mg",
-    description: "Antibiotic",
-    batch: "B-002",
-    stock: 30,
-    total: 200,
-    donor: "MedCare",
-    expiryDate: "2025-10-22",
-    location: "Pune",
-    status: "expiring",
-  },
-  {
-    id: 3,
-    name: "Metformin 500mg",
-    description: "Diabetes care",
-    batch: "B-003",
-    stock: 0,
-    total: 300,
-    donor: "Apollo",
-    expiryDate: "2025-09-20",
-    location: "Bangalore",
-    status: "expired",
-  },
-  {
-    id: 4,
-    name: "Vitamin D3 60K",
-    description: "Supplement",
-    batch: "B-004",
-    stock: 90,
-    total: 120,
-    donor: "Health Plus",
-    expiryDate: "2026-02-15",
-    location: "Delhi",
-    status: "active",
-  },
-  {
-    id: 5,
-    name: "ORS Sachets",
-    description: "Hydration support",
-    batch: "B-005",
-    stock: 500,
-    total: 600,
-    donor: "WHO Drive",
-    expiryDate: "2025-10-10",
-    location: "Nagpur",
-    status: "expiring",
-  },
-];
+import { getAllDonatedMedicinesByNgoId } from "../../Services/NgoServices";
 
 /* ---------------- HELPERS ---------------- */
 const getDaysLeft = (date) =>
@@ -90,7 +27,7 @@ const badgeIcon = {
   expired: <XCircle className="w-4 h-4" />,
 };
 
-/* ---------------- COUNT CARD ---------------- */
+/* ---------------- STAT CARD ---------------- */
 const StatCard = ({ title, value, color, border }) => {
   const ref = useRef(null);
   const inView = useInView(ref);
@@ -115,32 +52,73 @@ const StatCard = ({ title, value, color, border }) => {
   );
 };
 
+/* ---------------- ENTITY MAPPER ---------------- */
+const mapApiMedicineToUi = (med) => {
+  const daysLeft = getDaysLeft(med.expiry_date);
+
+  let status = "active";
+  if (daysLeft <= 0) status = "expired";
+  else if (daysLeft <= 30) status = "expiring";
+
+  const quantity = Number(med.quantity?.split(" ")[0]) || 0;
+
+  return {
+    id: med.id,
+    name: med.medicineName ?? "",
+    description: med.medicinecategory ?? "",
+    batch: `B-${med.id}`,
+    stock: quantity,
+    total: quantity,
+    donor: med.donarid ? `Donor #${med.donarid}` : "Donated",
+    location: "NGO Inventory",
+    expiryDate: med.expiry_date,
+    status,
+  };
+};
+
 /* ---------------- COMPONENT ---------------- */
 const InventoryManagement = () => {
+  const [inventory, setInventory] = useState([]);
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("all");
   const searchRef = useRef(null);
 
-  /* ✅ AUTO FOCUS SEARCH */
+  const NGO_ID = 1;
+
   useEffect(() => {
     searchRef.current?.focus();
   }, []);
 
-  const urgent = demoInventory.filter(
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const res = await getAllDonatedMedicinesByNgoId(NGO_ID);
+        setInventory(res.data.map(mapApiMedicineToUi));
+      } catch (err) {
+        console.error("Failed to fetch inventory", err);
+      }
+    };
+
+    fetchInventory();
+  }, []);
+
+  /* STATS */
+  const urgent = inventory.filter(
     (i) => getDaysLeft(i.expiryDate) <= 7 && i.status !== "expired"
   ).length;
 
-  const expiringSoon = demoInventory.filter(
+  const expiringSoon = inventory.filter(
     (i) => getDaysLeft(i.expiryDate) <= 30 && getDaysLeft(i.expiryDate) > 7
   ).length;
 
-  const expired = demoInventory.filter((i) => i.status === "expired").length;
+  const expired = inventory.filter((i) => i.status === "expired").length;
 
-  const filtered = demoInventory.filter((item) => {
+  /* 🔥 FIXED FILTER (NULL SAFE) */
+  const filtered = inventory.filter((item) => {
     const matchSearch =
-      item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.batch.toLowerCase().includes(search.toLowerCase()) ||
-      item.donor.toLowerCase().includes(search.toLowerCase());
+      (item.name ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (item.batch ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (item.donor ?? "").toLowerCase().includes(search.toLowerCase());
 
     const matchTab = tab === "all" || item.status === tab;
     return matchSearch && matchTab;
@@ -158,7 +136,7 @@ const InventoryManagement = () => {
           Track & manage donated medicines
         </p>
 
-        {/* ---- STATS ---- */}
+        {/* STATS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-7">
           <StatCard
             title="Urgent (≤7 days)"
@@ -180,41 +158,40 @@ const InventoryManagement = () => {
           />
         </div>
 
-        {/* ---- SEARCH ---- */}
+        {/* SEARCH */}
         <input
           ref={searchRef}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search medicine, donor or batch"
-          className="w-full mb-5 p-3 text-sm border rounded-xl focus:ring-2 focus:ring-teal-600 focus:border-transparent"
+          className="w-full mb-5 p-3 text-sm border rounded-xl focus:ring-2 focus:ring-teal-600"
         />
 
-        {/* ---- TABS ---- */}
+        {/* TABS */}
         <div className="flex gap-3 mb-6">
           {["all", "active", "expiring", "expired"].map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-4 py-2 text-sm rounded-xl font-medium transition
-                ${
-                  tab === t
-                    ? "bg-teal-700 text-white shadow"
-                    : "bg-white border border-gray-200 text-gray-700 hover:shadow-md"
-                }`}
+              className={`px-4 py-2 text-sm rounded-xl font-medium transition ${
+                tab === t
+                  ? "bg-teal-700 text-white shadow"
+                  : "bg-white border text-gray-700"
+              }`}
             >
               {t.toUpperCase()}
             </button>
           ))}
         </div>
 
-        {/* ---- INVENTORY LIST ---- */}
+        {/* LIST */}
         <div className="space-y-5">
           {filtered.map((item) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col md:flex-row gap-5"
+              className="bg-white rounded-xl p-5 border shadow-sm flex gap-5"
             >
               <div className="flex-1">
                 <h3 className="text-lg font-semibold">{item.name}</h3>

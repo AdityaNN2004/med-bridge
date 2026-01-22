@@ -25,3 +25,8 @@ export const FindRejectedRequestMedicines = (ngoid) => {
 export const FindPendingRequestMedicinesByNgoId = (ngoid) => {
   return axios.get(`${BASE_URL}/findpendingrequestmedicinesbyngoid/${ngoid}`);
 };
+
+export const getAllDonatedMedicinesByNgoId = (ngoid) => {
+  return axios.get(`${BASE_URL}/getalldonatedmedicinesbyngoid/${ngoid}`);
+};
+
