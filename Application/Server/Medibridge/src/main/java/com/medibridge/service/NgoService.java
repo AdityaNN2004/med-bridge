@@ -19,13 +19,13 @@ public interface NgoService {
 
     List<Medicine> getAllListedMedicines();
     
-    ApiResponse changeDonarApprovalToApproved();
+    ApiResponse changeDonarApprovalToApproved(Long donar_id);
     
-    ApiResponse changeDonarApprovalToNotApproved();
+    ApiResponse changeDonarApprovalToNotApproved(Long donar_id);
     
-    ApiResponse changeDonationStatusNgoToDonationProcessStarted();
+    ApiResponse changeDonationStatusNgoToDonationProcessStarted(Long medicineId, Long ngoId);
     
-    ApiResponse changeDonationStatusNgoToDonationProcessNotStarted();
+    ApiResponse changeDonationStatusNgoToDonationProcessNotStarted(Long medicineId, Long ngoId);
     
     ApiResponse addToViewStatusNgo(ViewStatusDto viewstatusdto);
 

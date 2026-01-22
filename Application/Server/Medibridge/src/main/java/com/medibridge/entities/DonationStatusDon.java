@@ -1,5 +1,5 @@
 package com.medibridge.entities;
 
-public enum DonationStatus {
+public enum DonationStatusDon {
    Completed, Pending, Discarded
 }

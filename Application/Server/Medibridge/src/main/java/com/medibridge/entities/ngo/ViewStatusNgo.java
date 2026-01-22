@@ -7,6 +7,8 @@ import com.medibridge.entities.donar.Medicine;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
@@ -32,7 +34,9 @@ public class ViewStatusNgo extends BaseEntity {
 	@JoinColumn(name = "ngo_id")
 	private Ngo ngo;
 	
+	 @Enumerated(EnumType.STRING)
 	private DonarApproval donarapproval =  DonarApproval.Donar_NotApproved;
 	
+	 @Enumerated(EnumType.STRING)
 	private DonationStatusNgo donationStatusNgo = DonationStatusNgo.DonationProcessNotStarted;
 }

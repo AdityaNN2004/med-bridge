@@ -1,8 +1,8 @@
 package com.medibridge.dtos;
 
-import com.medibridge.entities.donar.Medicine;
-import com.medibridge.entities.ngo.Ngo;
 
+
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,8 +10,10 @@ import lombok.Setter;
 @Setter
 public class ViewStatusDto {
 
-	private Ngo ngo;
+	@NotNull(message = "NGO ID is required")
+	private Long ngoId;
 	
-	private Medicine medicine;
+	@NotNull(message = "Medicine ID is required")
+	private Long medicineId;
 	
 }

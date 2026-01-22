@@ -20,17 +20,26 @@ import com.medibridge.dtos.ListedMedicineInAreaDto;
 import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ServiceAreaDto;
 import com.medibridge.dtos.ViewStatusDto;
+import com.medibridge.entities.DonationStatusDon;
+import com.medibridge.entities.Donations;
 import com.medibridge.entities.User;
 import com.medibridge.entities.userRole;
 import com.medibridge.entities.donar.Address;
+import com.medibridge.entities.donar.DonationStatus;
+import com.medibridge.entities.donar.ListingStatus;
 import com.medibridge.entities.donar.Medicine;
 import com.medibridge.entities.ngo.DocumentRegistration;
+import com.medibridge.entities.ngo.DonarApproval;
+import com.medibridge.entities.ngo.DonationStatusNgo;
 import com.medibridge.entities.ngo.Ngo;
 import com.medibridge.entities.ngo.ServiceArea;
+import com.medibridge.entities.ngo.ViewStatusNgo;
 import com.medibridge.repository.DonarRepository;
+import com.medibridge.repository.DonationsRepository;
 import com.medibridge.repository.MedicineRepository;
 import com.medibridge.repository.NgoRepository;
 import com.medibridge.repository.UserRepository;
+import com.medibridge.repository.ViewStatusNgoRepository;
 
 @Service
 public class NgoServiceImpl implements NgoService{
@@ -38,6 +47,9 @@ public class NgoServiceImpl implements NgoService{
     @Autowired
     private NgoRepository ngoRepository;
 
+    @Autowired
+    private ViewStatusNgoRepository viewStatusNgoRepository;
+    
     @Autowired
    	private MedicineRepository medicineRepository ;
     
@@ -54,6 +66,9 @@ public class NgoServiceImpl implements NgoService{
     private S3Service s3Service;
     
     @Autowired
+    private DonationsRepository donationsRepository;
+    
+    @Autowired
     private ModelMapper modelMapper;
 	
 	@Override
@@ -63,33 +78,159 @@ public class NgoServiceImpl implements NgoService{
 	}
 
 	@Override
-	public ApiResponse changeDonarApprovalToApproved() {
-		// TODO Auto-generated method stub
-		return null;
+	public ApiResponse changeDonarApprovalToApproved(Long donarId) {
+		List<Medicine> medicines = medicineRepository.findByDonarId(donarId);
+
+	    if (medicines == null || medicines.isEmpty()) {
+	        return new ApiResponse(
+	                "No medicines found for donor id: " + donarId,
+	                "FAILED"
+	        );
+	    }
+
+	    // ✅ Only collect medicines that must be updated
+	    List<Medicine> medicinesToApprove = new ArrayList<>();
+
+	    for (Medicine medicine : medicines) {
+
+	        if (medicine.getListingStatus() == ListingStatus.IsListed &&
+	            medicine.getDonationStatus() != DonationStatus.Accepted) {
+
+	            medicine.setDonationStatus(DonationStatus.Accepted);
+	            medicinesToApprove.add(medicine);
+	        }
+	    }
+
+	    if (medicinesToApprove.isEmpty()) {
+	        return new ApiResponse(
+	                "No LISTED medicines found to approve for donor id: " + donarId,
+	                "FAILED"
+	        );
+	    }
+
+	  
+	    medicineRepository.saveAll(medicinesToApprove);
+
+	    return new ApiResponse(
+	            "Donation status updated to ACCEPTED for donor id: " + donarId,
+	            "SUCCESS"
+	    );
 	}
 
 	@Override
-	public ApiResponse changeDonarApprovalToNotApproved() {
-		// TODO Auto-generated method stub
-		return null;
+	public ApiResponse changeDonarApprovalToNotApproved(Long donarId) {
+		 List<Medicine> medicines = medicineRepository.findByDonarId(donarId);
+
+		    if (medicines == null || medicines.isEmpty()) {
+		        return new ApiResponse(
+		                "No medicines found for donor id: " + donarId,
+		                "FAILED"
+		        );
+		    }
+
+		    boolean updated = false;
+
+		    for (Medicine medicine : medicines) {
+
+		        // ✅ STRICT condition
+		        if (medicine.getListingStatus() == ListingStatus.IsListed) {
+
+		            medicine.setListingStatus(ListingStatus.NotListed);
+		            updated = true;
+		        }
+		    }
+
+		    if (!updated) {
+		        return new ApiResponse(
+		                "No listed medicines found for donor id: " + donarId,
+		                "FAILED"
+		        );
+		    }
+
+		    medicineRepository.saveAll(medicines);
+
+		    return new ApiResponse(
+		            "Listing status changed to NOT_LISTED for donor id: " + donarId,
+		            "SUCCESS"
+		    );
 	}
 
 	@Override
-	public ApiResponse changeDonationStatusNgoToDonationProcessStarted() {
-		// TODO Auto-generated method stub
-		return null;
+	public ApiResponse changeDonationStatusNgoToDonationProcessStarted(Long medicineId, Long ngoId) {
+		ViewStatusNgo viewStatusNgo = viewStatusNgoRepository.findByMedicineIdAndNgoId(medicineId, ngoId) .orElseThrow(() ->
+        new RuntimeException( "No status found for medicineId: " + medicineId +  " and ngoId: " + ngoId));
+
+		viewStatusNgo.setDonarapproval(DonarApproval.Donar_NotApproved);
+		viewStatusNgo.setDonationStatusNgo(DonationStatusNgo.DonationProcessNotStarted);
+		
+		viewStatusNgoRepository.save(viewStatusNgo);
+		
+		return new ApiResponse( "Donation process started and donor approved successfully","SUCCESS");
 	}
 
 	@Override
-	public ApiResponse changeDonationStatusNgoToDonationProcessNotStarted() {
-		// TODO Auto-generated method stub
-		return null;
+	public ApiResponse changeDonationStatusNgoToDonationProcessNotStarted( Long medicineId, Long ngoId) {
+		 ViewStatusNgo viewStatusNgo =
+		            viewStatusNgoRepository.findByMedicineIdAndNgoId(medicineId, ngoId)
+		                    .orElseThrow(() ->new RuntimeException("No status found for medicineId: " + medicineId +" and ngoId: " + ngoId));
+
+		    viewStatusNgo.setDonarapproval(DonarApproval.Donar_Approved);
+		    viewStatusNgo.setDonationStatusNgo(
+		            DonationStatusNgo.DonationProcessStarted
+		    );
+		    viewStatusNgoRepository.save(viewStatusNgo);
+
+		    if (donationsRepository.existsByMedicineId(medicineId)) {
+		        return new ApiResponse( "Donation already exists for this medicine","FAILED");
+		    }
+
+		    Donations donation = new Donations();
+		    donation.setMedicine(viewStatusNgo.getMedicine());
+		    donation.setNgo(viewStatusNgo.getNgo());
+		    donation.setDonar(viewStatusNgo.getMedicine().getDonar());
+		    donation.setDonationstatus(DonationStatusDon.Pending); // stored as tinyint = 1
+
+		    donationsRepository.save(donation);
+
+		    return new ApiResponse( "Donation process started and donation entry created successfully","SUCCESS" );
 	}
 
 	@Override
 	public ApiResponse addToViewStatusNgo(ViewStatusDto viewstatusdto) {
-		// TODO Auto-generated method stub
-		return null;
+		   if (viewstatusdto == null ||
+		            viewstatusdto.getMedicineId() == null ||
+		            viewstatusdto.getNgoId() == null) {
+
+		            return new ApiResponse( "Invalid data: NGO or Medicine is missing","FAILED");
+		        }
+
+		        Long ngoId = viewstatusdto.getNgoId();
+		        Long medicineId = viewstatusdto.getMedicineId();
+
+		        // 1️⃣ Check if already exists (medicine_id is UNIQUE)
+		        if (viewStatusNgoRepository.existsByMedicineIdAndNgoId(medicineId, ngoId)) {
+
+		            return new ApiResponse( "View status already exists for this NGO and Medicine","FAILED");
+		        }
+		        
+		        Ngo ngo = ngoRepository.findById(ngoId).orElseThrow(() -> new RuntimeException("Ngo not found"));
+		        Medicine medicine = medicineRepository.findById(medicineId).orElseThrow(() -> new RuntimeException("Medicine not found"));
+
+		        // 2️⃣ Create entity
+		        ViewStatusNgo viewStatusNgo = new ViewStatusNgo();
+		        viewStatusNgo.setNgo(ngo);
+		        viewStatusNgo.setMedicine(medicine);
+
+		        // defaults are already set in entity, but explicit is safer
+		        viewStatusNgo.setDonarapproval(DonarApproval.Donar_NotApproved);
+		        viewStatusNgo.setDonationStatusNgo(
+		                DonationStatusNgo.DonationProcessNotStarted
+		        );
+
+		        // 3️⃣ Save
+		        viewStatusNgoRepository.save(viewStatusNgo);
+
+		        return new ApiResponse( "View status created successfully","SUCCESS" );
 	}
 
     @Override

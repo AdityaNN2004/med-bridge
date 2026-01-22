@@ -9,13 +9,17 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.medibridge.dtos.AddressDto;
+import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.ListedMedicineInAreaDto;
 import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ServiceAreaDto;
+import com.medibridge.dtos.ViewStatusDto;
 import com.medibridge.entities.ngo.Ngo;
 import com.medibridge.entities.ngo.ServiceArea;
 
 import com.medibridge.service.NgoService;
+
+import jakarta.validation.Valid;
 //http://localhost:5173/ngo/register
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
@@ -70,5 +74,51 @@ public class NgoController {
     }
     
   
+    @PutMapping("/donor/{donarId}/approve")
+    public ResponseEntity<ApiResponse> approveDonor(@PathVariable Long donarId) {
+
+        ApiResponse response =
+                ngoService.changeDonarApprovalToApproved(donarId);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    
+    @PutMapping("/donor/{donarId}/reject")
+    public ResponseEntity<ApiResponse> rejectDonor(  @PathVariable Long donarId) {
+
+        ApiResponse response =
+                ngoService.changeDonarApprovalToNotApproved(donarId);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    
+    @PutMapping("/donation/startprocess")
+    public ResponseEntity<ApiResponse> startDonationProcess(@RequestParam Long medicineId, @RequestParam Long ngoId) {
+
+        ApiResponse response =
+                ngoService.changeDonationStatusNgoToDonationProcessStarted( medicineId, ngoId);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    
+    @PutMapping("/donation/stoptprocess")
+    public ResponseEntity<ApiResponse> stopDonationProcess(@RequestParam Long medicineId, @RequestParam Long ngoId) {
+
+        ApiResponse response =
+                ngoService.changeDonationStatusNgoToDonationProcessNotStarted(
+                        medicineId, ngoId);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/addToViewStatusNgo")
+    public ResponseEntity<ApiResponse> addToViewStatusNgo( @Valid @RequestBody ViewStatusDto dto) {
+
+        ApiResponse response = ngoService.addToViewStatusNgo(dto);
+        return ResponseEntity.ok(response);
+    }
+    
     
 }
