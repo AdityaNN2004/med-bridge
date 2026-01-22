@@ -1,5 +1,6 @@
 package com.medibridge.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,9 +24,12 @@ public interface DonarRepository extends JpaRepository<Donar, Long> {
    @Query("SELECT a FROM Address a WHERE a.donar.id = :donarId AND a.isActive = true")
    Address findActiveAddressByDonarId(@Param("donarId") Long donarId);
 
+   @Query("SELECT a FROM Address a WHERE a.isActive = true")
+   List<Address> findAllActiveAddress();
+
+   
    @Modifying
    @Query(value="UPDATE address SET is_active = 0 ",nativeQuery=true)
-  // int inActiveAddress(@Param("donarId") Long donar_id);
    int inActiveAddress();
    
    @Modifying

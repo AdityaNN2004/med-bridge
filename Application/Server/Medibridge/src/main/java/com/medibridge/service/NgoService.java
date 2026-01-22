@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.medibridge.dtos.ApiResponse;
+import com.medibridge.dtos.ListedMedicineInAreaDto;
+import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ServiceAreaDto;
 import com.medibridge.dtos.ViewStatusDto;
 import com.medibridge.entities.donar.Medicine;
@@ -34,5 +36,7 @@ public interface NgoService {
 	void saveServiceArea(Long ngoId, ServiceArea serviceArea);
     
 	ServiceAreaDto getServiceAreaOfNgo(Long Ngo_id);
+	
+	List<ListedMedicineInAreaDto> getListMedicinesInServiceRadius(Long Ngo_id);
 	
 }

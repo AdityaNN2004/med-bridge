@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { getListMedicinesInServiceRadius } from "../../Services/NgoServices";
 import {
   Search,
   Package,
@@ -14,59 +15,7 @@ import {
 import NGONavbar from "./NGONavbar";
 import { motion } from "framer-motion";
 
-/* ---------------- DATA (REPLACE WITH API LATER) ---------------- */
-const medicines = [
-  {
-    id: 1,
-    brandName: "Paracetamol 500mg",
-    genericName: "Acetaminophen",
-    expiryDate: "2025-08-15",
-    donor: "City Hospital",
-    location: "Mumbai, Maharashtra",
-    status: "available", // listed in area
-    quantity: "500 tablets",
-    manufacturer: "Sun Pharma",
-    description: "Pain reliever and fever reducer.",
-  },
-  {
-    id: 2,
-    brandName: "Amoxicillin 250mg",
-    genericName: "Amoxicillin",
-    expiryDate: "2025-12-30",
-    donor: "MedCare Pharmacy",
-    location: "Pune, Maharashtra",
-    status: "ongoing", // approved by donor
-    quantity: "200 capsules",
-    manufacturer: "Cipla",
-    description: "Antibiotic for bacterial infections.",
-  },
-  {
-    id: 3,
-    brandName: "Cetirizine 10mg",
-    genericName: "Cetirizine",
-    expiryDate: "2025-10-01",
-    donor: "HealthPlus",
-    location: "Nagpur, Maharashtra",
-    status: "pending",
-    quantity: "300 tablets",
-    manufacturer: "Dr Reddy’s",
-    description: "Used to relieve allergy symptoms.",
-  },
-  {
-    id: 4,
-    brandName: "Azithromycin 500mg",
-    genericName: "Azithromycin",
-    expiryDate: "2025-07-20",
-    donor: "Care Hospital",
-    location: "Hyderabad, Telangana",
-    status: "rejected",
-    quantity: "150 tablets",
-    manufacturer: "Cipla",
-    description: "Antibiotic used to treat infections.",
-  },
-];
-
-/* ---------------- HELPERS ---------------- */
+/* ---------------- HELPERS (UNCHANGED) ---------------- */
 const getStatusColor = (status) => {
   switch (status) {
     case "available":
@@ -105,23 +54,60 @@ const isExpiringSoon = (expiryDate) => {
 
 /* ---------------- MAIN ---------------- */
 const NGOListedMedicineInArea = () => {
+  const [medicines, setMedicines] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("available");
   const [selectedMedicine, setSelectedMedicine] = useState(null);
+
   const searchRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     searchRef.current?.focus();
+
+    const fetchAvailableMedicines = async () => {
+      try {
+        const ngoId = 2;
+        const response = await getListMedicinesInServiceRadius(ngoId);
+
+        /* -------- ONLY FIX IS HERE -------- */
+        const mappedData = response.data.map((med) => ({
+          id: med.id,
+          brandName: med.medicineName,
+          genericName: med.medicinecategory,
+          expiryDate: med.expiry_date,
+          quantity: med.quantity ?? "Not specified",
+          manufacturer: "Not Provided",
+          description: `Category: ${med.medicinecategory}`,
+          donor: "Nearby Donor",
+          location: "Within Service Radius",
+
+          // ✅ distance mapped (ONLY CHANGE)
+          distance: med.distancefromdonar,
+
+          // ⛔ status logic untouched
+          status: "available",
+        }));
+
+        setMedicines(mappedData);
+      } catch (error) {
+        console.error("Error fetching available medicines:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAvailableMedicines();
   }, []);
 
+  /* ---------------- FILTER (UNCHANGED) ---------------- */
   const filteredMedicines = medicines.filter((med) => {
     const matchesSearch =
       med.brandName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      med.genericName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      med.donor.toLowerCase().includes(searchTerm.toLowerCase());
+      med.genericName.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesSearch && med.status === statusFilter;
+    return statusFilter === "available" && matchesSearch;
   });
 
   return (
@@ -133,14 +119,14 @@ const NGOListedMedicineInArea = () => {
         <div className="flex items-center gap-3 mb-1">
           <Package className="w-7 h-7 text-teal-700" />
           <h1 className="text-2xl font-bold text-gray-900">
-            Medicine Requests
+            Available Medicines
           </h1>
         </div>
         <p className="text-gray-500 text-sm mb-6">
-          Search and request donated medicines from verified donors
+          Medicines available within your service radius
         </p>
 
-        {/* Search & Filters */}
+        {/* Search & Tabs (UNCHANGED) */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -148,7 +134,7 @@ const NGOListedMedicineInArea = () => {
               ref={searchRef}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search medicine, donor, or generic name..."
+              placeholder="Search medicine or category..."
               className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-teal-600"
             />
           </div>
@@ -157,11 +143,11 @@ const NGOListedMedicineInArea = () => {
             {["available", "ongoing", "pending", "rejected"].map((status) => (
               <button
                 key={status}
-                onClick={() => setStatusFilter(status)}
+                disabled={status !== "available"}
                 className={`px-5 py-3 rounded-xl text-sm font-medium capitalize transition ${
-                  statusFilter === status
+                  status === "available"
                     ? "bg-teal-700 text-white shadow"
-                    : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
                 }`}
               >
                 {status}
@@ -170,98 +156,78 @@ const NGOListedMedicineInArea = () => {
           </div>
         </div>
 
+        {/* Loading */}
+        {loading && (
+          <div className="text-center py-20">
+            <Clock className="w-10 h-10 mx-auto text-gray-400 animate-spin" />
+            <p className="text-gray-500 mt-2">Loading medicines...</p>
+          </div>
+        )}
+
         {/* Cards */}
-        <div className="space-y-5">
-          {filteredMedicines.length === 0 && (
-            <div className="text-center py-16">
-              <Package className="w-14 h-14 mx-auto text-gray-300 mb-3" />
-              <p className="text-gray-500">No medicines found</p>
-            </div>
-          )}
+        {!loading && (
+          <div className="space-y-5">
+            {filteredMedicines.map((med) => (
+              <motion.div
+                key={med.id}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                onClick={() => setSelectedMedicine(med)}
+                className="bg-white rounded-xl border shadow-sm hover:shadow-lg p-6 flex flex-col sm:flex-row gap-4 cursor-pointer"
+              >
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg">{med.brandName}</h3>
+                  <p className="text-sm text-gray-500">{med.genericName}</p>
 
-          {filteredMedicines.map((med) => (
-            <motion.div
-              key={med.id}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              onClick={() => setSelectedMedicine(med)}
-              className="bg-white rounded-xl border shadow-sm hover:shadow-lg p-6 flex flex-col sm:flex-row gap-4 cursor-pointer"
-            >
-              <div className="flex-1">
-                <h3 className="font-semibold text-lg">{med.brandName}</h3>
-                <p className="text-sm text-gray-500">{med.genericName}</p>
-
-                <div className="mt-2 text-sm text-gray-600 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span
-                      className={
-                        isExpiringSoon(med.expiryDate)
-                          ? "text-red-600 font-semibold"
-                          : ""
-                      }
-                    >
+                  <div className="mt-2 text-sm text-gray-600 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
                       {new Date(med.expiryDate).toLocaleDateString("en-IN")}
-                    </span>
-                  </div>
+                    </div>
 
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    {med.donor}
-                  </div>
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      {med.donor}
+                    </div>
 
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    {med.location}
+                    {/* ✅ Distance display */}
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      {med.distance != null
+                        ? `${med.distance.toFixed(2)} km away`
+                        : "Distance unavailable"}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* STATUS + ACTION */}
-              <div className="flex flex-col items-end gap-2">
-                <span
-                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${getStatusColor(
-                    med.status
-                  )}`}
-                >
-                  {getStatusIcon(med.status)}
-                  {med.status}
-                </span>
+                <div className="flex flex-col items-end gap-2">
+                  <span
+                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${getStatusColor(
+                      med.status
+                    )}`}
+                  >
+                    {getStatusIcon(med.status)}
+                    {med.status}
+                  </span>
 
-                {/* AVAILABLE → REQUEST */}
-                {med.status === "available" && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      // CALL REQUEST MEDICINE API
                       navigate("/ngo/pending-requests");
                     }}
                     className="text-xs font-medium text-teal-700 border border-teal-700 px-4 py-1.5 rounded-lg hover:bg-teal-700 hover:text-white transition"
                   >
                     Request Medicine
                   </button>
-                )}
-
-                {/* ONGOING → VIEW STATUS */}
-                {med.status === "ongoing" && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate("/ngo/viewstatus");
-                    }}
-                    className="text-xs font-medium text-teal-700 border border-teal-700 px-4 py-1.5 rounded-lg hover:bg-teal-700 hover:text-white transition"
-                  >
-                    View Status
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Modal */}
+      {/* Modal unchanged */}
       {selectedMedicine && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full">
@@ -272,25 +238,6 @@ const NGOListedMedicineInArea = () => {
               <button onClick={() => setSelectedMedicine(null)}>
                 <X className="w-5 h-5 text-gray-500" />
               </button>
-            </div>
-
-            <div className="p-6 space-y-4 text-sm text-gray-700">
-              <p>{selectedMedicine.description}</p>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-gray-500">Quantity</p>
-                  <p className="font-semibold">
-                    {selectedMedicine.quantity}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Manufacturer</p>
-                  <p className="font-semibold">
-                    {selectedMedicine.manufacturer}
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </div>

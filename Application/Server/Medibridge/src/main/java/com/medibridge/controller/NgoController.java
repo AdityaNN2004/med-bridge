@@ -1,6 +1,7 @@
 package com.medibridge.controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -8,13 +9,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.medibridge.dtos.AddressDto;
+import com.medibridge.dtos.ListedMedicineInAreaDto;
+import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ServiceAreaDto;
 import com.medibridge.entities.ngo.Ngo;
 import com.medibridge.entities.ngo.ServiceArea;
 
 import com.medibridge.service.NgoService;
 //http://localhost:5173/ngo/register
-@CrossOrigin(origins = "http://localhost:5174")
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/ngo")
 public class NgoController {
@@ -54,10 +57,10 @@ public class NgoController {
         return ResponseEntity.ok("Service area saved successfully");
     }
     
-    @GetMapping("/getservicearea/{ngoId}")
-    public ResponseEntity<?> getActiveAddressByDonar(@PathVariable Long ngoId) {
+    @GetMapping("/getlistmedicinesinserviceradius/{ngoId}")
+    public ResponseEntity<?> getListMedicinesInServiceRadius(@PathVariable Long ngoId) {
         
-        ServiceAreaDto result =  ngoService.getServiceAreaOfNgo(ngoId);
+        List<ListedMedicineInAreaDto> result =  ngoService.getListMedicinesInServiceRadius(ngoId);
                
         if (result == null) {
             return ResponseEntity.noContent().build();
@@ -65,5 +68,7 @@ public class NgoController {
 
         return ResponseEntity.ok(result);
     }
+    
+  
     
 }

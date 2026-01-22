@@ -285,5 +285,19 @@ public class DonarServiceImpl implements DonarService{
         }
 	}
 
+	@Override
+	public List<AddressDto> getListOfActiveAddress() {
+		List<Address> addresslist = donarRepository.findAllActiveAddress();
+		List<AddressDto> addressdtolist = new ArrayList();
+		
+		for(Address address : addresslist)
+		{
+			addressdtolist.add(modelMapper.map(address, AddressDto.class));
+		}
+		 return addressdtolist;
+	
+	  
+	}
+
 
 }

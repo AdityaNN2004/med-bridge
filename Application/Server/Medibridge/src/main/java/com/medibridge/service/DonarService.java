@@ -61,6 +61,8 @@ public interface DonarService {
 		List<MedicineCategoryPercentageDto> getMedicineCategoryPercentageByDonar(Long donarId);
 		
 		AddressDto getActiveDonarAddress(Long donar_id);
+		
+		List<AddressDto> getListOfActiveAddress();
 
 	//	void switchAddress(Long address_id, Long donar_id);
 		void switchAddress(Long address_id);

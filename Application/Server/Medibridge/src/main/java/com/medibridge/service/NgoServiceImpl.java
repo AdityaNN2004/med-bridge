@@ -1,23 +1,34 @@
 package com.medibridge.service;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.medibridge.dtos.AddressDto;
 import com.medibridge.dtos.ApiResponse;
+import com.medibridge.dtos.ListedMedicineInAreaDto;
+import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ServiceAreaDto;
 import com.medibridge.dtos.ViewStatusDto;
 import com.medibridge.entities.User;
 import com.medibridge.entities.userRole;
+import com.medibridge.entities.donar.Address;
 import com.medibridge.entities.donar.Medicine;
 import com.medibridge.entities.ngo.DocumentRegistration;
 import com.medibridge.entities.ngo.Ngo;
 import com.medibridge.entities.ngo.ServiceArea;
+import com.medibridge.repository.DonarRepository;
+import com.medibridge.repository.MedicineRepository;
 import com.medibridge.repository.NgoRepository;
 import com.medibridge.repository.UserRepository;
 
@@ -28,7 +39,13 @@ public class NgoServiceImpl implements NgoService{
     private NgoRepository ngoRepository;
 
     @Autowired
+   	private MedicineRepository medicineRepository ;
+    
+    @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private DonarRepository donarRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -138,5 +155,64 @@ public class NgoServiceImpl implements NgoService{
 		ServiceAreaDto serviceareadto = modelMapper.map(sevicearea, ServiceAreaDto.class);
 		return serviceareadto;
 	}
+
+	@Override
+	public List<ListedMedicineInAreaDto> getListMedicinesInServiceRadius(Long ngoId) {
+
+	    ServiceArea sa = ngoRepository.findServiceAreaByNgoId(ngoId);
+
+	    String ngoAddress = sa.getStreetAddress() + ", " + sa.getCity() + ", " + sa.getState() + ", " + sa.getZipCode() + ", India";
+	 
+
+	    List<Address> addressList = donarRepository.findAllActiveAddress();
+	    RestTemplate restTemplate = new RestTemplate();
+	    List<ListedMedicineInAreaDto> medicineDtolist = new ArrayList();
+
+	    for (Address address : addressList) {
+
+	        String donorAddress = address.getFullAddress() + ", " + address.getCity() + ", " + address.getState() + ", " + address.getPincode() + ", India";
+
+	        String url = "https://api.distancematrix.ai/maps/api/distancematrix/json?origins=" + URLEncoder.encode(ngoAddress, StandardCharsets.UTF_8) + "&destinations=" + URLEncoder.encode(donorAddress, StandardCharsets.UTF_8) + "&key=0isMFectINCLWIOYtTbiBcjuzDR6E2VKuX5PZi3y1bkx1WYlKQHcuyXnlFeSlqns";
+
+	        Map response = restTemplate.getForObject(url, Map.class);
+	   
+	        try {
+	            List rows = (List) response.get("rows");
+	            Map row0 = (Map) rows.get(0);
+	            List elements = (List) row0.get("elements");
+	            Map element0 = (Map) elements.get(0);
+
+	            if (!"OK".equals(element0.get("status"))) continue;
+
+	            Map distance = (Map) element0.get("distance");
+	            double distanceKm = ((Number) distance.get("value")).doubleValue() / 1000;
+
+	            System.out.println("DISTANCE KM => " + distanceKm);
+
+	            if (distanceKm <= sa.getServiceRadius()) {
+	            	List<Medicine> medicinelist = medicineRepository.findlistedMedicinesByDonar(address.getDonar().getId());
+	               for(Medicine medicine : medicinelist)
+	               {
+	            	   ListedMedicineInAreaDto listedmedicine =  modelMapper.map(medicine, ListedMedicineInAreaDto.class);
+	            	   listedmedicine.setDistancefromdonar(distanceKm);
+	            	   medicineDtolist.add(listedmedicine);
+	               }
+	            }
+
+	        } catch (Exception e) {
+	            System.out.println("Error parsing distance response");
+	        }
+	    }
+
+	    return medicineDtolist;
+	}
+
+
+
+	
+
+
+
+
 }
 
