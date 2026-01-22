@@ -19,7 +19,7 @@ import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.ListedMedicineInAreaDto;
 import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ServiceAreaDto;
-import com.medibridge.dtos.ViewStatusDto;
+import com.medibridge.dtos.ViewStatusDtoDonarId;
 import com.medibridge.entities.DonationStatusDon;
 import com.medibridge.entities.Donations;
 import com.medibridge.entities.User;
@@ -196,7 +196,7 @@ public class NgoServiceImpl implements NgoService{
 	}
 
 	@Override
-	public ApiResponse addToViewStatusNgo(ViewStatusDto viewstatusdto) {
+	public ApiResponse addToViewStatusNgo(ViewStatusDtoDonarId viewstatusdto) {
 		   if (viewstatusdto == null ||
 		            viewstatusdto.getMedicineId() == null ||
 		            viewstatusdto.getNgoId() == null) {
@@ -330,10 +330,166 @@ public class NgoServiceImpl implements NgoService{
 
 	            System.out.println("DISTANCE KM => " + distanceKm);
 
-	            if (distanceKm <= sa.getServiceRadius()) {
+	            if (distanceKm <= 800) {
 	            	
 	            	List<Medicine> medicinelist = medicineRepository.findlistedMedicinesByDonarAvailableToNgo(address.getDonar().getId());
 	            	System.out.println(medicinelist);
+	               for(Medicine medicine : medicinelist)
+	               {
+	            	   ListedMedicineInAreaDto listedmedicine =  modelMapper.map(medicine, ListedMedicineInAreaDto.class);
+	            	   listedmedicine.setDistancefromdonar(distanceKm);
+	            	   medicineDtolist.add(listedmedicine);
+	               }
+	            }
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
+
+	    return medicineDtolist;
+	}
+
+	@Override
+	public List<ListedMedicineInAreaDto> findPendingRequestMedicinesByNgoId(Long Ngo_id) {
+		  ServiceArea sa = ngoRepository.findServiceAreaByNgoId(Ngo_id);
+
+		    String ngoAddress = sa.getStreetAddress() + ", " + sa.getCity() + ", " + sa.getState() + ", " + sa.getZipCode() + ", India";
+		 
+
+		    List<Address> addressList = donarRepository.findAllActiveAddress();
+		    RestTemplate restTemplate = new RestTemplate();
+		    List<ListedMedicineInAreaDto> medicineDtolist = new ArrayList();
+
+		    for (Address address : addressList) {
+
+		        String donorAddress = address.getFullAddress() + ", " + address.getCity() + ", " + address.getState() + ", " + address.getPincode() + ", India";
+
+		        String url = "https://api.distancematrix.ai/maps/api/distancematrix/json?origins=" + URLEncoder.encode(ngoAddress, StandardCharsets.UTF_8) + "&destinations=" + URLEncoder.encode(donorAddress, StandardCharsets.UTF_8) + "&key=0isMFectINCLWIOYtTbiBcjuzDR6E2VKuX5PZi3y1bkx1WYlKQHcuyXnlFeSlqns";
+
+		        Map response = restTemplate.getForObject(url, Map.class);
+		   
+		        try {
+		            List rows = (List) response.get("rows");
+		            Map row0 = (Map) rows.get(0);
+		            List elements = (List) row0.get("elements");
+		            Map element0 = (Map) elements.get(0);
+
+		            if (!"OK".equals(element0.get("status"))) continue;
+
+		            Map distance = (Map) element0.get("distance");
+		            double distanceKm = ((Number) distance.get("value")).doubleValue() / 1000;
+
+		            System.out.println("DISTANCE KM => " + distanceKm);
+
+		            if (distanceKm <= 800) {
+		            	
+		            	List<Medicine> medicinelist = ngoRepository.findPendingRequestMedicines(Ngo_id ,address.getDonar().getId());
+//		            	System.out.println(medicinelist);
+		               for(Medicine medicine : medicinelist)
+		               {
+		            	   ListedMedicineInAreaDto listedmedicine =  modelMapper.map(medicine, ListedMedicineInAreaDto.class);
+		            	   listedmedicine.setDistancefromdonar(distanceKm);
+		            	   medicineDtolist.add(listedmedicine);
+		               }
+		            }
+
+		        } catch (Exception e) {
+		            e.printStackTrace();
+		        }
+		    }
+
+		    return medicineDtolist;
+	}
+
+	@Override
+	public List<ListedMedicineInAreaDto> findRejectedRequestMedicines(Long Ngo_id) {
+		ServiceArea sa = ngoRepository.findServiceAreaByNgoId(Ngo_id);
+
+	    String ngoAddress = sa.getStreetAddress() + ", " + sa.getCity() + ", " + sa.getState() + ", " + sa.getZipCode() + ", India";
+	 
+
+	    List<Address> addressList = donarRepository.findAllActiveAddress();
+	    RestTemplate restTemplate = new RestTemplate();
+	    List<ListedMedicineInAreaDto> medicineDtolist = new ArrayList();
+
+	    for (Address address : addressList) {
+
+	        String donorAddress = address.getFullAddress() + ", " + address.getCity() + ", " + address.getState() + ", " + address.getPincode() + ", India";
+
+	        String url = "https://api.distancematrix.ai/maps/api/distancematrix/json?origins=" + URLEncoder.encode(ngoAddress, StandardCharsets.UTF_8) + "&destinations=" + URLEncoder.encode(donorAddress, StandardCharsets.UTF_8) + "&key=0isMFectINCLWIOYtTbiBcjuzDR6E2VKuX5PZi3y1bkx1WYlKQHcuyXnlFeSlqns";
+
+	        Map response = restTemplate.getForObject(url, Map.class);
+	   
+	        try {
+	            List rows = (List) response.get("rows");
+	            Map row0 = (Map) rows.get(0);
+	            List elements = (List) row0.get("elements");
+	            Map element0 = (Map) elements.get(0);
+
+	            if (!"OK".equals(element0.get("status"))) continue;
+
+	            Map distance = (Map) element0.get("distance");
+	            double distanceKm = ((Number) distance.get("value")).doubleValue() / 1000;
+
+	            System.out.println("DISTANCE KM => " + distanceKm);
+
+	            if (distanceKm <= 800) {
+	            	
+	            	List<Medicine> medicinelist = ngoRepository.findRejectedRequestMedicines(Ngo_id ,address.getDonar().getId());
+//	            	System.out.println(medicinelist);
+	               for(Medicine medicine : medicinelist)
+	               {
+	            	   ListedMedicineInAreaDto listedmedicine =  modelMapper.map(medicine, ListedMedicineInAreaDto.class);
+	            	   listedmedicine.setDistancefromdonar(distanceKm);
+	            	   medicineDtolist.add(listedmedicine);
+	               }
+	            }
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
+
+	    return medicineDtolist;
+	}
+
+	@Override
+	public List<ListedMedicineInAreaDto> findOnGoingRequestMedicines(Long Ngo_id) {
+		ServiceArea sa = ngoRepository.findServiceAreaByNgoId(Ngo_id);
+
+	    String ngoAddress = sa.getStreetAddress() + ", " + sa.getCity() + ", " + sa.getState() + ", " + sa.getZipCode() + ", India";
+	 
+
+	    List<Address> addressList = donarRepository.findAllActiveAddress();
+	    RestTemplate restTemplate = new RestTemplate();
+	    List<ListedMedicineInAreaDto> medicineDtolist = new ArrayList();
+
+	    for (Address address : addressList) {
+
+	        String donorAddress = address.getFullAddress() + ", " + address.getCity() + ", " + address.getState() + ", " + address.getPincode() + ", India";
+
+	        String url = "https://api.distancematrix.ai/maps/api/distancematrix/json?origins=" + URLEncoder.encode(ngoAddress, StandardCharsets.UTF_8) + "&destinations=" + URLEncoder.encode(donorAddress, StandardCharsets.UTF_8) + "&key=0isMFectINCLWIOYtTbiBcjuzDR6E2VKuX5PZi3y1bkx1WYlKQHcuyXnlFeSlqns";
+
+	        Map response = restTemplate.getForObject(url, Map.class);
+	   
+	        try {
+	            List rows = (List) response.get("rows");
+	            Map row0 = (Map) rows.get(0);
+	            List elements = (List) row0.get("elements");
+	            Map element0 = (Map) elements.get(0);
+
+	            if (!"OK".equals(element0.get("status"))) continue;
+
+	            Map distance = (Map) element0.get("distance");
+	            double distanceKm = ((Number) distance.get("value")).doubleValue() / 1000;
+
+	            System.out.println("DISTANCE KM => " + distanceKm);
+
+	            if (distanceKm <= 800) {
+	            	
+	            	List<Medicine> medicinelist = ngoRepository.findOnGoingRequestMedicines(Ngo_id ,address.getDonar().getId());
+//	            	System.out.println(medicinelist);
 	               for(Medicine medicine : medicinelist)
 	               {
 	            	   ListedMedicineInAreaDto listedmedicine =  modelMapper.map(medicine, ListedMedicineInAreaDto.class);

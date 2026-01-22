@@ -14,7 +14,7 @@ import {
 // ---------- COMPONENT ----------
 function DonorProfile() {
   const navigate = useNavigate();
-  const donorId = 4; // TODO: make dynamic later
+  const donorId = 1; // TODO: make dynamic later
 
   const [donor, setDonor] = useState(null);
   const [addresses, setAddresses] = useState([]);

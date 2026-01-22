@@ -10,7 +10,7 @@ import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.ListedMedicineInAreaDto;
 import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ServiceAreaDto;
-import com.medibridge.dtos.ViewStatusDto;
+import com.medibridge.dtos.ViewStatusDtoDonarId;
 import com.medibridge.entities.donar.Medicine;
 import com.medibridge.entities.ngo.Ngo;
 import com.medibridge.entities.ngo.ServiceArea;
@@ -27,7 +27,7 @@ public interface NgoService {
     
     ApiResponse changeDonationStatusNgoToDonationProcessNotStarted(Long medicineId, Long ngoId);
     
-    ApiResponse addToViewStatusNgo(ViewStatusDto viewstatusdto);
+    ApiResponse addToViewStatusNgo(ViewStatusDtoDonarId viewstatusdto);
 
 	Ngo registerNGO(Ngo ngo);
 
@@ -38,5 +38,11 @@ public interface NgoService {
 	ServiceAreaDto getServiceAreaOfNgo(Long Ngo_id);
 	
 	List<ListedMedicineInAreaDto> getListMedicinesInServiceRadius(Long Ngo_id);
+	
+	List<ListedMedicineInAreaDto> findPendingRequestMedicinesByNgoId(Long Ngo_id);
+	
+	List<ListedMedicineInAreaDto> findRejectedRequestMedicines(Long Ngo_id);
+	
+	List<ListedMedicineInAreaDto> findOnGoingRequestMedicines(Long Ngo_id);
 	
 }

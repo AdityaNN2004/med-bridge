@@ -13,7 +13,7 @@ import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.ListedMedicineInAreaDto;
 import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ServiceAreaDto;
-import com.medibridge.dtos.ViewStatusDto;
+import com.medibridge.dtos.ViewStatusDtoDonarId;
 import com.medibridge.entities.ngo.Ngo;
 import com.medibridge.entities.ngo.ServiceArea;
 
@@ -114,11 +114,48 @@ public class NgoController {
     }
 
     @PostMapping("/addToViewStatusNgo")
-    public ResponseEntity<ApiResponse> addToViewStatusNgo( @RequestBody ViewStatusDto dto) {
+    public ResponseEntity<ApiResponse> addToViewStatusNgo( @RequestBody ViewStatusDtoDonarId dto) {
 
         ApiResponse response = ngoService.addToViewStatusNgo(dto);
         return ResponseEntity.ok(response);
     }
+    
+    @GetMapping("/findpendingrequestmedicinesbyngoid/{ngoId}")
+    public ResponseEntity<?> findPendingRequestMedicinesByNgoId(@PathVariable Long ngoId) {
+        
+        List<ListedMedicineInAreaDto> result =  ngoService.findPendingRequestMedicinesByNgoId(ngoId);
+               
+        if (result == null) {
+            return ResponseEntity.noContent().build();
+         }
+
+        return ResponseEntity.ok(result);
+    }
+    
+    @GetMapping("/findrejectedrequestmedicines/{ngoId}")
+    public ResponseEntity<?> findRejectedRequestMedicines(@PathVariable Long ngoId) {
+        
+        List<ListedMedicineInAreaDto> result =  ngoService.findRejectedRequestMedicines(ngoId);
+               
+        if (result == null) {
+            return ResponseEntity.noContent().build();
+         }
+
+        return ResponseEntity.ok(result);
+    }
+    
+    @GetMapping("/findongoingrequestmedicines/{ngoId}")
+    public ResponseEntity<?> findOnGoingRequestMedicines(@PathVariable Long ngoId) {
+        
+        List<ListedMedicineInAreaDto> result =  ngoService.findOnGoingRequestMedicines(ngoId);
+               
+        if (result == null) {
+            return ResponseEntity.noContent().build();
+         }
+
+        return ResponseEntity.ok(result);
+    }
+    
     
     
 }

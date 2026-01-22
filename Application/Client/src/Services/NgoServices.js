@@ -14,3 +14,14 @@ export const getListMedicinesInServiceRadius = (ngoid) =>
 export const RequestMedicine = (body) => {
   return axios.post(`${BASE_URL}/addToViewStatusNgo`, body);
 };
+
+export const FindOnGoingRequestMedicines = (ngoid) => {
+  return axios.get(`${BASE_URL}/findongoingrequestmedicines/${ngoid}`);
+};
+export const FindRejectedRequestMedicines = (ngoid) => {
+  return axios.get(`${BASE_URL}/findrejectedrequestmedicines/${ngoid}`);
+};
+
+export const FindPendingRequestMedicinesByNgoId = (ngoid) => {
+  return axios.get(`${BASE_URL}/findpendingrequestmedicinesbyngoid/${ngoid}`);
+};

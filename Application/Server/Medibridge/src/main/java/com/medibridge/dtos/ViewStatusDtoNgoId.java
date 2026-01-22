@@ -8,10 +8,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ViewStatusDto {
+public class ViewStatusDtoNgoId {
 
 //	@NotNull(message = "NGO ID is required")
-	private Long ngoId;
+	private Long donarId;
 	
 	//@NotNull(message = "Medicine ID is required")
 	private Long medicineId;

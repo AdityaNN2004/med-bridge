@@ -1,5 +1,5 @@
 package com.medibridge.entities.ngo;
 
 public enum DonarApproval {
-    Donar_Approved, Donar_NotApproved
+    Donar_Approved, Donar_NotApproved, Donar_Rejected
 }
