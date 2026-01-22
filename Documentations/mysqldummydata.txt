@@ -1,0 +1,111 @@
+drop database medibridge;
+
+use medibridge;
+
+INSERT INTO users
+(created_on, last_updated, email, is_active, mobile, password, user_role)
+VALUES
+('2026-01-20', NOW(6), 'donar_test@gmail.com', b'1', '9000000001', '$2a$10$donarpass', 'ROLE_DONAR'),
+('2026-01-20', NOW(6), 'ngo_test@help.org',   b'1', '9000000002', '$2a$10$ngopass',   'ROLE_NGO');
+
+
+
+INSERT INTO donars
+(created_on, last_updated, first_name, last_name, user_id)
+VALUES
+('2026-01-22', NOW(6), 'Ravi', 'Kumar', 1);
+
+
+INSERT INTO medicine
+(created_on, last_updated, donation_status, expiry_date,
+ listing_status, medicine_image, medicine_name,
+ medicinecategory, quantity, donar_id)
+VALUES
+-- ❌ Expired medicines
+('2025-10-01', NOW(6), 'NotAccepted', '2025-12-01',
+ 'NotListed', NULL, 'Expired Paracetamol 500mg',
+ 'PAINKILLER', '10 tablets', 1),
+
+('2025-09-15', NOW(6), 'NotAccepted', '2025-11-20',
+ 'NotListed', NULL, 'Old Amoxicillin 250mg',
+ 'ANTIBIOTIC', '6 capsules', 1),
+
+-- ⏳ About to expire (within ~3 months)
+('2026-01-15', NOW(6), 'Accepted', '2026-03-10',
+ 'IsListed', NULL, 'Ibuprofen 400mg',
+ 'ANTIINFLAMMATORY', '10 tablets', 1),
+
+('2026-01-16', NOW(6), 'Accepted', '2026-04-05',
+ 'IsListed', NULL, 'Pantoprazole 40mg',
+ 'ANTACID', '15 tablets', 1),
+
+-- 🟢 Long validity
+('2026-01-17', NOW(6), 'Accepted', '2027-06-30',
+ 'IsListed', NULL, 'Vitamin D3 Capsules',
+ 'VITAMIN_SUPPLEMENT', '30 capsules', 1);
+
+
+
+INSERT INTO address
+(created_on, last_updated, city, full_address,
+ is_active, pincode, state, donar_id)
+VALUES
+('2026-01-22', NOW(6), 'Nagpur',
+ 'Flat No 12, Shankar Nagar, Near Ram Nagar Square',
+ b'1', 440010, 'Maharashtra', 1),
+
+('2026-01-22', NOW(6), 'Nagpur',
+ 'Plot No 45, Manish Nagar, Near Airport Road',
+ b'0', 440015, 'Maharashtra', 1);
+
+
+INSERT INTO service_area
+(created_on, last_updated, city, collection_type, company_name,
+ district, landmark, primary_contact, service_radius,
+ state, street_address, zipcode)
+VALUES
+('2026-01-22', NOW(6), 'Nagpur', 'PICK_UP', 'Test Helping NGO',
+ 'Nagpur', 'Near Sitabuldi Metro Station', '9000000002', 15,
+ 'Maharashtra', 'Sitabuldi Main Road', '440001');
+
+ INSERT INTO document_registration
+(created_on, last_updated,
+ registration_certificate,
+ contact_person_id_proof,
+ tax_exemption_certificate)
+VALUES
+('2026-01-22', NOW(6),
+ 'ngo_registration_certificate.pdf',
+ 'authorized_person_aadhar.pdf',
+ 'tax_exemption_80G.pdf');
+
+INSERT INTO ngo
+(created_on, last_updated, organization_name, registration_number,
+ document_registration_id, service_area_id, user_id)
+VALUES
+('2026-01-22', NOW(6), 'Test Helping NGO', 'NGO-NAGPUR-001',
+ 1, 1, 2);
+
+INSERT INTO donations
+(created_on, last_updated, donationstatus, donar_id, medicine_id, ngo_id)
+VALUES
+-- ✅ Completed donation
+('2026-01-22', NOW(6), 'Completed', 1, 1, 1),
+
+-- ⏳ Pending donation
+('2026-01-22', NOW(6), 'Pending', 1, 2, 1),
+
+-- ❌ Discarded donation
+('2025-12-10', NOW(6), 'Discarded', 1, 3, 1);
+
+INSERT INTO viewstatus_ngo
+(created_on, last_updated, donarapproval, donation_status_ngo, medicine_id, ngo_id)
+VALUES
+-- For Completed donation (medicine_id = 1)
+('2026-01-22', NOW(6), 'Donar_Approved', 'DonationProcessStarted', 1, 1),
+
+-- For Pending donation (medicine_id = 2)
+('2026-01-22', NOW(6), 'Donar_Approved', 'DonationProcessNotStarted', 2, 1),
+
+-- For Discarded donation (medicine_id = 3)
+('2025-12-10', NOW(6), 'Donar_NotApproved', 'DonationProcessNotStarted', 3, 1);
