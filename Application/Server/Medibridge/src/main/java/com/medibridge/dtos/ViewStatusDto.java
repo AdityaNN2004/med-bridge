@@ -10,10 +10,10 @@ import lombok.Setter;
 @Setter
 public class ViewStatusDto {
 
-	@NotNull(message = "NGO ID is required")
+//	@NotNull(message = "NGO ID is required")
 	private Long ngoId;
 	
-	@NotNull(message = "Medicine ID is required")
+	//@NotNull(message = "Medicine ID is required")
 	private Long medicineId;
 	
 }

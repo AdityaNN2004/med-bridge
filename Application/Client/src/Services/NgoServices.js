@@ -10,3 +10,7 @@ export const getListMedicinesInServiceRadius = (ngoid) =>
 {
    return axios.get(`${BASE_URL}/getlistmedicinesinserviceradius/${ngoid}`);
 }
+
+export const RequestMedicine = (body) => {
+  return axios.post(`${BASE_URL}/addToViewStatusNgo`, body);
+};

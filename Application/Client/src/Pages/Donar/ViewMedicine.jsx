@@ -52,7 +52,7 @@ function ViewMedicine() {
           break;
         case "all":
         default:
-          response = await getAllMedicines();
+          response = await getAllUnListedMedicines();
       }
 
       const mapped =

@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getListMedicinesInServiceRadius } from "../../Services/NgoServices";
+import {
+  getListMedicinesInServiceRadius,
+  RequestMedicine,
+} from "../../Services/NgoServices";
 import {
   Search,
   Package,
@@ -15,7 +18,7 @@ import {
 import NGONavbar from "./NGONavbar";
 import { motion } from "framer-motion";
 
-/* ---------------- HELPERS (UNCHANGED) ---------------- */
+/* ---------------- HELPERS ---------------- */
 const getStatusColor = (status) => {
   switch (status) {
     case "available":
@@ -46,12 +49,6 @@ const getStatusIcon = (status) => {
   }
 };
 
-const isExpiringSoon = (expiryDate) => {
-  const today = new Date();
-  const expiry = new Date(expiryDate);
-  return (expiry - today) / (1000 * 60 * 60 * 24) <= 90;
-};
-
 /* ---------------- MAIN ---------------- */
 const NGOListedMedicineInArea = () => {
   const [medicines, setMedicines] = useState([]);
@@ -63,36 +60,30 @@ const NGOListedMedicineInArea = () => {
   const searchRef = useRef(null);
   const navigate = useNavigate();
 
+  const NGO_ID = 2; // later from JWT
+
   useEffect(() => {
     searchRef.current?.focus();
 
     const fetchAvailableMedicines = async () => {
       try {
-        const ngoId = 2;
-        const response = await getListMedicinesInServiceRadius(ngoId);
+        const response = await getListMedicinesInServiceRadius(NGO_ID);
 
-        /* -------- ONLY FIX IS HERE -------- */
         const mappedData = response.data.map((med) => ({
           id: med.id,
           brandName: med.medicineName,
           genericName: med.medicinecategory,
           expiryDate: med.expiry_date,
           quantity: med.quantity ?? "Not specified",
-          manufacturer: "Not Provided",
-          description: `Category: ${med.medicinecategory}`,
           donor: "Nearby Donor",
           location: "Within Service Radius",
-
-          // ✅ distance mapped (ONLY CHANGE)
           distance: med.distancefromdonar,
-
-          // ⛔ status logic untouched
           status: "available",
         }));
 
         setMedicines(mappedData);
       } catch (error) {
-        console.error("Error fetching available medicines:", error);
+        console.error("Error fetching medicines:", error);
       } finally {
         setLoading(false);
       }
@@ -101,13 +92,32 @@ const NGOListedMedicineInArea = () => {
     fetchAvailableMedicines();
   }, []);
 
-  /* ---------------- FILTER (UNCHANGED) ---------------- */
+  /* ---------------- REQUEST MEDICINE ---------------- */
+  const handleRequestMedicine = async (medicineId) => {
+    try {
+      const payload = {
+        ngoId: NGO_ID,
+        medicineId: medicineId,
+      };
+      console.log(payload);
+      await RequestMedicine(payload);
+       alert("Requeted SuccessFull");
+    } catch (error) {
+      console.error("Request failed:", error);
+      alert("Failed to request medicine ❌");
+    }
+  };
+
+  /* ---------------- FILTER ---------------- */
   const filteredMedicines = medicines.filter((med) => {
     const matchesSearch =
       med.brandName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       med.genericName.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return statusFilter === "available" && matchesSearch;
+    const matchesStatus =
+      statusFilter === "available" ? med.status === "available" : true;
+
+    return matchesSearch && matchesStatus;
   });
 
   return (
@@ -126,7 +136,7 @@ const NGOListedMedicineInArea = () => {
           Medicines available within your service radius
         </p>
 
-        {/* Search & Tabs (UNCHANGED) */}
+        {/* Search + STATUS BUTTONS (UNCHANGED) */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -143,11 +153,11 @@ const NGOListedMedicineInArea = () => {
             {["available", "ongoing", "pending", "rejected"].map((status) => (
               <button
                 key={status}
-                disabled={status !== "available"}
+                onClick={() => setStatusFilter(status)}
                 className={`px-5 py-3 rounded-xl text-sm font-medium capitalize transition ${
-                  status === "available"
+                  statusFilter === status
                     ? "bg-teal-700 text-white shadow"
-                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
                 {status}
@@ -172,8 +182,6 @@ const NGOListedMedicineInArea = () => {
                 key={med.id}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                onClick={() => setSelectedMedicine(med)}
                 className="bg-white rounded-xl border shadow-sm hover:shadow-lg p-6 flex flex-col sm:flex-row gap-4 cursor-pointer"
               >
                 <div className="flex-1">
@@ -191,7 +199,6 @@ const NGOListedMedicineInArea = () => {
                       {med.donor}
                     </div>
 
-                    {/* ✅ Distance display */}
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4" />
                       {med.distance != null
@@ -211,15 +218,17 @@ const NGOListedMedicineInArea = () => {
                     {med.status}
                   </span>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate("/ngo/pending-requests");
-                    }}
-                    className="text-xs font-medium text-teal-700 border border-teal-700 px-4 py-1.5 rounded-lg hover:bg-teal-700 hover:text-white transition"
-                  >
-                    Request Medicine
-                  </button>
+                  {med.status === "available" && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRequestMedicine(med.id);
+                      }}
+                      className="text-xs font-medium text-teal-700 border border-teal-700 px-4 py-1.5 rounded-lg hover:bg-teal-700 hover:text-white transition"
+                    >
+                      Request Medicine
+                    </button>
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -227,7 +236,7 @@ const NGOListedMedicineInArea = () => {
         )}
       </div>
 
-      {/* Modal unchanged */}
+      {/* Modal */}
       {selectedMedicine && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full">

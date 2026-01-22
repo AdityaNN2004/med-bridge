@@ -207,7 +207,7 @@ public class NgoServiceImpl implements NgoService{
 		        Long ngoId = viewstatusdto.getNgoId();
 		        Long medicineId = viewstatusdto.getMedicineId();
 
-		        // 1️⃣ Check if already exists (medicine_id is UNIQUE)
+//		         1️⃣ Check if already exists (medicine_id is UNIQUE)
 		        if (viewStatusNgoRepository.existsByMedicineIdAndNgoId(medicineId, ngoId)) {
 
 		            return new ApiResponse( "View status already exists for this NGO and Medicine","FAILED");
@@ -331,7 +331,9 @@ public class NgoServiceImpl implements NgoService{
 	            System.out.println("DISTANCE KM => " + distanceKm);
 
 	            if (distanceKm <= sa.getServiceRadius()) {
-	            	List<Medicine> medicinelist = medicineRepository.findlistedMedicinesByDonar(address.getDonar().getId());
+	            	
+	            	List<Medicine> medicinelist = medicineRepository.findlistedMedicinesByDonarAvailableToNgo(address.getDonar().getId());
+	            	System.out.println(medicinelist);
 	               for(Medicine medicine : medicinelist)
 	               {
 	            	   ListedMedicineInAreaDto listedmedicine =  modelMapper.map(medicine, ListedMedicineInAreaDto.class);
@@ -341,7 +343,7 @@ public class NgoServiceImpl implements NgoService{
 	            }
 
 	        } catch (Exception e) {
-	            System.out.println("Error parsing distance response");
+	            e.printStackTrace();
 	        }
 	    }
 

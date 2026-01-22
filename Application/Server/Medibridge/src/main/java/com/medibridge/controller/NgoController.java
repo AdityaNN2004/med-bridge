@@ -114,7 +114,7 @@ public class NgoController {
     }
 
     @PostMapping("/addToViewStatusNgo")
-    public ResponseEntity<ApiResponse> addToViewStatusNgo( @Valid @RequestBody ViewStatusDto dto) {
+    public ResponseEntity<ApiResponse> addToViewStatusNgo( @RequestBody ViewStatusDto dto) {
 
         ApiResponse response = ngoService.addToViewStatusNgo(dto);
         return ResponseEntity.ok(response);
