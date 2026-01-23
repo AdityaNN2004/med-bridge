@@ -26,6 +26,7 @@ import com.medibridge.service.DonarService;
 import io.micrometer.core.ipc.http.HttpSender.Response;
 
 import com.medibridge.dtos.MedicineDto;
+import com.medibridge.dtos.NgoWithServiceAreaDto;
 import com.medibridge.dtos.RequestedNgos;
 import com.medibridge.dtos.AddressDto;
 import com.medibridge.dtos.ApiResponse;
@@ -329,6 +330,16 @@ public class DonarController {
   public ResponseEntity<?> isMedicineDonationInProgress(  @PathVariable Long medicine_id) {
 
       Long response = donarService.isMedicineDonationInProgress( medicine_id );
+
+      return ResponseEntity.ok(response);
+  }
+  
+  
+  
+  @GetMapping("getngodetailsfoarequestedmedicinebyMedicineidapprovedbydonar/{medicine_id}")
+  public ResponseEntity<?> getNgoDetailsForARequestedMedicineByMedicineIdApprovedByDonar(  @PathVariable Long medicine_id) {
+
+	  NgoWithServiceAreaDto response = donarService.getNgoDetailsForARequestedMedicineByMedicineIdApprovedByDonar( medicine_id );
 
       return ResponseEntity.ok(response);
   }

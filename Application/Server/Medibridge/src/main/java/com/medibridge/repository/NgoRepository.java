@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.medibridge.dtos.DonorWithAddressDto;
+import com.medibridge.dtos.NgoWithServiceAreaDto;
 import com.medibridge.entities.donar.Address;
 import com.medibridge.entities.donar.Medicine;
 import com.medibridge.entities.ngo.Ngo;
@@ -34,10 +36,17 @@ public interface NgoRepository extends JpaRepository<Ngo, Long> {
 
 
     @Query(value="SELECT m.medicinecategory,COUNT(*) FROM donations d INNER JOIN medicine m WHERE m.medicine_id = d.medicine_id AND d.donationstatus=\"completed\" AND d.ngo_id=:ngoId  GROUP BY medicinecategory;",nativeQuery = true)
-       List<Object[]> countMedicinesByCategoryForNgo(@Param("ngoId") Long ngo_id);
+    List<Object[]> countMedicinesByCategoryForNgo(@Param("ngoId") Long ngo_id);
        
-       @Query(value="SELECT COUNT(*)  FROM donations WHERE donationstatus=\"completed\" AND ngo_id=:ngoId ",nativeQuery = true)
-       int getTotalMedicines(@Param("ngoId") Long ngo_id);
+    @Query(value="SELECT COUNT(*)  FROM donations WHERE donationstatus=\"completed\" AND ngo_id=:ngoId ",nativeQuery = true)
+    int getTotalMedicines(@Param("ngoId") Long ngo_id);
+    
+    @Query("SELECT new com.medibridge.dtos.NgoWithServiceAreaDto(n.id, n.organizationName, n.registrationNumber, s.companyName, s.streetAddress, s.landMark, s.city, s.district, s.state, s.zipCode, s.primaryContact, s.serviceRadius) FROM Ngo n JOIN n.serviceArea s WHERE n.id = :ngoId")
+    NgoWithServiceAreaDto getNgoWithServiceAreaByNgoId(@Param("ngoId") Long ngoId);
+    
+    @Query("SELECT new com.medibridge.dtos.DonorWithAddressDto(d.id, d.firstName, d.lastName, a.id, a.fullAddress, a.city, a.state, a.pincode) FROM ViewStatusNgo v JOIN v.medicine m JOIN m.donar d JOIN Address a ON a.donar.id = d.id WHERE v.ngo.id = :ngoId AND m.id = :medicineId AND v.donarapproval = 'Donar_Approved' AND v.donationStatusNgo = 'DonationProcessStarted' AND a.isActive = true")
+    DonorWithAddressDto getDonorWithAddressByNgoAndMedicine(@Param("ngoId") Long ngoId, @Param("medicineId") Long medicineId);
+
 
 }
 

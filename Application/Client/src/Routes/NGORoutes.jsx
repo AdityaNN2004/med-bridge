@@ -22,6 +22,6 @@ export const NGORoutes = (
     <Route path="/ngo/review" element={<VerifcationUnderReview />} />
     <Route path="/ngo/login" element={<NGOLogin />} />
      <Route path="/ngo/chatbot" element={<NGOChatBot />} />
-      <Route path="/ngo/viewstatus" element={<NgoViewStatus />} />
+      <Route path="/ngo/viewstatus/:id" element={<NgoViewStatus />} />
   </>
 );

@@ -15,6 +15,7 @@ import jakarta.transaction.Transactional;
 import com.medibridge.custom_exceptions.ApiException;
 import com.medibridge.custom_exceptions.ResourceNotFoundException;
 import com.medibridge.dtos.MedicineDto;
+import com.medibridge.dtos.NgoWithServiceAreaDto;
 import com.medibridge.dtos.RequestedNgos;
 import com.medibridge.dtos.AddressDto;
 import com.medibridge.dtos.ApiResponse;
@@ -27,14 +28,20 @@ import com.medibridge.entities.donar.Donar;
 import com.medibridge.entities.donar.ListingStatus;
 import com.medibridge.entities.donar.Medicine;
 import com.medibridge.entities.donar.MedicineCategory;
+import com.medibridge.entities.ngo.Ngo;
+import com.medibridge.entities.ngo.ServiceArea;
 import com.medibridge.repository.DonarAddressRepository;
 import com.medibridge.repository.DonarRepository;
 import com.medibridge.repository.MedicineRepository;
+import com.medibridge.repository.NgoRepository;
 import com.medibridge.repository.ViewStatusNgoRepository;
 @Service
 @Transactional
 public class DonarServiceImpl implements DonarService{
    
+	
+	 @Autowired
+	    private NgoRepository ngoRepository;
     @Autowired
 	private MedicineRepository medicineRepository ;
     @Autowired
@@ -378,6 +385,13 @@ public class DonarServiceImpl implements DonarService{
 		medicine.setListingStatus(ListingStatus.IsListed);
 		medicineRepository.save(medicine);
 		return  new ApiResponse("Medicine ListingStatus Changed", "Success");
+	}
+
+	@Override
+	public NgoWithServiceAreaDto getNgoDetailsForARequestedMedicineByMedicineIdApprovedByDonar(Long medicine_id) {
+		Long ngo_id = viewStatusNgoRepository.getNgoIdForARequestedMedicineByMedicineIdWhichIsApprovedByDonar(medicine_id);
+		NgoWithServiceAreaDto ngowithservicearea = ngoRepository.getNgoWithServiceAreaByNgoId(ngo_id);
+		return ngowithservicearea;
 	}
 	
 

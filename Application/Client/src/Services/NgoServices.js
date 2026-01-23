@@ -30,3 +30,7 @@ export const getAllDonatedMedicinesByNgoId = (ngoid) => {
   return axios.get(`${BASE_URL}/getalldonatedmedicinesbyngoid/${ngoid}`);
 };
 
+export const getDonorWithAddressByNgoAndMedicineNative = (ngoid, medicine_id) => {
+  return axios.get(`${BASE_URL}/getdonorwithaddressbyngoandmedicinenative/${ngoid}/${medicine_id}`);
+};
+

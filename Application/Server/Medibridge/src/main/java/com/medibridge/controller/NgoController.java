@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.medibridge.dtos.AddressDto;
 import com.medibridge.dtos.ApiResponse;
+import com.medibridge.dtos.DonorWithAddressDto;
 import com.medibridge.dtos.ListedMedicineInAreaDto;
 import com.medibridge.dtos.MedicineCategoryPercentageDto;
 import com.medibridge.dtos.MedicineDto;
@@ -158,7 +159,14 @@ public class NgoController {
     return ResponseEntity.ok(medicinecategory);
     }
 
-   
+    @GetMapping("/getdonorwithaddressbyngoandmedicinenative/{ngo_id}/{medicine_id}")
+    public ResponseEntity<?> getDonorWithAddressByNgoAndMedicineNative(@PathVariable Long ngo_id, @PathVariable Long medicine_id){
+   	   
+    	DonorWithAddressDto donarwithaddress=ngoService.getDonorWithAddressByNgoAndMedicineNative(ngo_id,medicine_id);
+    
+    return ResponseEntity.ok(donarwithaddress);
+    }
+
 
     
 }

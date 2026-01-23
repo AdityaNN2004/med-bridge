@@ -231,11 +231,12 @@ const NGOListedMedicineInArea = () => {
                   {/* ✅ ONLY ADDITION */}
                   {med.status === "ongoing" && (
                     <button
-                      onClick={() => navigate("/ngo/viewstatus")}
+                      onClick={() => navigate(`/ngo/viewstatus/${med.id}`)}
                       className="text-xs border px-4 py-1.5 rounded-lg text-emerald-700 border-emerald-700 hover:bg-emerald-700 hover:text-white"
                     >
                       View Status
                     </button>
+
                   )}
                 </div>
               </motion.div>

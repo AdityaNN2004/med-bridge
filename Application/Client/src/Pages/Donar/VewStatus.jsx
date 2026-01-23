@@ -1,180 +1,121 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Phone, MapPin, Building } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Truck,
+  MapPin,
+  MessageCircle,
+} from "lucide-react";
 import DonorNavbar from "./DonorNavbar";
-import DonorChatBot from "../../Compoments/DonarChatbot";
 import RoutesMap from "../../Compoments/RoutesMap";
+import DonorChatBot from "../../Compoments/DonarChatbot";
 import { getMedicineDetails } from "../../Services/MedicineServices";
+import { getNgoDetailsForARequestedMedicineByMedicineIdApprovedByDonar } from "../../Services/DonarServices";
 
 function ViewStatus() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [medicine, setMedicine] = useState(null);
-  const [status, setStatus] = useState("Pending");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [ngo, setNgo] = useState(null);
+  const [status, setStatus] = useState("IN_TRANSIT");
 
   useEffect(() => {
-    fetchMedicineDetails();
-    // eslint-disable-next-line
+    loadData();
   }, [id]);
 
-  const fetchMedicineDetails = async () => {
-    try {
-      const response = await getMedicineDetails(id);
-      const data = response.data;
+  const loadData = async () => {
+    const medRes = await getMedicineDetails(id);
+    setMedicine(medRes.data);
 
-      setMedicine(data);
-
-      // 🔹 Map backend status → UI status
-      if (data?.donationStatus === "ACCEPTED") {
-        setStatus("Accepted");
-      } else if (data?.donationStatus === "REJECTED") {
-        setStatus("Not Accepted");
-      } else {
-        setStatus("Pending");
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Failed to load medicine details");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="text-center mt-24 text-gray-500">
-        Loading medicine details...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center mt-24 text-red-500">
-        {error}
-      </div>
-    );
-  }
-
-  if (!medicine) {
-    return (
-      <div className="text-center mt-24 text-gray-500">
-        Medicine not found
-      </div>
-    );
-  }
-
-  const statusColor = {
-    Accepted: "bg-green-100 text-green-700",
-    Pending: "bg-yellow-100 text-yellow-700",
-    "Not Accepted": "bg-red-100 text-red-700",
+    const ngoRes =
+      await getNgoDetailsForARequestedMedicineByMedicineIdApprovedByDonar(id);
+    setNgo(ngoRes.data);
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-100 min-h-screen">
       <DonorNavbar />
 
-      <div className="mt-24 max-w-7xl mx-auto px-6 py-6">
-        {/* Back */}
-        <button
-          className="flex items-center gap-2 text-indigo-600 font-medium mb-6 hover:underline"
-          onClick={() => navigate("/donor/listedmedicine")}
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Medicines
-        </button>
+      <div className="pt-20 px-4 max-w-[1600px] mx-auto">
+        {/* HEADER */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-full hover:bg-gray-200"
+            >
+              <ArrowLeft />
+            </button>
+            <h2 className="text-xl font-bold text-gray-800">
+              Tracking ID: MED-{id}
+            </h2>
+          </div>
 
-        {/* Medicine Card */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
-          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                {medicine.medicineName}
-              </h1>
-              <p className="text-sm text-gray-500 mt-1">
-                {medicine.quantity || medicine.numberOfUnits} units • Expires{" "}
-                {medicine.expiryDate}
+          <span className="px-4 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
+            In Transit
+          </span>
+        </div>
+
+        {/* MAIN GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* MAP SECTION */}
+          <div className="lg:col-span-8 bg-white rounded-xl shadow overflow-hidden relative">
+            <RoutesMap />
+
+            {/* Floating status */}
+            <div className="absolute top-4 left-4 bg-white shadow px-4 py-2 rounded-full flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+              <span className="text-sm font-medium">In Transit</span>
+            </div>
+          </div>
+
+          {/* RIGHT PANEL */}
+          <div className="lg:col-span-4 bg-white rounded-xl shadow flex flex-col">
+            {/* STEPPER */}
+            <div className="p-5 border-b">
+              <div className="flex items-center justify-between">
+                <Step active label="Order Placed" icon={<Check />} />
+                <Line />
+                <Step active label="In Transit" icon={<Truck />} />
+                <Line />
+                <Step label="Delivered" icon={<MapPin />} />
+              </div>
+
+              <p className="text-xs text-gray-500 mt-3">
+                Last updated 4 minutes ago
               </p>
             </div>
 
-            <span
-              className={`px-4 py-1 rounded-full text-sm font-semibold ${statusColor[status]}`}
-            >
-              {status}
-            </span>
-          </div>
-        </div>
-
-        {/* Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Map Section */}
-          <div className="bg-white rounded-2xl shadow-sm p-5">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  <MapPin size={18} className="text-indigo-600" />
-                  Live Route Tracking
-                </h2>
-                <p className="text-sm text-gray-500">
-                  Pickup → NGO delivery route
+            {/* NGO + MEDICINE INFO */}
+            <div className="p-5 border-b space-y-2">
+              <h3 className="font-semibold text-gray-800">Delivery Details</h3>
+              {ngo && (
+                <p className="text-sm text-gray-600">
+                  NGO: <span className="font-medium">{ngo.organizationName}</span>
                 </p>
-              </div>
-
-              <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">
-                Active
-              </span>
+              )}
+              {medicine && (
+                <p className="text-sm text-gray-600">
+                  Medicine:{" "}
+                  <span className="font-medium">{medicine.medicineName}</span>
+                </p>
+              )}
             </div>
 
-            <div className="h-[340px] rounded-xl overflow-hidden shadow-inner">
-              <RoutesMap />
-            </div>
-
-            <div className="flex justify-between items-center mt-4 px-2">
-              <div className="bg-gray-100 rounded-xl px-4 py-2 text-sm">
-                <p className="font-semibold text-gray-800">Distance</p>
-                <p className="text-gray-600">~ 4.5 km</p>
+            {/* LIVE UPDATES / CHAT */}
+            <div className="flex-1 flex flex-col">
+              <div className="p-4 border-b flex items-center gap-2">
+                <MessageCircle size={18} className="text-indigo-600" />
+                <h3 className="font-semibold text-indigo-600">
+                  Live Updates
+                </h3>
               </div>
 
-              <div className="bg-gray-100 rounded-xl px-4 py-2 text-sm">
-                <p className="font-semibold text-gray-800">ETA</p>
-                <p className="text-gray-600">~ 15 mins</p>
+              <div className="flex-1 overflow-hidden">
+                <DonorChatBot />
               </div>
-            </div>
-          </div>
-
-          {/* Right Section */}
-          <div className="space-y-6">
-            {/* NGO Details */}
-            <div className="bg-white rounded-2xl shadow-sm p-6">
-              <h3 className="text-lg font-semibold mb-4 text-gray-800">
-                NGO Details
-              </h3>
-
-              <div className="space-y-3 text-gray-700">
-                <p className="flex items-center gap-2">
-                  <Building size={16} />{" "}
-                  {medicine.ngoName || "Helping Hands NGO"}
-                </p>
-                <p className="flex items-center gap-2">
-                  <Phone size={16} />{" "}
-                  {medicine.ngoContact || "+91 98765 43210"}
-                </p>
-                <p className="flex items-center gap-2">
-                  <MapPin size={16} />{" "}
-                  {medicine.ngoAddress || "Pune, Maharashtra"}
-                </p>
-              </div>
-            </div>
-
-            {/* Chat */}
-            <div className="bg-white rounded-2xl shadow-sm p-4">
-              <h3 className="text-lg font-semibold mb-3 text-gray-800">
-                Chat & Updates
-              </h3>
-              <DonorChatBot />
             </div>
           </div>
         </div>
@@ -182,5 +123,30 @@ function ViewStatus() {
     </div>
   );
 }
+
+/* ---------- SMALL COMPONENTS ---------- */
+
+const Step = ({ active, label, icon }) => (
+  <div className="flex flex-col items-center text-center">
+    <div
+      className={`w-10 h-10 rounded-full flex items-center justify-center ${
+        active ? "bg-teal-500 text-white" : "bg-gray-200 text-gray-500"
+      }`}
+    >
+      {icon}
+    </div>
+    <p
+      className={`text-xs mt-2 ${
+        active ? "text-gray-800 font-medium" : "text-gray-400"
+      }`}
+    >
+      {label}
+    </p>
+  </div>
+);
+
+const Line = () => (
+  <div className="flex-1 h-[2px] bg-gray-300 mx-1"></div>
+);
 
 export default ViewStatus;

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.medibridge.dtos.ApiResponse;
+import com.medibridge.dtos.DonorWithAddressDto;
 import com.medibridge.dtos.ListedMedicineInAreaDto;
 import com.medibridge.dtos.MedicineCategoryPercentageDto;
 import com.medibridge.dtos.MedicineDto;
@@ -46,6 +47,7 @@ public interface NgoService {
 	ApiResponse changeDonationStatusNgoToDonationProcessStarted(Long medicineId, Long ngoId);
     
 	ApiResponse changeDonationStatusNgoToDonationProcessNotStarted(Long medicineId, Long ngoId);
-
+  
+	DonorWithAddressDto getDonorWithAddressByNgoAndMedicineNative( Long ngoId, Long medicineId);
 	
 }

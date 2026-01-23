@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.medibridge.dtos.MedicineDto;
+import com.medibridge.dtos.NgoWithServiceAreaDto;
 import com.medibridge.dtos.RequestedNgos;
 import com.medibridge.dtos.AddressDto;
 import com.medibridge.dtos.ApiResponse;
@@ -18,6 +19,7 @@ import com.medibridge.entities.donar.Address;
 import com.medibridge.entities.donar.Donar;
 import com.medibridge.entities.donar.Medicine;
 import com.medibridge.entities.donar.MedicineCategory;
+import com.medibridge.entities.ngo.Ngo;
 @Service
 public interface DonarService {
 		    
@@ -86,4 +88,6 @@ public interface DonarService {
 		 ApiResponse changeDonarApprovalToNotApproved(Long medicine_id , Long ngo_id);
 		
 		 Long isMedicineDonationInProgress(Long medicine_id);
+		 
+		 NgoWithServiceAreaDto getNgoDetailsForARequestedMedicineByMedicineIdApprovedByDonar(Long medicine_id);
 }
