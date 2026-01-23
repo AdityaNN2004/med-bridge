@@ -49,5 +49,7 @@ public interface NgoService {
 	ApiResponse changeDonationStatusNgoToDonationProcessNotStarted(Long medicineId, Long ngoId);
   
 	DonorWithAddressDto getDonorWithAddressByNgoAndMedicineNative( Long ngoId, Long medicineId);
-	
+
+
+	Long rejectedngos(Long medicine_id);
 }

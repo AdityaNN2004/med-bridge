@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.medibridge.dtos.DonorWithAddressDto;
 import com.medibridge.dtos.NgoWithServiceAreaDto;
@@ -47,6 +49,9 @@ public interface NgoRepository extends JpaRepository<Ngo, Long> {
     @Query("SELECT new com.medibridge.dtos.DonorWithAddressDto(d.id, d.firstName, d.lastName, a.id, a.fullAddress, a.city, a.state, a.pincode) FROM ViewStatusNgo v JOIN v.medicine m JOIN m.donar d JOIN Address a ON a.donar.id = d.id WHERE v.ngo.id = :ngoId AND m.id = :medicineId AND v.donarapproval = 'Donar_Approved' AND v.donationStatusNgo = 'DonationProcessStarted' AND a.isActive = true")
     DonorWithAddressDto getDonorWithAddressByNgoAndMedicine(@Param("ngoId") Long ngoId, @Param("medicineId") Long medicineId);
 
-
+    @Modifying
+    @Transactional
+    @Query(value="UPDATE viewstatus_ngo  SET donarapproval=\"Donar_Rejected\" WHERE ngo_id IN (SELECT ngo_id FROM (SELECT ngo_id FROM viewstatus_ngo WHERE donarapproval=\"Donar_NotApproved\" AND donation_status_ngo=\"DonationProcessNotStarted\" AND medicine_id=3)AS temp)\r\n",nativeQuery = true)
+    Long rejectedngo(@Param("medicineId") Long medicine_id);
 }
 

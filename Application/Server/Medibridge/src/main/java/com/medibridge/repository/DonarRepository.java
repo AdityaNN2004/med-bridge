@@ -42,4 +42,10 @@ public interface DonarRepository extends JpaRepository<Donar, Long> {
      
    @Query(value="SELECT COUNT(*) FROM medicine WHERE donar_id=:donarId",nativeQuery = true)
    int getAllMedicineCount(@Param("donarId") Long donar_id);
+   
+   @Query(value="SELECT count(*) FROM donations WHERE donar_id=:donarId AND donationstatus=\"completed\"",nativeQuery = true)
+   int completedDonations(@Param("donarId") Long donar_id);
+   
+   @Query(value="SELECT count(*) FROM viewstatus_ngo v INNER JOIN medicine m WHERE v.medicine_id = m.medicine_id AND v.donation_status_ngo = \"DonationProcessNotStarted\" AND v.donarapproval=\"Donar_NotApproved\" AND m.donar_id = :donarId",nativeQuery = true)
+   int requestedMedicinesCount(@Param("donarId") Long donar_id);
 }

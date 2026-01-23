@@ -2,17 +2,6 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:9090/donar";
 
-/* ---------- UTILITY (204 → 0) ---------- */
-const safeCount = async (apiCall) => {
-  try {
-    const response = await apiCall;
-    return response.status === 204 ? 0 : response.data;
-  } catch (error) {
-    console.error("Count API failed", error);
-    return 0;
-  }
-};
-
 /* ---------- DONOR ---------- */
 export const getDonor = (userid) => {
   return axios.get(`${BASE_URL}/getdonardetails/${userid}`);
@@ -52,29 +41,45 @@ export const getNgoDetailsForARequestedMedicineByMedicineIdApprovedByDonar = (
   );
 };
 
-/* ---------- MEDICINE COUNTS (FIXED FOR 204) ---------- */
-export const getAllMedicinesCount = async (donar_id) =>
-  safeCount(
-    axios.get(`${BASE_URL}/getAllMedicinesCount/${donar_id}`)
-  );
+/* ---------- MEDICINE COUNTS (SERVER 11.0) ---------- */
+export async function getAllMedicinesCount(donar_id) {
+  const url = `${BASE_URL}/getAllMedicinesCount/${donar_id}`;
+  const response = await axios.get(url);
+  return response.data;
+}
 
-export const getListedMedicinesCount = async (donar_id) =>
-  safeCount(
-    axios.get(`${BASE_URL}/getListedMedicinesCount/${donar_id}`)
-  );
+export async function getListedMedicinesCount(donar_id) {
+  const url = `${BASE_URL}/getListedMedicinesCount/${donar_id}`;
+  const response = await axios.get(url);
+  return response.data;
+}
 
-export const getUnListedMedicinesCount = async (donar_id) =>
-  safeCount(
-    axios.get(`${BASE_URL}/getUnListedMedicinesCount/${donar_id}`)
-  );
+export async function getUnListedMedicinesCount(donar_id) {
+  const url = `${BASE_URL}/getUnListedMedicinesCount/${donar_id}`;
+  const response = await axios.get(url);
+  return response.data;
+}
 
-export const getExpiredMedicinesCount = async (donar_id) =>
-  safeCount(
-    axios.get(`${BASE_URL}/getExpiredMedicinesCount/${donar_id}`)
-  );
+export async function getExpiredMedicinesCount(donar_id) {
+  const url = `${BASE_URL}/getExpiredMedicinesCount/${donar_id}`;
+  const response = await axios.get(url);
+  return response.data;
+}
 
-export const getExpiringSoonMedicinesCount = async (donar_id) =>
-  safeCount(
-    axios.get(`${BASE_URL}/getExpiringSoonMedicinesCount/${donar_id}`)
-  );
+export async function getExpiringSoonMedicinesCount(donar_id) {
+  const url = `${BASE_URL}/getExpiringSoonMedicinesCount/${donar_id}`;
+  const response = await axios.get(url);
+  return response.data;
+}
 
+export async function getCompletedDonations(donar_id) {
+  const url = `${BASE_URL}/completeddonations/${donar_id}`;
+  const response = await axios.get(url);
+  return response.data;
+}
+
+export async function getpendingRequests(donar_id) {
+  const url = `${BASE_URL}/requestedMedicines/${donar_id}`;
+  const response = await axios.get(url);
+  return response.data;
+}

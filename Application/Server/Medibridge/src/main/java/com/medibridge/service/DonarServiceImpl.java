@@ -393,6 +393,20 @@ public class DonarServiceImpl implements DonarService{
 		NgoWithServiceAreaDto ngowithservicearea = ngoRepository.getNgoWithServiceAreaByNgoId(ngo_id);
 		return ngowithservicearea;
 	}
+	@Override
+	public int completedDonations(Long donar_id) {
+		int completed=donarRepository.completedDonations(donar_id);
+		return completed;
+	}
+
+	@Override
+	public int requestedMedicinesCount(Long donar_id) {
+		// TODO Auto-generated method stub
+		int requestedMedicinesCount=donarRepository.requestedMedicinesCount(donar_id);
+		return requestedMedicinesCount;
+	}
+
+	
 	
 
 }

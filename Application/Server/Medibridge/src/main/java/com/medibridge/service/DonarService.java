@@ -90,4 +90,9 @@ public interface DonarService {
 		 Long isMedicineDonationInProgress(Long medicine_id);
 		 
 		 NgoWithServiceAreaDto getNgoDetailsForARequestedMedicineByMedicineIdApprovedByDonar(Long medicine_id);
+
+		int completedDonations(Long donar_id);
+
+		int requestedMedicinesCount(Long donar_id);
+
 }

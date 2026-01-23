@@ -344,4 +344,23 @@ public class DonarController {
       return ResponseEntity.ok(response);
   }
   
+
+  @GetMapping("/completeddonations/{donar_id}")
+  public ResponseEntity<?> completedDonations(@PathVariable Long donar_id){
+	 int completedDonation = donarService.completedDonations(donar_id);
+	 if(completedDonation==0) {
+		 ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	 }
+	 return ResponseEntity.ok(completedDonation);
+  }
+  
+  @GetMapping("/requestedMedicines/{donar_id}")
+  public ResponseEntity<?> requestedMedicinesCount(@PathVariable Long donar_id){
+	 int requestedMedicinesCount= donarService.requestedMedicinesCount(donar_id);
+	 if(requestedMedicinesCount==0) {
+		 ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	 }
+	 return ResponseEntity.ok(requestedMedicinesCount);
+  }
+  
 }

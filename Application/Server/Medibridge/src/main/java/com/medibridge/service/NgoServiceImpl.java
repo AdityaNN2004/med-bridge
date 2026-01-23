@@ -480,6 +480,14 @@ public class NgoServiceImpl implements NgoService{
 
 
 
+
+	@Override
+	public Long rejectedngos(Long medicine_id) {
+		
+		return ngoRepository.rejectedngo(medicine_id);
+		
+	}
+
 	
 
 

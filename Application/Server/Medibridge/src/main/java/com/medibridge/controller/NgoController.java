@@ -168,5 +168,13 @@ public class NgoController {
     }
 
 
+    @PutMapping("/rejectedngos/{medicine_id}")
+    public ResponseEntity<?> rejectedNgos(@PathVariable Long medicine_id){
+    	Long count=ngoService.rejectedngos(medicine_id);
+    	
+    	return ResponseEntity.ok(count);
+    }
+
+
     
 }

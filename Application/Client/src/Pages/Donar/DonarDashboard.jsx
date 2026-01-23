@@ -27,7 +27,9 @@ import {
   getListedMedicinesCount,
   getUnListedMedicinesCount,
   getExpiredMedicinesCount,
-  getExpiringSoonMedicinesCount
+  getExpiringSoonMedicinesCount,
+  getCompletedDonations,
+  getpendingRequests
 } from "../../Services/DonarServices";
 
 function DonorDashboard() {
@@ -38,7 +40,9 @@ function DonorDashboard() {
     listed: 0,
     notListed: 0,
     expired: 0,
-    expiringSoon: 0
+    expiringSoon: 0,
+    completedDonation: 0,
+    pendingRequests: 0
   });
 
   useEffect(() => {
@@ -48,26 +52,33 @@ function DonorDashboard() {
   const fetchMedicineCounts = async () => {
     try {
       const donarId = 1; // replace later with auth user
+
       const [
         total,
         listed,
         unlisted,
         expired,
-        expiringSoon
+        expiringSoon,
+        completedDonation,
+        pendingRequests
       ] = await Promise.all([
         getAllMedicinesCount(donarId),
         getListedMedicinesCount(donarId),
         getUnListedMedicinesCount(donarId),
         getExpiredMedicinesCount(donarId),
-        getExpiringSoonMedicinesCount(donarId)
+        getExpiringSoonMedicinesCount(donarId),
+        getCompletedDonations(donarId),
+        getpendingRequests(donarId)
       ]);
 
       setStats({
-        total: total.data || 0,
-        listed: listed.data || 0,
-        notListed: unlisted.data || 0,
-        expired: expired.data || 0,
-        expiringSoon: expiringSoon.data || 0
+        total: total ?? 0,
+        listed: listed ?? 0,
+        notListed: unlisted ?? 0,
+        expired: expired ?? 0,
+        expiringSoon: expiringSoon ?? 0,
+        completedDonation: completedDonation ?? 0,
+        pendingRequests: pendingRequests ?? 0
       });
     } catch (error) {
       console.error("Error fetching medicine counts", error);
@@ -75,8 +86,8 @@ function DonorDashboard() {
   };
 
   const barChartData = [
-    { name: "Listed", value: stats.listed },
-    { name: "Not Listed", value: stats.notListed },
+    { name: "Pending Requests", value: stats.pendingRequests },
+    { name: "Completed", value: stats.completedDonation },
     { name: "Expired", value: stats.expired },
     { name: "Expiring Soon", value: stats.expiringSoon }
   ];
@@ -113,50 +124,19 @@ function DonorDashboard() {
         </div>
 
         {/* Stat Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
-          <StatCard
-            icon={<Package className="w-5 h-5 text-indigo-600" />}
-            title="Total Medicines"
-            value={stats.total}
-            accent="indigo"
-          />
-          <StatCard
-            icon={<CheckCircle className="w-5 h-5 text-green-600" />}
-            title="Listed"
-            value={stats.listed}
-            accent="green"
-          />
-          <StatCard
-            icon={<TrendingUp className="w-5 h-5 text-blue-600" />}
-            title="Not Listed"
-            value={stats.notListed}
-            accent="blue"
-          />
-          <StatCard
-            icon={<AlertTriangle className="w-5 h-5 text-orange-600" />}
-            title="Expiring Soon"
-            value={stats.expiringSoon}
-            accent="orange"
-          />
-          <StatCard
-            icon={<XCircle className="w-5 h-5 text-red-600" />}
-            title="Expired"
-            value={stats.expired}
-            accent="red"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 mb-12">
+          <StatCard icon={<Package className="w-5 h-5 text-indigo-600" />} title="Total Medicines" value={stats.total} accent="indigo" />
+          <StatCard icon={<CheckCircle className="w-5 h-5 text-green-600" />} title="Listed" value={stats.listed} accent="green" />
+          <StatCard icon={<TrendingUp className="w-5 h-5 text-blue-600" />} title="Not Listed" value={stats.notListed} accent="blue" />
+          <StatCard icon={<AlertTriangle className="w-5 h-5 text-orange-600" />} title="Expiring Soon" value={stats.expiringSoon} accent="orange" />
+          <StatCard icon={<XCircle className="w-5 h-5 text-red-600" />} title="Expired" value={stats.expired} accent="red" />
+          <StatCard icon={<CheckCircle className="w-5 h-5 text-green-600" />} title="Donations Completed" value={stats.completedDonation} accent="green" />
         </div>
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Bar Chart */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-1">
-              Medicine Distribution
-            </h2>
-            <p className="text-sm text-gray-500 mb-4">
-              Current status breakdown
-            </p>
-
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={barChartData}>
                 <XAxis dataKey="name" />
@@ -174,26 +154,11 @@ function DonorDashboard() {
 
           {/* Pie Chart */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-1">
-              Medicines Overview
-            </h2>
-            <p className="text-sm text-gray-500 mb-4">
-              Listed vs unlisted vs expired
-            </p>
-
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
-                <Pie
-                  data={pieChartData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  label
-                >
-                  {pieChartData.map((_, index) => (
-                    <Cell key={index} fill={COLORS[index]} />
+                <Pie data={pieChartData} dataKey="value" nameKey="name" outerRadius={100} label>
+                  {pieChartData.map((_, i) => (
+                    <Cell key={i} fill={COLORS[i]} />
                   ))}
                 </Pie>
                 <Legend />
@@ -207,7 +172,6 @@ function DonorDashboard() {
   );
 }
 
-/* 🔹 Stat Card (UI-only refinement) */
 const StatCard = ({ icon, title, value, accent }) => {
   const accentMap = {
     indigo: "bg-indigo-50",
@@ -218,12 +182,12 @@ const StatCard = ({ icon, title, value, accent }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-sm transition">
+    <div className="bg-white rounded-xl border border-gray-200 p-6">
       <div className={`inline-flex p-3 rounded-lg ${accentMap[accent]} mb-4`}>
         {icon}
       </div>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
-      <p className="text-sm text-gray-500 font-medium">{title}</p>
+      <p className="text-2xl font-bold">{value}</p>
+      <p className="text-sm text-gray-500">{title}</p>
     </div>
   );
 };
