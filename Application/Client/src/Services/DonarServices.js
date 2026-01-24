@@ -20,6 +20,11 @@ export const updateAddress = (addressId, payload) => {
   return axios.put(`${BASE_URL}/address/${addressId}`, payload);
 };
 
+
+export const getDonarAddress = (donarId) => {
+  return axios.get(`${BASE_URL}/getactiveaddress/${donarId}`);
+};
+
 export const makeAddressActive = (addressId) => {
   return axios.put(`${BASE_URL}/makeaddressactive/${addressId}`);
 };

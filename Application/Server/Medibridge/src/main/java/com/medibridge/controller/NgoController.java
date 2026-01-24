@@ -75,6 +75,18 @@ public class NgoController {
         return ResponseEntity.ok(result);
     }
     
+    @GetMapping("/getserviceareaofngo/{ngoId}")
+    public ResponseEntity<?> getServiceAreaOfNgo(@PathVariable Long ngoId) {
+        
+        ServiceAreaDto result =  ngoService.getServiceAreaOfNgo(ngoId);
+               
+        if (result == null) {
+            return ResponseEntity.noContent().build();
+         }
+
+        return ResponseEntity.ok(result);
+    }
+    
   
     @PutMapping("/donation/startprocess")
     public ResponseEntity<ApiResponse> startDonationProcess(@RequestParam Long medicineId, @RequestParam Long ngoId) {

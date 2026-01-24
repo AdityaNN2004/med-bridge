@@ -53,5 +53,7 @@ public interface NgoRepository extends JpaRepository<Ngo, Long> {
     @Transactional
     @Query(value="UPDATE viewstatus_ngo  SET donarapproval=\"Donar_Rejected\" WHERE ngo_id IN (SELECT ngo_id FROM (SELECT ngo_id FROM viewstatus_ngo WHERE donarapproval=\"Donar_NotApproved\" AND donation_status_ngo=\"DonationProcessNotStarted\" AND medicine_id=3)AS temp)\r\n",nativeQuery = true)
     Long rejectedngo(@Param("medicineId") Long medicine_id);
+    
+    
 }
 
