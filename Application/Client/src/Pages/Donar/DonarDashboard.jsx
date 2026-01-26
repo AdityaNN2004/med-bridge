@@ -11,8 +11,6 @@ import {
   Clock,
   ArrowUpRight,
   ArrowDownRight,
-  Bell,
-  Menu,
   User,
   LayoutDashboard,
   LogOut
@@ -41,6 +39,9 @@ import {
   getpendingRequests
 } from "../../Services/DonarServices";
 
+// Import JWT utility functions
+import { getDonarIdFromToken, isTokenExpired } from "../../utils/jwtUtils";
+
 function DonorDashboard() {
   const navigate = useNavigate();
   const location = window.location;
@@ -58,13 +59,31 @@ function DonorDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check if token exists and is valid
+    const token = localStorage.getItem('donorToken');
+    if (!token || isTokenExpired()) {
+      console.error('No valid token found, redirecting to login');
+      navigate('/donor/login');
+      return;
+    }
+
     fetchMedicineCounts();
-  }, []);
+  }, [navigate]);
 
   const fetchMedicineCounts = async () => {
     try {
       setLoading(true);
-      const donarId = 1; // replace later with auth user
+      
+      // Get donarId from token
+      const donarId = getDonarIdFromToken();
+      
+      if (!donarId) {
+        console.error('No donarId found in token');
+        navigate('/donor/login');
+        return;
+      }
+
+      console.log('Fetching data for Donar ID:', donarId);
 
       const [
         total,
@@ -95,6 +114,11 @@ function DonorDashboard() {
       });
     } catch (error) {
       console.error("Error fetching medicine counts", error);
+      // If error is due to authentication, redirect to login
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        localStorage.removeItem('donorToken');
+        navigate('/donor/login');
+      }
     } finally {
       setLoading(false);
     }
@@ -103,8 +127,8 @@ function DonorDashboard() {
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/');
+    localStorage.removeItem('donorToken');
+    navigate('/donor/login');
   };
 
   // Dynamic chart data based on backend stats
@@ -119,9 +143,8 @@ function DonorDashboard() {
     { name: "Listed", value: stats.listed },
     { name: "Not Listed", value: stats.notListed },
     { name: "Expired", value: stats.expired }
-  ].filter(item => item.value > 0); // Only show non-zero values
+  ].filter(item => item.value > 0);
 
-  // Generate trend data based on current stats
   const generateTrendData = () => {
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
     const currentTotal = stats.completedDonation;
@@ -134,7 +157,6 @@ function DonorDashboard() {
 
   const trendData = generateTrendData();
 
-  // Generate recent activity based on stats
   const recentActivity = [];
   
   if (stats.listed > 0) {
@@ -166,10 +188,9 @@ function DonorDashboard() {
 
   const COLORS = ["#10b981", "#3b82f6", "#ef4444"];
 
-  // Calculate percentage changes (mock calculation based on current vs previous period)
   const calculateChange = (current) => {
     if (current === 0) return { value: "0%", isPositive: true };
-    const mockChange = Math.floor(Math.random() * 30) - 10; // Random -10 to +20
+    const mockChange = Math.floor(Math.random() * 30) - 10;
     return {
       value: `${Math.abs(mockChange)}%`,
       isPositive: mockChange >= 0
@@ -189,7 +210,7 @@ function DonorDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Navbar - Integrated */}
+      {/* Navbar */}
       <nav className="fixed top-4 left-1/2 z-50 w-260 max-w-7xl -translate-x-1/2 bg-white/80 backdrop-blur-md border border-gray-200 rounded-full p-2 shadow-lg">
         <div className="flex items-center justify-center px-4 gap-2 overflow-x-auto scrollbar-hide">
           {/* LOGO */}
@@ -208,7 +229,7 @@ function DonorDashboard() {
             <button
               onClick={() => navigate('/donor/viewprofile')}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex-shrink-0 ${
-                isActive('/donor/profile')
+                isActive('/donor/viewprofile')
                   ? 'bg-indigo-600 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
@@ -296,7 +317,7 @@ function DonorDashboard() {
           </button>
         </div>
 
-        {/* Quick Stats - From Backend */}
+        {/* Quick Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
             icon={<Package className="w-6 h-6" />}
@@ -464,7 +485,7 @@ function DonorDashboard() {
             </ResponsiveContainer>
           </div>
 
-          {/* Recent Activity - From Backend Stats */}
+          {/* Recent Activity */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -501,7 +522,7 @@ function DonorDashboard() {
           </div>
         </div>
 
-        {/* Alert Cards - Based on Backend Data */}
+        {/* Alert Cards */}
         {(stats.expiringSoon > 0 || stats.expired > 0) && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             {stats.expiringSoon > 0 && (

@@ -30,7 +30,7 @@ public class JwtUtils {
     private long expTime;
     public SecretKey key; //symmetric secret key -- HMC_SHA256
   
-    @PostConstruct //This method is called once, automatically After Spring creates the bean
+    @PostConstruct //This method is called 	cally After Spring creates the bean
     public void myInit()
     {
     	key = Keys.hmacShaKeyFor(secretKey.getBytes());
@@ -38,7 +38,7 @@ public class JwtUtils {
     }
     
     //genenrate token
-     public String generateToken(User user)
+    public String generateToken(User user, Long entityId)
      {
 	    Date createdOnDate = new Date();
 	    Date expDate = new Date(createdOnDate.getTime() + expTime);
@@ -47,7 +47,7 @@ public class JwtUtils {
 	    		.issuedAt(createdOnDate) //set issued at
 	    		.expiration(expDate) //set exp date
 	    		//payload -- custom claims
-	    		.claims(Map.of("user_id", user.getId(),"role", user.getUserRole().name()))
+	    		.claims(Map.of("user_id", user.getId(),"role", user.getUserRole().name(), "entity_id", entityId))
 	    		.signWith(key)
 	    		.compact();  //generate token string
      }

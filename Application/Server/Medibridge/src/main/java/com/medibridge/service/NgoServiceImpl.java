@@ -23,7 +23,9 @@ import com.medibridge.dtos.DonorWithAddressDto;
 import com.medibridge.dtos.ListedMedicineInAreaDto;
 import com.medibridge.dtos.MedicineCategoryPercentageDto;
 import com.medibridge.dtos.MedicineDto;
+import com.medibridge.dtos.NgoDetailsDto;
 import com.medibridge.dtos.ServiceAreaDto;
+import com.medibridge.dtos.ServiceAreaUpdateDto;
 import com.medibridge.dtos.ViewStatusDtoDonarId;
 import com.medibridge.entities.DonationStatusDon;
 import com.medibridge.entities.Donations;
@@ -43,18 +45,25 @@ import com.medibridge.repository.DonarRepository;
 import com.medibridge.repository.DonationsRepository;
 import com.medibridge.repository.MedicineRepository;
 import com.medibridge.repository.NgoRepository;
+import com.medibridge.repository.ServiceAreaRepository;
 import com.medibridge.repository.UserRepository;
 import com.medibridge.repository.ViewStatusNgoRepository;
 
 @Service
 public class NgoServiceImpl implements NgoService{
 
+	
+	private static final String GOOGLE_DISTANCE_MATRIX_API_KEY = "AIzaSyC4g6WxdDCx7UoDKC0mF9c0-Tyx6hjehOs";
+//	private static final String GOOGLE_DISTANCE_MATRIX_API_KEY ="";
+	private static final double SERVICE_RADIUS_KM = 80; 
     @Autowired
     private NgoRepository ngoRepository;
     
     @Autowired
     private ViewStatusNgoRepository viewStatusNgoRepository;
     
+    @Autowired
+    private ServiceAreaRepository serviceRepository;
    
     @Autowired
    	private MedicineRepository medicineRepository ;
@@ -228,214 +237,198 @@ public class NgoServiceImpl implements NgoService{
 		return serviceareadto;
 	}
 
+
+	
+	private Double getDistanceInKm(String origin, String destination, RestTemplate restTemplate) {
+
+	    try {
+	        String url =
+	                "https://maps.googleapis.com/maps/api/distancematrix/json" +
+	                "?origins=" + URLEncoder.encode(origin, StandardCharsets.UTF_8) +
+	                "&destinations=" + URLEncoder.encode(destination, StandardCharsets.UTF_8) +
+	                "&key=" + GOOGLE_DISTANCE_MATRIX_API_KEY;
+
+	        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+
+	        if (response == null || !"OK".equals(response.get("status")))
+	            return null;
+
+	        List<Map<String, Object>> rows =
+	                (List<Map<String, Object>>) response.get("rows");
+	        if (rows.isEmpty()) return null;
+
+	        Map<String, Object> row0 = rows.get(0);
+	        List<Map<String, Object>> elements =
+	                (List<Map<String, Object>>) row0.get("elements");
+	        if (elements.isEmpty()) return null;
+
+	        Map<String, Object> element0 = elements.get(0);
+	        if (!"OK".equals(element0.get("status"))) return null;
+
+	        Map<String, Object> distance =
+	                (Map<String, Object>) element0.get("distance");
+
+	        return ((Number) distance.get("value")).doubleValue() / 1000;
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return null;
+	    }
+	}
+
 	@Override
 	public List<ListedMedicineInAreaDto> getListMedicinesInServiceRadius(Long ngoId) {
 
 	    ServiceArea sa = ngoRepository.findServiceAreaByNgoId(ngoId);
 
-	    String ngoAddress = sa.getStreetAddress() + ", " + sa.getCity() + ", " + sa.getState() + ", " + sa.getZipCode() + ", India";
-	 
+	    String ngoAddress =
+	            sa.getStreetAddress() + ", " +
+	            sa.getCity() + ", " +
+	            sa.getState() + ", " +
+	            sa.getZipCode() + ", India";
 
 	    List<Address> addressList = donarRepository.findAllActiveAddress();
 	    RestTemplate restTemplate = new RestTemplate();
-	    List<ListedMedicineInAreaDto> medicineDtolist = new ArrayList();
+
+	    List<ListedMedicineInAreaDto> result = new ArrayList<>();
 
 	    for (Address address : addressList) {
 
-	        String donorAddress = address.getFullAddress() + ", " + address.getCity() + ", " + address.getState() + ", " + address.getPincode() + ", India";
+	        String donorAddress =
+	                address.getFullAddress() + ", " +
+	                address.getCity() + ", " +
+	                address.getState() + ", " +
+	                address.getPincode() + ", India";
 
-	        String url = "https://api.distancematrix.ai/maps/api/distancematrix/json?origins=" + URLEncoder.encode(ngoAddress, StandardCharsets.UTF_8) + "&destinations=" + URLEncoder.encode(donorAddress, StandardCharsets.UTF_8) + "&key=0isMFectINCLWIOYtTbiBcjuzDR6E2VKuX5PZi3y1bkx1WYlKQHcuyXnlFeSlqns";
+	        Double distanceKm = getDistanceInKm(ngoAddress, donorAddress, restTemplate);
 
-	        Map response = restTemplate.getForObject(url, Map.class);
-	   
-	        try {
-	            List rows = (List) response.get("rows");
-	            Map row0 = (Map) rows.get(0);
-	            List elements = (List) row0.get("elements");
-	            Map element0 = (Map) elements.get(0);
+	        if (distanceKm == null || distanceKm > SERVICE_RADIUS_KM)
+	            continue;
 
-	            if (!"OK".equals(element0.get("status"))) continue;
+	        List<Medicine> medicineList =
+	                medicineRepository.findlistedMedicinesByDonarAvailableToNgo(
+	                        address.getDonar().getId()
+	                );
 
-	            Map distance = (Map) element0.get("distance");
-	            double distanceKm = ((Number) distance.get("value")).doubleValue() / 1000;
-
-	            System.out.println("DISTANCE KM => " + distanceKm);
-
-	            if (distanceKm <= 800) {
-	            	
-	            	List<Medicine> medicinelist = medicineRepository.findlistedMedicinesByDonarAvailableToNgo(address.getDonar().getId());
-	            	System.out.println(medicinelist);
-	               for(Medicine medicine : medicinelist)
-	               {
-	            	   ListedMedicineInAreaDto listedmedicine =  modelMapper.map(medicine, ListedMedicineInAreaDto.class);
-	            	   listedmedicine.setDistancefromdonar(distanceKm);
-	            	   medicineDtolist.add(listedmedicine);
-	               }
-	            }
-
-	        } catch (Exception e) {
-	            e.printStackTrace();
+	        for (Medicine medicine : medicineList) {
+	            ListedMedicineInAreaDto dto =
+	                    modelMapper.map(medicine, ListedMedicineInAreaDto.class);
+	            dto.setDistancefromdonar(distanceKm);
+	            result.add(dto);
 	        }
 	    }
 
-	    return medicineDtolist;
+	    return result;
 	}
 
 	@Override
-	public List<ListedMedicineInAreaDto> findPendingRequestMedicinesByNgoId(Long Ngo_id) {
-		  ServiceArea sa = ngoRepository.findServiceAreaByNgoId(Ngo_id);
+	public List<ListedMedicineInAreaDto> findPendingRequestMedicinesByNgoId(Long ngoId) {
 
-		    String ngoAddress = sa.getStreetAddress() + ", " + sa.getCity() + ", " + sa.getState() + ", " + sa.getZipCode() + ", India";
-		 
-
-		    List<Address> addressList = donarRepository.findAllActiveAddress();
-		    RestTemplate restTemplate = new RestTemplate();
-		    List<ListedMedicineInAreaDto> medicineDtolist = new ArrayList();
-
-		    for (Address address : addressList) {
-
-		        String donorAddress = address.getFullAddress() + ", " + address.getCity() + ", " + address.getState() + ", " + address.getPincode() + ", India";
-
-		        String url = "https://api.distancematrix.ai/maps/api/distancematrix/json?origins=" + URLEncoder.encode(ngoAddress, StandardCharsets.UTF_8) + "&destinations=" + URLEncoder.encode(donorAddress, StandardCharsets.UTF_8) + "&key=0isMFectINCLWIOYtTbiBcjuzDR6E2VKuX5PZi3y1bkx1WYlKQHcuyXnlFeSlqns";
-
-		        Map response = restTemplate.getForObject(url, Map.class);
-		   
-		        try {
-		            List rows = (List) response.get("rows");
-		            Map row0 = (Map) rows.get(0);
-		            List elements = (List) row0.get("elements");
-		            Map element0 = (Map) elements.get(0);
-
-		            if (!"OK".equals(element0.get("status"))) continue;
-
-		            Map distance = (Map) element0.get("distance");
-		            double distanceKm = ((Number) distance.get("value")).doubleValue() / 1000;
-
-		            System.out.println("DISTANCE KM => " + distanceKm);
-
-		            if (distanceKm <= 800) {
-		            	
-		            	List<Medicine> medicinelist = ngoRepository.findPendingRequestMedicines(Ngo_id ,address.getDonar().getId());
-//		            	System.out.println(medicinelist);
-		               for(Medicine medicine : medicinelist)
-		               {
-		            	   ListedMedicineInAreaDto listedmedicine =  modelMapper.map(medicine, ListedMedicineInAreaDto.class);
-		            	   listedmedicine.setDistancefromdonar(distanceKm);
-		            	   medicineDtolist.add(listedmedicine);
-		               }
-		            }
-
-		        } catch (Exception e) {
-		            e.printStackTrace();
-		        }
-		    }
-
-		    return medicineDtolist;
-	}
-
-	@Override
-	public List<ListedMedicineInAreaDto> findRejectedRequestMedicines(Long Ngo_id) {
-		ServiceArea sa = ngoRepository.findServiceAreaByNgoId(Ngo_id);
-
-	    String ngoAddress = sa.getStreetAddress() + ", " + sa.getCity() + ", " + sa.getState() + ", " + sa.getZipCode() + ", India";
-	 
+	    ServiceArea sa = ngoRepository.findServiceAreaByNgoId(ngoId);
+	    String ngoAddress = sa.getStreetAddress() + ", " + sa.getCity() + ", " +
+	            sa.getState() + ", " + sa.getZipCode() + ", India";
 
 	    List<Address> addressList = donarRepository.findAllActiveAddress();
 	    RestTemplate restTemplate = new RestTemplate();
-	    List<ListedMedicineInAreaDto> medicineDtolist = new ArrayList();
+
+	    List<ListedMedicineInAreaDto> result = new ArrayList<>();
 
 	    for (Address address : addressList) {
 
-	        String donorAddress = address.getFullAddress() + ", " + address.getCity() + ", " + address.getState() + ", " + address.getPincode() + ", India";
+	        String donorAddress = address.getFullAddress() + ", " +
+	                address.getCity() + ", " +
+	                address.getState() + ", " +
+	                address.getPincode() + ", India";
 
-	        String url = "https://api.distancematrix.ai/maps/api/distancematrix/json?origins=" + URLEncoder.encode(ngoAddress, StandardCharsets.UTF_8) + "&destinations=" + URLEncoder.encode(donorAddress, StandardCharsets.UTF_8) + "&key=0isMFectINCLWIOYtTbiBcjuzDR6E2VKuX5PZi3y1bkx1WYlKQHcuyXnlFeSlqns";
+	        Double distanceKm = getDistanceInKm(ngoAddress, donorAddress, restTemplate);
+	        if (distanceKm == null || distanceKm > SERVICE_RADIUS_KM) continue;
 
-	        Map response = restTemplate.getForObject(url, Map.class);
-	   
-	        try {
-	            List rows = (List) response.get("rows");
-	            Map row0 = (Map) rows.get(0);
-	            List elements = (List) row0.get("elements");
-	            Map element0 = (Map) elements.get(0);
+	        List<Medicine> medicines =
+	                ngoRepository.findPendingRequestMedicines(
+	                        ngoId, address.getDonar().getId());
 
-	            if (!"OK".equals(element0.get("status"))) continue;
-
-	            Map distance = (Map) element0.get("distance");
-	            double distanceKm = ((Number) distance.get("value")).doubleValue() / 1000;
-
-	            System.out.println("DISTANCE KM => " + distanceKm);
-
-	            if (distanceKm <= 800) {
-	            	
-	            	List<Medicine> medicinelist = ngoRepository.findRejectedRequestMedicines(Ngo_id ,address.getDonar().getId());
-//	            	System.out.println(medicinelist);
-	               for(Medicine medicine : medicinelist)
-	               {
-	            	   ListedMedicineInAreaDto listedmedicine =  modelMapper.map(medicine, ListedMedicineInAreaDto.class);
-	            	   listedmedicine.setDistancefromdonar(distanceKm);
-	            	   medicineDtolist.add(listedmedicine);
-	               }
-	            }
-
-	        } catch (Exception e) {
-	            e.printStackTrace();
+	        for (Medicine medicine : medicines) {
+	            ListedMedicineInAreaDto dto =
+	                    modelMapper.map(medicine, ListedMedicineInAreaDto.class);
+	            dto.setDistancefromdonar(distanceKm);
+	            result.add(dto);
 	        }
 	    }
-
-	    return medicineDtolist;
+	    return result;
 	}
 
 	@Override
-	public List<ListedMedicineInAreaDto> findOnGoingRequestMedicines(Long Ngo_id) {
-		ServiceArea sa = ngoRepository.findServiceAreaByNgoId(Ngo_id);
+	public List<ListedMedicineInAreaDto> findRejectedRequestMedicines(Long ngoId) {
 
-	    String ngoAddress = sa.getStreetAddress() + ", " + sa.getCity() + ", " + sa.getState() + ", " + sa.getZipCode() + ", India";
-	 
+	    ServiceArea sa = ngoRepository.findServiceAreaByNgoId(ngoId);
+	    String ngoAddress = sa.getStreetAddress() + ", " + sa.getCity() + ", " +
+	            sa.getState() + ", " + sa.getZipCode() + ", India";
 
 	    List<Address> addressList = donarRepository.findAllActiveAddress();
 	    RestTemplate restTemplate = new RestTemplate();
-	    List<ListedMedicineInAreaDto> medicineDtolist = new ArrayList();
+
+	    List<ListedMedicineInAreaDto> result = new ArrayList<>();
 
 	    for (Address address : addressList) {
 
-	        String donorAddress = address.getFullAddress() + ", " + address.getCity() + ", " + address.getState() + ", " + address.getPincode() + ", India";
+	        String donorAddress = address.getFullAddress() + ", " +
+	                address.getCity() + ", " +
+	                address.getState() + ", " +
+	                address.getPincode() + ", India";
 
-	        String url = "https://api.distancematrix.ai/maps/api/distancematrix/json?origins=" + URLEncoder.encode(ngoAddress, StandardCharsets.UTF_8) + "&destinations=" + URLEncoder.encode(donorAddress, StandardCharsets.UTF_8) + "&key=0isMFectINCLWIOYtTbiBcjuzDR6E2VKuX5PZi3y1bkx1WYlKQHcuyXnlFeSlqns";
+	        Double distanceKm = getDistanceInKm(ngoAddress, donorAddress, restTemplate);
+	        if (distanceKm == null || distanceKm > SERVICE_RADIUS_KM) continue;
 
-	        Map response = restTemplate.getForObject(url, Map.class);
-	   
-	        try {
-	            List rows = (List) response.get("rows");
-	            Map row0 = (Map) rows.get(0);
-	            List elements = (List) row0.get("elements");
-	            Map element0 = (Map) elements.get(0);
+	        List<Medicine> medicines =
+	                ngoRepository.findRejectedRequestMedicines(
+	                        ngoId, address.getDonar().getId());
 
-	            if (!"OK".equals(element0.get("status"))) continue;
-
-	            Map distance = (Map) element0.get("distance");
-	            double distanceKm = ((Number) distance.get("value")).doubleValue() / 1000;
-
-	            System.out.println("DISTANCE KM => " + distanceKm);
-
-	            if (distanceKm <= 800) {
-	            	
-	            	List<Medicine> medicinelist = ngoRepository.findOnGoingRequestMedicines(Ngo_id ,address.getDonar().getId());
-//	            	System.out.println(medicinelist);
-	               for(Medicine medicine : medicinelist)
-	               {
-	            	   ListedMedicineInAreaDto listedmedicine =  modelMapper.map(medicine, ListedMedicineInAreaDto.class);
-	            	   listedmedicine.setDistancefromdonar(distanceKm);
-	            	   medicineDtolist.add(listedmedicine);
-	               }
-	            }
-
-	        } catch (Exception e) {
-	            e.printStackTrace();
+	        for (Medicine medicine : medicines) {
+	            ListedMedicineInAreaDto dto =
+	                    modelMapper.map(medicine, ListedMedicineInAreaDto.class);
+	            dto.setDistancefromdonar(distanceKm);
+	            result.add(dto);
 	        }
 	    }
-
-	    return medicineDtolist;
+	    return result;
 	}
+
+	@Override
+	public List<ListedMedicineInAreaDto> findOnGoingRequestMedicines(Long ngoId) {
+
+	    ServiceArea sa = ngoRepository.findServiceAreaByNgoId(ngoId);
+	    String ngoAddress = sa.getStreetAddress() + ", " + sa.getCity() + ", " +
+	            sa.getState() + ", " + sa.getZipCode() + ", India";
+
+	    List<Address> addressList = donarRepository.findAllActiveAddress();
+	    RestTemplate restTemplate = new RestTemplate();
+
+	    List<ListedMedicineInAreaDto> result = new ArrayList<>();
+
+	    for (Address address : addressList) {
+
+	        String donorAddress = address.getFullAddress() + ", " +
+	                address.getCity() + ", " +
+	                address.getState() + ", " +
+	                address.getPincode() + ", India";
+
+	        Double distanceKm = getDistanceInKm(ngoAddress, donorAddress, restTemplate);
+	        if (distanceKm == null || distanceKm > SERVICE_RADIUS_KM) continue;
+
+	        List<Medicine> medicines =
+	                ngoRepository.findOnGoingRequestMedicines(
+	                        ngoId, address.getDonar().getId());
+
+	        for (Medicine medicine : medicines) {
+	            ListedMedicineInAreaDto dto =
+	                    modelMapper.map(medicine, ListedMedicineInAreaDto.class);
+	            dto.setDistancefromdonar(distanceKm);
+	            result.add(dto);
+	        }
+	    }
+	    return result;
+	}
+
 
 	@Override
 	public List<MedicineDto> getAllDonatedMedicinesByNgoId(Long Ngo_id) {
@@ -485,6 +478,48 @@ public class NgoServiceImpl implements NgoService{
 	public Long rejectedngos(Long medicine_id) {
 		
 		return ngoRepository.rejectedngo(medicine_id);
+		
+	}
+	
+	@Override
+	public String updateServiceRadius(Long ngo_id,Long service_radius) {
+		
+	int update=ngoRepository.updateServiceDetails(ngo_id, service_radius);
+	if(update==0) {
+		return "unable to update service radius";
+	}
+		return "Service Radius Updated Succesfully";
+	}
+
+
+
+
+	@Override
+	public String updateServiceArea(Long ngo_id, ServiceAreaUpdateDto request) {
+	
+		ServiceArea service=ngoRepository.findServiceAreaByNgoId(ngo_id);
+		System.out.println(service);
+		if (service == null) {
+	        throw new RuntimeException("Service Area not found for NGO id: " + ngo_id);
+	    }
+		    service.setCity(request.getCity());
+		    service.setLandMark(request.getLandMark());
+		    service.setState(request.getState());
+		    service.setDistrict(request.getDistrict());
+		    service.setStreetAddress(request.getStreetAddress());
+		    service.setZipCode(request.getZipCode());
+		    service.setPrimaryContact(request.getPrimaryContact());
+		    serviceRepository.save(service);
+		    return "Service Area updated successfully";
+	}
+
+
+
+
+	@Override
+	public NgoDetailsDto getNgoDetails(Long ngo_id) {
+		
+		return ngoRepository.findNgoDetailsById(ngo_id);
 		
 	}
 

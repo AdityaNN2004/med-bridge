@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.medibridge.dtos.RequestedNgos;
+import com.medibridge.entities.User;
 import com.medibridge.entities.donar.Address;
 import com.medibridge.entities.donar.Donar;
 import com.medibridge.entities.donar.Medicine;
@@ -17,9 +18,11 @@ import com.medibridge.entities.donar.Medicine;
 @Repository
 public interface DonarRepository extends JpaRepository<Donar, Long> {
    boolean existsByUser_Id(Long userId);
-   Optional<Donar> findByUser_Id(Long userId);
+   Optional<Donar> findByUser_Id(Long userId); 
+   Optional<Donar>  findByUser(User user);
    
    @Query("SELECT d from Donar d WHERE d.user.id=:UserId AND d.user.isActive=true")
+   
    Donar getAllUsers(@Param("UserId") Long userID);
    
    @Query("SELECT a FROM Address a WHERE a.donar.id = :donarId AND a.isActive = true")
@@ -48,4 +51,7 @@ public interface DonarRepository extends JpaRepository<Donar, Long> {
    
    @Query(value="SELECT count(*) FROM viewstatus_ngo v INNER JOIN medicine m WHERE v.medicine_id = m.medicine_id AND v.donation_status_ngo = \"DonationProcessNotStarted\" AND v.donarapproval=\"Donar_NotApproved\" AND m.donar_id = :donarId",nativeQuery = true)
    int requestedMedicinesCount(@Param("donarId") Long donar_id);
+   
+   
 }
+

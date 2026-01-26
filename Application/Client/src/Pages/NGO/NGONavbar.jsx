@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { UserCircle } from "lucide-react";
 import {
   LayoutDashboard,
   Package,
@@ -54,6 +55,14 @@ const NGONavbar = () => {
           onClick={() => navigate("/ngo/listedmedicineinarea")}
         >
           Listed Medicines in Area
+        </NavItem>
+
+        <NavItem
+          icon={<UserCircle className="w-4 h-4" />}
+          active={isActive("/ngo/profile")}
+          onClick={() => navigate("/ngo/profile")}
+        >
+          Profile
         </NavItem>
 
         <LogoutButton onClick={() => navigate("/")} />

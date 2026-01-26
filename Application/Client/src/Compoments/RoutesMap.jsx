@@ -10,7 +10,7 @@ const RoutesMap = ({ originAddress, destinationAddress }) => {
   const [distance, setDistance] = useState(null);
 
   const { isLoaded } = useJsApiLoader({
-    //googleMapsApiKey: "AIzaSyCz5BYROEEeoaccHJLX0agc13U_JE6jgbE",
+    // googleMapsApiKey: "AIzaSyCz5BYROEEeoaccHJLX0agc13U_JE6jgbE",
   });
 
   useEffect(() => {

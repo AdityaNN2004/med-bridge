@@ -1,69 +1,67 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { sendMessage } from "./ReduxSliceCart";
-import styles from "./chatStyles";
+import React, { useEffect, useState } from "react";
+import { fetchMessages, sendMessage } from "../Services/ChatService";
+import {
+  chatContainer,
+  messagesBox,
+  inputBox,
+  messageLeft,
+  messageRight,
+} from "./chatStyles";
 
-const donorId = "donor1";
-const ngoId = "ngo1";
-
-export default function NGOChatBot() {
-  const dispatch = useDispatch();
+const NGOChatbot = ({ ngoId, donarId }) => {
+  const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
-  const messagesEndRef = useRef(null);
 
-  const messages = useSelector(
-    state => state.chat.chats[`${ngoId}_${donorId}`] || []
-  );
+  const loadMessages = async () => {
+    const res = await fetchMessages(ngoId, donarId);
+    setMessages(res.data);
+  };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    loadMessages();
+    const interval = setInterval(loadMessages, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!text.trim()) return;
 
-    dispatch(
-      sendMessage({
-        ngoId,
-        donorId,
-        sender: "ngo",
-        message: text
-      })
-    );
+    await sendMessage({
+      ngoId,
+      donarId,
+      senderType: "NGO",
+      senderId: ngoId,
+      message: text,
+    });
 
     setText("");
+    loadMessages();
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>🏥 NGO Chat</div>
-
-      <div style={styles.messages}>
-        {messages.map((msg, i) => (
+    <div style={chatContainer}>
+      <div style={messagesBox}>
+        {messages.map((msg) => (
           <div
-            key={i}
-            style={msg.sender === "ngo" ? styles.donorMsg : styles.ngoMsg}
+            key={msg.messageId}
+            style={msg.senderType === "NGO" ? messageRight : messageLeft}
           >
             {msg.message}
           </div>
         ))}
-        <div ref={messagesEndRef} />
       </div>
 
-      <div style={styles.inputBox}>
+      <div style={inputBox}>
         <input
-          style={styles.input}
+          style={{ flex: 1, padding: "10px" }}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Type a reply..."
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleSend();
-            }
-          }}
+          placeholder="Type message..."
         />
-        <button style={styles.sendBtn} onClick={handleSend}>➤</button>
+        <button onClick={handleSend}>Send</button>
       </div>
     </div>
   );
-}
+};
+
+export default NGOChatbot;

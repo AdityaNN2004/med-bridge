@@ -11,8 +11,12 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.medibridge.dtos.DonorWithAddressDto;
+import com.medibridge.dtos.ListedMedicineInAreaDto;
+import com.medibridge.dtos.NgoDetailsDto;
 import com.medibridge.dtos.NgoWithServiceAreaDto;
+import com.medibridge.entities.User;
 import com.medibridge.entities.donar.Address;
+import com.medibridge.entities.donar.Donar;
 import com.medibridge.entities.donar.Medicine;
 import com.medibridge.entities.ngo.Ngo;
 import com.medibridge.entities.ngo.ServiceArea;
@@ -24,11 +28,14 @@ public interface NgoRepository extends JpaRepository<Ngo, Long> {
     Optional<Ngo> findByUser_Id(Long userId);
     boolean existsByUser_Email(String email);
     
+    Optional<Ngo>  findByUser(User user);
     @Query("SELECT n.serviceArea FROM Ngo n WHERE n.id = :ngoId")
     ServiceArea findServiceAreaByNgoId(@Param("ngoId") Long ngoId);
     
     @Query(value = "SELECT DISTINCT m.* FROM medicine m JOIN viewstatus_ngo v ON v.medicine_id = m.medicine_id WHERE v.ngo_id = :ngoId AND m.donar_id = :donarId AND v.donarapproval = 'Donar_NotApproved' AND v.donation_status_ngo = 'DonationProcessNotStarted'", nativeQuery = true)
     List<Medicine> findPendingRequestMedicines(@Param("ngoId") Long ngoId, @Param("donarId") Long donarId);
+
+
 
     @Query(value = "SELECT DISTINCT m.* FROM medicine m JOIN viewstatus_ngo v ON v.medicine_id = m.medicine_id WHERE v.ngo_id = :ngoId AND m.donar_id = :donarId AND v.donarapproval = 'Donar_Rejected' AND v.donation_status_ngo = 'DonationProcessNotStarted'", nativeQuery = true)
     List<Medicine> findRejectedRequestMedicines(@Param("ngoId") Long ngoId, @Param("donarId") Long donarId);
@@ -53,6 +60,14 @@ public interface NgoRepository extends JpaRepository<Ngo, Long> {
     @Transactional
     @Query(value="UPDATE viewstatus_ngo  SET donarapproval=\"Donar_Rejected\" WHERE ngo_id IN (SELECT ngo_id FROM (SELECT ngo_id FROM viewstatus_ngo WHERE donarapproval=\"Donar_NotApproved\" AND donation_status_ngo=\"DonationProcessNotStarted\" AND medicine_id=3)AS temp)\r\n",nativeQuery = true)
     Long rejectedngo(@Param("medicineId") Long medicine_id);
+    
+    @Query("SELECT new com.medibridge.dtos.NgoDetailsDto(n.organizationName,n.registrationNumber, s.city,s.companyName,s.district, s.primaryContact,s.serviceRadius, s.state,s.streetAddress,s.zipCode) FROM Ngo n JOIN n.serviceArea s  WHERE n.id = :ngoId  ")
+    NgoDetailsDto findNgoDetailsById(@Param("ngoId") Long ngo_id);     
+         
+    @Modifying
+    @Transactional
+    @Query(value="UPDATE service_area sa INNER JOIN ngo n ON n.service_area_id = sa.service_area_id SET sa.service_radius = :serviceRadius WHERE n.ngo_id = :ngoId",nativeQuery = true)
+    int updateServiceDetails(@Param("ngoId") Long ngo_id,@Param("serviceRadius") Long service_radius);
     
     
 }

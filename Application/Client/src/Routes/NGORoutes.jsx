@@ -10,6 +10,7 @@ import NGOLogin from "../Pages/NGO/NGOLogin";
 import NGOChatBot from "../Compoments/NGOChatbot";
 import NGOListedMedicineInArea from "../Pages/NGO/NGOListedMedicineInArea";
 import NgoViewStatus from "../Pages/NGO/NgoViewStatus";
+import NGOProfile from "../Pages/NGO/NGOProfile";
 export const NGORoutes = (
   <>
     <Route path="/ngo/dashboard" element={<NGODashboard />} />
@@ -23,5 +24,6 @@ export const NGORoutes = (
     <Route path="/ngo/login" element={<NGOLogin />} />
      <Route path="/ngo/chatbot" element={<NGOChatBot />} />
       <Route path="/ngo/viewstatus/:id" element={<NgoViewStatus />} />
+      <Route path="/ngo/profile" element={<NGOProfile/>}/>
   </>
 );

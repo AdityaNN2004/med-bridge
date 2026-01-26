@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-
-
-
+import { toast } from "react-toastify";
 
 function DonorRegistration() {
   
@@ -21,9 +18,60 @@ const [state, setState] = useState("");
 const [pincode, setPincode] = useState("");
 const [termsAccepted, setTermsAccepted] = useState(false);
 
-  const goNext = () => {
-    navigate("/donor/login"); // redirect after registration
+  
+const handleRegister = async () => {
+  if (password !== confirmPassword) {
+    toast.error("Passwords do not match!");
+    return;
+  }
+
+  if (!termsAccepted) {
+    toast.warning("Please accept terms & conditions");
+    return;
+  }
+
+  const payload = {
+    user: {
+      firstName,
+      lastName,
+      email,
+      mobile,
+      password,
+      userRole: "ROLE_DONAR",
+    },
+    address: {
+      fullAddress: address,
+      city,
+      state,
+      pincode,
+    },
   };
+
+  try {
+    const response = await fetch("http://localhost:9090/donar/sign-up", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error("Registration failed");
+    }
+
+    toast.success("Registration successful!");
+
+    setTimeout(() => {
+      navigate("/donor/login"); // ✅ correct URL
+    }, 1500);
+
+  } catch (error) {
+    toast.error("Registration failed. Please try again.");
+  }
+};
+
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-blue-50 px-4">
@@ -58,7 +106,10 @@ const [termsAccepted, setTermsAccepted] = useState(false);
             Join our community and start making an impact.
           </p>
 
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={(e) => {
+            e.preventDefault();
+            handleRegister();
+          }}>
 
             {/* Row 1: First + Last Name */}
             <div className="grid sm:grid-cols-2 gap-4">
@@ -178,8 +229,7 @@ const [termsAccepted, setTermsAccepted] = useState(false);
 
             {/* Register Button */}
             <button
-              type="button"
-              onClick={goNext}
+              type="submit"
               className="w-full py-3 bg-blue-800 text-white text-sm font-medium rounded-lg shadow-md hover:bg-blue-700 transition"
             >
               Register

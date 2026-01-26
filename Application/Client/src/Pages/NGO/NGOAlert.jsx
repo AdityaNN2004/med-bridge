@@ -1,111 +1,181 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import NGONavbar from "./NGONavbar";
 import { XCircle, Clock, CheckCircle } from "lucide-react";
-import { animate, useInView, motion } from "framer-motion";
+import { motion } from "framer-motion";
+import {
+  FindPendingRequestMedicinesByNgoId,
+  getAllDonatedMedicinesByNgoId,
+  FindRejectedRequestMedicines,
+  getListMedicinesInServiceRadius
+} from "../../Services/NgoServices";
 
-/* ---------------- DEMO ALERT DATA ---------------- */
-const alertsData = [
-  {
-    id: 1,
-    title: "Urgent: Medicine Expiring Soon",
-    message: "Vitamin D3 1000IU will expire in 8 days.",
-    type: "urgent",
-    status: "unread",
-    time: "2 hours ago",
-  },
-  {
-    id: 2,
-    title: "Expiry Warning",
-    message: "Cetirizine 10mg will expire in 23 days.",
-    type: "warning",
-    status: "unread",
-    time: "5 hours ago",
-  },
-  {
-    id: 3,
-    title: "Expiry Reminder",
-    message: "Ibuprofen 400mg will expire in 60 days.",
-    type: "reminder",
-    status: "completed",
-    time: "8 hours ago",
-  },
-  {
-    id: 4,
-    title: "Urgent: Donor Pickup Required",
-    message: "Pickup scheduled today for donated medicines.",
-    type: "urgent",
-    status: "unread",
-    time: "1 day ago",
-  },
-  {
-    id: 5,
-    title: "Donation Completed",
-    message: "Paracetamol donation successfully completed.",
-    type: "success",
-    status: "completed",
-    time: "2 days ago",
-  },
-];
+/* ---------------- SAFE DATE HELPERS ---------------- */
 
-/* ---------------- COUNTING STAT CARD ---------------- */
-const StatMiniCard = ({ title, value, border, textColor }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref);
-
-  useEffect(() => {
-    if (!isInView) return;
-
-    animate(0, value, {
-      duration: 1.5,
-      onUpdate(v) {
-        if (ref.current) ref.current.textContent = Math.round(v);
-      },
-    });
-  }, [value, isInView]);
-
+// Extract date safely from ANY API response
+const getSafeDateString = (m) => {
   return (
-    <div className={`bg-white border-l-4 ${border} rounded-xl p-5 shadow`}>
-      <p className="text-sm text-gray-500">{title}</p>
-      <p ref={ref} className={`text-3xl font-bold mt-1 ${textColor}`} />
-    </div>
+    m?.lastUpdated ||
+    m?.last_updated ||
+    m?.updatedAt ||
+    m?.createdAt ||
+    null
   );
 };
 
-/* ---------------- HELPERS ---------------- */
-const getIcon = (type) => {
-  switch (type) {
-    case "urgent":
-      return <XCircle className="w-5 h-5 text-red-600" />;
-    case "warning":
-    case "reminder":
-      return <Clock className="w-5 h-5 text-amber-500" />;
-    case "success":
-      return <CheckCircle className="w-5 h-5 text-emerald-600" />;
-    default:
-      return null;
-  }
+// Used for filtering (tabs & cards)
+const getTimeCategory = (dateString) => {
+  if (!dateString) return "justnow";
+
+  const date = new Date(
+    typeof dateString === "string"
+      ? dateString.replace(" ", "T")
+      : dateString
+  );
+
+  if (isNaN(date.getTime())) return "justnow";
+
+  const diffMs = Date.now() - date.getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+  const diffDays = diffHours / 24;
+
+  if (diffHours < 24) return "justnow";
+  if (diffDays < 7) return "week";
+  if (diffDays < 30) return "month";
+  return "older";
 };
 
-const getBadge = (status) =>
-  status === "unread"
-    ? "bg-blue-100 text-blue-800"
-    : "bg-emerald-100 text-emerald-800";
+// Used for display text
+const getExactTimeLabel = (dateString) => {
+  if (!dateString) return "Just now";
+
+  const date = new Date(
+    typeof dateString === "string"
+      ? dateString.replace(" ", "T")
+      : dateString
+  );
+
+  if (isNaN(date.getTime())) return "Just now";
+
+  const diffMs = Date.now() - date.getTime();
+  const minutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes} minutes ago`;
+  if (hours < 24) return `${hours} hours ago`;
+  return `${days} days ago`;
+};
 
 /* ---------------- MAIN COMPONENT ---------------- */
 const NGOAlert = () => {
+  const [alerts, setAlerts] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
 
-  const unreadCount = alertsData.filter((a) => a.status === "unread").length;
-  const urgentCount = alertsData.filter((a) => a.type === "urgent").length;
-  const completedCount = alertsData.filter((a) => a.status === "completed")
-    .length;
+  /* ---------------- LOAD NOTIFICATIONS ---------------- */
+  useEffect(() => {
+    const loadNotifications = async (ngo_id = 1) => {
+      try {
+        const [
+          pendingRes,
+          rejectedRes,
+          donatedRes,
+          nearbyRes
+        ] = await Promise.all([
+          FindPendingRequestMedicinesByNgoId(ngo_id),
+          FindRejectedRequestMedicines(ngo_id),
+          getAllDonatedMedicinesByNgoId(ngo_id),
+          getListMedicinesInServiceRadius(ngo_id)
+        ]);
 
-  const filteredAlerts = alertsData.filter((alert) => {
+        const mapAlert = (m, title, message, type, status) => {
+          const safeDate = getSafeDateString(m);
+
+          const parsedDate = safeDate
+            ? new Date(
+                typeof safeDate === "string"
+                  ? safeDate.replace(" ", "T")
+                  : safeDate
+              )
+            : new Date();
+
+          const timeMs = isNaN(parsedDate.getTime())
+            ? Date.now()
+            : parsedDate.getTime();
+
+          return {
+            id: `${type}-${m.id}`,
+            title,
+            message,
+            type,
+            status,
+            timeCategory: getTimeCategory(safeDate),
+            timeLabel: getExactTimeLabel(safeDate),
+            lastUpdatedMs: timeMs
+          };
+        };
+
+        const allAlerts = [
+          ...(pendingRes?.data || []).map((m) =>
+            mapAlert(
+              m,
+              "New Medicine Request",
+              `${m.medicineName} request is pending approval.`,
+              "warning",
+              "unread"
+            )
+          ),
+          ...(rejectedRes?.data || []).map((m) =>
+            mapAlert(
+              m,
+              "Request Rejected",
+              `${m.medicineName} request was rejected.`,
+              "urgent",
+              "unread"
+            )
+          ),
+          ...(donatedRes?.data || []).map((m) =>
+            mapAlert(
+              m,
+              "Donation Completed",
+              `${m.medicineName} donation completed successfully.`,
+              "success",
+              "completed"
+            )
+          ),
+          ...(nearbyRes?.data || []).map((m) =>
+            mapAlert(
+              m,
+              "Medicine Available Nearby",
+              `${m.medicineName} is available within your service radius.`,
+              "success",
+              "unread"
+            )
+          )
+        ];
+
+        // ✅ SORT: newest first
+        allAlerts.sort((a, b) => b.lastUpdatedMs - a.lastUpdatedMs);
+
+        setAlerts(allAlerts);
+      } catch (err) {
+        console.error("Failed to load notifications", err);
+      }
+    };
+
+    loadNotifications();
+  }, []);
+
+  /* ---------------- COUNTS ---------------- */
+  const totalCount = alerts.length;
+  const justNowCount = alerts.filter(a => a.timeCategory === "justnow").length;
+  const weekCount = alerts.filter(a => a.timeCategory === "week").length;
+  const monthCount = alerts.filter(a => a.timeCategory === "month").length;
+
+  /* ---------------- FILTER ---------------- */
+  const filteredAlerts = alerts.filter((a) => {
     if (activeTab === "all") return true;
-    if (activeTab === "unread") return alert.status === "unread";
-    if (activeTab === "urgent") return alert.type === "urgent";
-    if (activeTab === "completed") return alert.status === "completed";
-    return true;
+    return a.timeCategory === activeTab;
   });
 
   return (
@@ -113,7 +183,6 @@ const NGOAlert = () => {
       <NGONavbar />
 
       <div className="max-w-7xl mx-auto px-6 py-28">
-        {/* Header */}
         <h1 className="text-2xl font-bold text-gray-900 mb-1">
           Alerts & Notifications
         </h1>
@@ -121,31 +190,29 @@ const NGOAlert = () => {
           Monitor urgent updates, expiry alerts, and completed actions
         </p>
 
-        {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <StatMiniCard
-            title="Unread Alerts"
-            value={unreadCount}
-            border="border-teal-600"
-            textColor="text-teal-700"
-          />
-          <StatMiniCard
-            title="Urgent"
-            value={urgentCount}
-            border="border-amber-500"
-            textColor="text-amber-700"
-          />
-          <StatMiniCard
-            title="Completed"
-            value={completedCount}
-            border="border-emerald-600"
-            textColor="text-emerald-700"
-          />
+        {/* SUMMARY CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="bg-white border-l-4 border-teal-600 rounded-xl p-5 shadow">
+            <p className="text-sm text-gray-500">Total</p>
+            <p className="text-3xl font-bold text-teal-700">{totalCount}</p>
+          </div>
+          <div className="bg-white border-l-4 border-indigo-600 rounded-xl p-5 shadow">
+            <p className="text-sm text-gray-500">Just Now</p>
+            <p className="text-3xl font-bold text-indigo-700">{justNowCount}</p>
+          </div>
+          <div className="bg-white border-l-4 border-amber-500 rounded-xl p-5 shadow">
+            <p className="text-sm text-gray-500">Last Week</p>
+            <p className="text-3xl font-bold text-amber-700">{weekCount}</p>
+          </div>
+          <div className="bg-white border-l-4 border-emerald-600 rounded-xl p-5 shadow">
+            <p className="text-sm text-gray-500">Last Month</p>
+            <p className="text-3xl font-bold text-emerald-700">{monthCount}</p>
+          </div>
         </div>
 
-        {/* Tabs */}
+        {/* TABS */}
         <div className="flex gap-3 mb-6 flex-wrap">
-          {["all", "unread", "urgent", "completed"].map((tab) => (
+          {["all", "justnow", "week", "month"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -155,12 +222,18 @@ const NGOAlert = () => {
                   : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
               }`}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === "all"
+                ? "All"
+                : tab === "justnow"
+                ? "Just Now"
+                : tab === "week"
+                ? "Last Week"
+                : "Last Month"}
             </button>
           ))}
         </div>
 
-        {/* Alerts List with Fade Animation */}
+        {/* NOTIFICATIONS */}
         <div className="space-y-5">
           {filteredAlerts.length === 0 && (
             <p className="text-center text-gray-400 py-10">
@@ -176,24 +249,24 @@ const NGOAlert = () => {
               transition={{ duration: 0.3 }}
               className="bg-white rounded-xl p-6 border border-gray-100 shadow hover:shadow-lg transition flex gap-4"
             >
-              <div className="mt-1">{getIcon(alert.type)}</div>
+              <div className="mt-1">
+                {alert.type === "urgent" ? (
+                  <XCircle className="w-5 h-5 text-red-600" />
+                ) : alert.type === "success" ? (
+                  <CheckCircle className="w-5 h-5 text-emerald-600" />
+                ) : (
+                  <Clock className="w-5 h-5 text-amber-500" />
+                )}
+              </div>
 
               <div className="flex-1">
-                <div className="flex justify-between items-start mb-1">
-                  <h4 className="text-sm font-semibold text-gray-900">
-                    {alert.title}
-                  </h4>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full font-medium ${getBadge(
-                      alert.status
-                    )}`}
-                  >
-                    {alert.status}
-                  </span>
-                </div>
-
+                <h4 className="text-sm font-semibold text-gray-900">
+                  {alert.title}
+                </h4>
                 <p className="text-gray-700 text-sm">{alert.message}</p>
-                <span className="text-xs text-gray-400">{alert.time}</span>
+                <span className="text-xs text-gray-400">
+                  {alert.timeLabel}
+                </span>
               </div>
             </motion.div>
           ))}

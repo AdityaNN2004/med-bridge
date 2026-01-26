@@ -18,7 +18,7 @@ export const DonorRoutes = (
     <Route path="/donor/alert" element={<DonarAlert />} />
     <Route path="/donor/view-medicine" element={<ViewMedicine />} />
     <Route path="/donor/register" element={<DonorRegistration />} />
-    <Route path="/donar/login" element= {<DonorLogin/>} />
+    <Route path="/donor/login" element= {<DonorLogin/>} />
     <Route path="/donor/chatbot" element={<DonarChatbot />} />
     <Route path="/donor/viewstatus/:id" element={<ViewStatus />} />
     <Route path="/donor/listedmedicine" element={<ListedMedicine />} />

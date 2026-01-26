@@ -1,6 +1,5 @@
 package com.medibridge.dtos;
 
-import java.time.LocalDate;
 import com.medibridge.entities.donar.MedicineCategory;
 
 import java.time.*;
@@ -18,6 +17,7 @@ import lombok.*;
 public class MedicineDto {
 
 	private Long id;
+	 private LocalDateTime lastUpdated;
     private String medicineName;
     private LocalDate expiry_date;
     private String quantity;

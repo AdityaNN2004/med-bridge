@@ -2,20 +2,14 @@ import React, { useEffect } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-const MapWithRadius = () => {
+const MapWithRadius = ({
+  centerAddress = "Sitabuldi , Maharashtra, India",
+  otherAddresses = [],
+  radiusInMeters = 15000,
+  height = "480px",
+
+}) => {
   useEffect(() => {
-    const centerAddress = "Charminar, Hyderabad, India";
-
-    const otherAddresses = [
-      "Mehdipatnam, Hyderabad, India",
-      "Banjara Hills, Hyderabad, India",
-      "Secunderabad Railway Station, Hyderabad, India",
-      "Shamshabad Airport, Hyderabad, India"
-    ];
-
-    const radiusInMeters = 15000; // 15 KM
-
-    // 🟢 Green icon (center)
     const greenIcon = new L.Icon({
       iconUrl:
         "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
@@ -27,7 +21,6 @@ const MapWithRadius = () => {
       shadowSize: [41, 41],
     });
 
-    // 🔵 Blue icon (other points)
     const blueIcon = new L.Icon({
       iconUrl:
         "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
@@ -40,84 +33,58 @@ const MapWithRadius = () => {
     });
 
     const getLatLng = async (address) => {
-      const response = await fetch(
+      const res = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
           address
         )}`
       );
-      const data = await response.json();
-      if (!data || data.length === 0) return null;
-
-      return {
-        lat: parseFloat(data[0].lat),
-        lng: parseFloat(data[0].lon),
-      };
+      const data = await res.json();
+      if (!data?.length) return null;
+      return { lat: +data[0].lat, lng: +data[0].lon };
     };
 
     const loadMap = async () => {
-      const centerLatLng = await getLatLng(centerAddress);
-      if (!centerLatLng) {
-        alert("Center address not found");
-        return;
-      }
+      const center = await getLatLng(centerAddress);
+      if (!center) return;
 
-      const map = L.map("map").setView(
-        [centerLatLng.lat, centerLatLng.lng],
+      const map = L.map(`map-${centerAddress}`).setView(
+        [center.lat, center.lng],
         12
       );
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap contributors",
-      }).addTo(map);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
-      // 🔴 Radius circle
-      L.circle([centerLatLng.lat, centerLatLng.lng], {
+      L.circle([center.lat, center.lng], {
         radius: radiusInMeters,
         color: "red",
-        fillColor: "#ff0000",
-        fillOpacity: 0.25,
+        fillOpacity: 0.2,
       }).addTo(map);
 
-      // 🟢 Center marker
-      L.marker([centerLatLng.lat, centerLatLng.lng], {
-        icon: greenIcon,
-      })
-        .addTo(map)
-        .bindPopup(`Center: ${centerAddress}`)
-        .openPopup();
+      L.marker([center.lat, center.lng], { icon: greenIcon }).addTo(map);
 
-      // 🔵 Other markers (inside radius only)
-      for (const address of otherAddresses) {
-        const point = await getLatLng(address);
+      for (const addr of otherAddresses) {
+        const point = await getLatLng(addr);
         if (!point) continue;
 
-        const distance = map.distance(
-          [centerLatLng.lat, centerLatLng.lng],
+        const dist = map.distance(
+          [center.lat, center.lng],
           [point.lat, point.lng]
         );
 
-        if (distance <= radiusInMeters) {
-          L.marker([point.lat, point.lng], {
-            icon: blueIcon,
-          })
-            .addTo(map)
-            .bindPopup(`Inside radius: ${address}`);
+        if (dist <= radiusInMeters) {
+          L.marker([point.lat, point.lng], { icon: blueIcon }).addTo(map);
         }
       }
     };
 
     loadMap();
-
-    return () => {
-      const mapElement = document.getElementById("map");
-      if (mapElement) mapElement._leaflet_id = null;
-    };
-  }, []);
+  }, [centerAddress, otherAddresses, radiusInMeters]);
 
   return (
-    <div style={{ width: "100%", height: "500px" }}>
-      <div id="map" style={{ width: "100%", height: "100%" }}></div>
-    </div>
+    <div
+      id={`map-${centerAddress}`}
+      style={{ width: "100%", height, borderRadius: "12px" }}
+    />
   );
 };
 

@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   User,
   Mail,
@@ -13,28 +16,17 @@ import {
   CheckCircle
 } from "lucide-react";
 
-// Mock services - replace with your actual imports
-const getDonor = async (id) => ({
-  data: {
-    firstName: "Ravi",
-    lastName: "Kumar",
-    profileImage: null,
-    user: { email: "donar_test@gmail.com", mobile: "9000000001" }
-  }
-});
-
-const getAddresses = async () => ({
-  data: [
-    { id: 1, fullAddress: "Plot No 45, Manish Nagar, Near Airport Road", city: "Nagpur", state: "Maharashtra", pincode: "440015", active: true }
-  ]
-});
-
-const updateDonor = async (id, data) => ({ success: true });
-const updateAddress = async (id, data) => ({ success: true });
-const makeAddressActive = async (id) => ({ success: true });
+import {
+  getDonor,
+  updateDonor,
+  getAddresses,
+  updateAddress,
+  makeAddressActive,
+} from "../../Services/DonarServices";
 
 function DonorProfile() {
-  const donorId = 1;
+  const navigate = useNavigate();
+  const donorId = 1; // TODO: make dynamic later
 
   const [donor, setDonor] = useState(null);
   const [addresses, setAddresses] = useState([]);
@@ -60,6 +52,7 @@ function DonorProfile() {
     pincode: "",
   });
 
+  // Fetch data from backend
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -81,6 +74,7 @@ function DonorProfile() {
         );
       } catch (error) {
         console.error(error);
+        toast.error("Failed to fetch donor data");
       } finally {
         setLoading(false);
       }
@@ -94,8 +88,10 @@ function DonorProfile() {
       await makeAddressActive(address.id);
       setSelectedAddress(address);
       setShowAddressModal(false);
+      toast.success("Address switched successfully!");
     } catch (error) {
       console.error(error);
+      toast.error("Failed to switch address!");
     }
   };
 
@@ -116,8 +112,10 @@ function DonorProfile() {
       await updateDonor(donorId, payload);
       setDonor({ ...donor, ...payload });
       setShowEditProfileModal(false);
+      toast.success("Profile updated successfully!");
     } catch (error) {
       console.error(error);
+      toast.error("Failed to update profile!");
     }
   };
 
@@ -146,8 +144,10 @@ function DonorProfile() {
       }
 
       setShowEditAddressModal(false);
+      toast.success("Address updated successfully!");
     } catch (error) {
       console.error(error);
+      toast.error("Failed to update address!");
     }
   };
 
@@ -175,7 +175,7 @@ function DonorProfile() {
         }}></div>
         
         <button
-          onClick={() => window.history.back()}
+          onClick={() => navigate(-1)}
           className="absolute top-6 left-6 z-10 flex items-center gap-2 px-4 py-2.5 bg-white/95 backdrop-blur text-gray-700 text-sm font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -479,6 +479,8 @@ function DonorProfile() {
           </div>
         </Modal>
       )}
+
+      <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
   );
 }

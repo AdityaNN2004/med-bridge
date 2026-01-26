@@ -11,7 +11,9 @@ import com.medibridge.dtos.DonorWithAddressDto;
 import com.medibridge.dtos.ListedMedicineInAreaDto;
 import com.medibridge.dtos.MedicineCategoryPercentageDto;
 import com.medibridge.dtos.MedicineDto;
+import com.medibridge.dtos.NgoDetailsDto;
 import com.medibridge.dtos.ServiceAreaDto;
+import com.medibridge.dtos.ServiceAreaUpdateDto;
 import com.medibridge.dtos.ViewStatusDtoDonarId;
 import com.medibridge.entities.donar.Medicine;
 import com.medibridge.entities.ngo.Ngo;
@@ -50,6 +52,12 @@ public interface NgoService {
   
 	DonorWithAddressDto getDonorWithAddressByNgoAndMedicineNative( Long ngoId, Long medicineId);
 
-
 	Long rejectedngos(Long medicine_id);
+	
+	NgoDetailsDto getNgoDetails(Long ngo_id);
+	
+	String updateServiceRadius(Long ngo_id,Long service_radius);
+
+
+	String updateServiceArea(Long ngo_id, ServiceAreaUpdateDto request);
 }

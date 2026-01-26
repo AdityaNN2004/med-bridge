@@ -12,4 +12,5 @@ import lombok.Setter;
 public class Jwtdto {
 	private Long userId;
 	private String role;
+	private Long entityId;
 }

@@ -7,6 +7,7 @@ import {
   FindPendingRequestMedicinesByNgoId,
   FindRejectedRequestMedicines
 } from "../../Services/NgoServices";
+
 import {
   Search,
   Package,
@@ -17,7 +18,9 @@ import {
   Clock,
   XCircle,
 } from "lucide-react";
+
 import NGONavbar from "./NGONavbar";
+import MapWithRadius from "../../Compoments/MapWithRadius";
 import { motion } from "framer-motion";
 
 /* ---------------- HELPERS ---------------- */
@@ -80,9 +83,8 @@ const NGOListedMedicineInArea = () => {
 
   const searchRef = useRef(null);
   const navigate = useNavigate();
-  const NGO_ID = 1; // later from JWT
+  const NGO_ID = 1;
 
-  /* ---------------- FETCH BY STATUS ---------------- */
   const fetchMedicinesByStatus = async (status) => {
     setLoading(true);
     try {
@@ -106,13 +108,11 @@ const NGOListedMedicineInArea = () => {
     }
   };
 
-  /* ---------------- LOAD ON TAB CHANGE ---------------- */
   useEffect(() => {
     searchRef.current?.focus();
     fetchMedicinesByStatus(statusFilter);
   }, [statusFilter]);
 
-  /* ---------------- REQUEST MEDICINE ---------------- */
   const handleRequestMedicine = async (medicineId) => {
     try {
       await RequestMedicine({ ngoId: NGO_ID, medicineId });
@@ -123,12 +123,11 @@ const NGOListedMedicineInArea = () => {
     }
   };
 
-  /* ---------------- SEARCH FILTER ---------------- */
   const filteredMedicines = medicines.filter((med) => {
     const brand = med.brandName?.toLowerCase() ?? "";
     const generic = med.genericName?.toLowerCase() ?? "";
-    const search = searchTerm.toLowerCase();
-    return brand.includes(search) || generic.includes(search);
+    return brand.includes(searchTerm.toLowerCase()) ||
+           generic.includes(searchTerm.toLowerCase());
   });
 
   return (
@@ -136,12 +135,13 @@ const NGOListedMedicineInArea = () => {
       <NGONavbar />
 
       <div className="max-w-7xl mx-auto px-6 py-28">
+        {/* HEADER */}
         <div className="flex items-center gap-3 mb-6">
           <Package className="w-7 h-7 text-teal-700" />
           <h1 className="text-2xl font-bold">Medicines</h1>
         </div>
 
-        {/* Search + Tabs */}
+        {/* SEARCH + TABS */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -171,26 +171,34 @@ const NGOListedMedicineInArea = () => {
           </div>
         </div>
 
-        {loading && (
-          <div className="text-center py-20">
-            <Clock className="w-10 h-10 mx-auto animate-spin" />
+        {/* MAP + LIST */}
+        <div className="flex gap-6 h-[480px]">
+          
+          {/* MAP (45%) */}
+          <div className="w-[45%] bg-white rounded-xl border overflow-hidden">
+            <MapWithRadius />
           </div>
-        )}
 
-        {!loading && (
-          <div className="space-y-5">
-            {filteredMedicines.map((med) => (
-              <motion.div
-                key={med.id}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-xl border p-6 flex flex-col sm:flex-row gap-4"
-              >
-                <div className="flex-1">
-                  <h3 className="font-semibold">{med.brandName}</h3>
-                  <p className="text-sm text-gray-500">{med.genericName}</p>
+          {/* MEDICINE LIST (55% SCROLLABLE) */}
+          <div className="w-[55%] overflow-y-auto pr-2 space-y-4">
+            {loading && (
+              <div className="flex justify-center items-center h-full">
+                <Clock className="w-10 h-10 animate-spin" />
+              </div>
+            )}
 
-                  <div className="text-sm text-gray-600 mt-2 space-y-1">
+            {!loading &&
+              filteredMedicines.map((med) => (
+                <motion.div
+                  key={med.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white rounded-xl border p-4"
+                >
+                  <h3 className="font-semibold text-sm">{med.brandName}</h3>
+                  <p className="text-xs text-gray-500">{med.genericName}</p>
+
+                  <div className="text-xs text-gray-600 mt-2 space-y-1">
                     {med.expiryDate && (
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
@@ -208,41 +216,34 @@ const NGOListedMedicineInArea = () => {
                         : med.location}
                     </div>
                   </div>
-                </div>
 
-                <div className="flex flex-col items-end gap-2">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs ${getStatusColor(
-                      med.status
-                    )}`}
-                  >
-                    {getStatusIcon(med.status)} {med.status}
-                  </span>
+                  <div className="flex justify-between items-center mt-3">
+                    <span className={`px-3 py-1 rounded-full text-xs ${getStatusColor(med.status)}`}>
+                      {getStatusIcon(med.status)} {med.status}
+                    </span>
 
-                  {med.status === "available" && (
-                    <button
-                      onClick={() => handleRequestMedicine(med.id)}
-                      className="text-xs border px-4 py-1.5 rounded-lg text-teal-700 border-teal-700 hover:bg-teal-700 hover:text-white"
-                    >
-                      Request Medicine
-                    </button>
-                  )}
+                    {med.status === "available" && (
+                      <button
+                        onClick={() => handleRequestMedicine(med.id)}
+                        className="text-xs border px-3 py-1 rounded-lg text-teal-700 border-teal-700 hover:bg-teal-700 hover:text-white"
+                      >
+                        Request
+                      </button>
+                    )}
 
-                  {/* ✅ ONLY ADDITION */}
-                  {med.status === "ongoing" && (
-                    <button
-                      onClick={() => navigate(`/ngo/viewstatus/${med.id}`)}
-                      className="text-xs border px-4 py-1.5 rounded-lg text-emerald-700 border-emerald-700 hover:bg-emerald-700 hover:text-white"
-                    >
-                      View Status
-                    </button>
-
-                  )}
-                </div>
-              </motion.div>
-            ))}
+                    {med.status === "ongoing" && (
+                      <button
+                        onClick={() => navigate(`/ngo/viewstatus/${med.id}`)}
+                        className="text-xs border px-3 py-1 rounded-lg text-emerald-700 border-emerald-700 hover:bg-emerald-700 hover:text-white"
+                      >
+                        View Status
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

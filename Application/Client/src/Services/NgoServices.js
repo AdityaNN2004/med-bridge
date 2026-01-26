@@ -37,3 +37,23 @@ export const getDonorWithAddressByNgoAndMedicineNative = (ngoid, medicine_id) =>
 export const getServiceAreaOfNgo = (ngoid) => {
   return axios.get(`${BASE_URL}/getserviceareaofngo/${ngoid}`);
 };
+
+export const updateServiceArea = (ngoId, payload) => {
+  return axios.put(
+    `${BASE_URL}/updateServiceArea/${ngoId}`,
+    payload,
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+};
+
+export const getNgoDetails = (ngoId) => {
+  return axios.get(`${BASE_URL}/getNgoDetails/${ngoId}`);
+};
+
+export const getServiceArea = (ngoId) => {
+  return axios.get(`${BASE_URL}/getServiceArea/${ngoId}`);
+};

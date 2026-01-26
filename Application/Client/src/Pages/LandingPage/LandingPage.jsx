@@ -13,7 +13,7 @@ const LandingPage = () => {
         <button className="btn ngo" onClick={() => navigate("/ngo/login")}>
           NGO Login
         </button>
-        <button className="btn donor" onClick={() => navigate("/donar/login")}>
+        <button className="btn donor" onClick={() => navigate("/donor/login")}>
           Donor
         </button>
         <button className="btn donor" onClick={() => navigate("/mapwithradius")}>

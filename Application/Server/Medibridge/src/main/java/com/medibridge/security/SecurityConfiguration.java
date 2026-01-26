@@ -1,5 +1,5 @@
 package com.medibridge.security;
-import org.apache.catalina.util.SessionConfig;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -34,17 +34,24 @@ public class SecurityConfiguration {
 	  httpSecurity.authorizeHttpRequests(auth -> auth
 	            .anyRequest().permitAll()
 		        );
+//	  
+//	  httpSecurity.sessionManagement(
+//			  sessionConfig ->
+//			  sessionConfig.sessionCreationPolicy
+//			  (SessionCreationPolicy.STATELESS));
 	  
-	  httpSecurity.sessionManagement(
-			  sessionConfig ->
-			  sessionConfig.sessionCreationPolicy
-			  (SessionCreationPolicy.STATELESS));
 	  
 //	  httpSecurity.httpBasic(httpBasic -> httpBasic.disable())
 //      .formLogin(form -> form.disable());
 //  
-	  
-//	  httpSecurity.authorizeHttpRequests( request ->
+//	  
+//	  httpSecurity
+//	  .cors(cors -> {})                 // ✅ ENABLE CORS
+//      .csrf(csrf -> csrf.disable())     // ✅ DISABLE CSRF (JWT based)
+//      .sessionManagement(session ->
+//      session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//  )
+//      .authorizeHttpRequests( request ->
 //	  request.requestMatchers("/swagger-ui/**",
 //			  "/v3/api-docs/**",
 //			  "/user/sign-in",
@@ -54,12 +61,13 @@ public class SecurityConfiguration {
 //			  ).permitAll()
 //	           .requestMatchers(HttpMethod.OPTIONS).permitAll()
 //	           .requestMatchers("/donar/**").hasRole("DONAR")
-//               .requestMatchers("/ngo/**").hasRole("NGO")
-//               .requestMatchers("/admin/**").hasRole("ADMIN")
-//	           .anyRequest().authenticated())
+//              .requestMatchers("/ngo/**").hasRole("NGO")
+//              .requestMatchers("/admin/**").hasRole("ADMIN")
+//           .anyRequest().authenticated())
 //	           .addFilterBefore(customJwtFilter, UsernamePasswordAuthenticationFilter.class);
 //	  
-	           return httpSecurity.build();  
+	  return httpSecurity.build();
+	  
   }
   
   @Bean

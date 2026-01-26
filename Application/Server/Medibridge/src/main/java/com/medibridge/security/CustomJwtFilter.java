@@ -26,6 +26,17 @@ public class CustomJwtFilter extends OncePerRequestFilter {
 	private final JwtUtils jwtUtils;
 
 	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) {
+		String path = request.getServletPath();
+
+	    return request.getMethod().equalsIgnoreCase("OPTIONS")
+	        || path.startsWith("/user/")
+	        || path.startsWith("/swagger-ui/")
+	        || path.startsWith("/v3/api-docs/");
+	}
+
+	
+	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		
@@ -35,11 +46,17 @@ public class CustomJwtFilter extends OncePerRequestFilter {
 			log.info("jwt found {} ", jwt);
 			Claims claims = jwtUtils.validateJWT(jwt);
 		
-			String role = claims.get("role", String.class);
-			Jwtdto dto=new Jwtdto(claims.get("user_id", Long.class),role);
 			
-			UsernamePasswordAuthenticationToken auth=new UsernamePasswordAuthenticationToken(dto, null,List.of(new SimpleGrantedAuthority(role)));
-		
+			String role = claims.get("role", String.class);
+			Long entityId = claims.get("entity_id", Long.class); 
+			Jwtdto dto=new Jwtdto(claims.get("user_id", Long.class), role, entityId);
+			
+			SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role.startsWith("ROLE_") ? role : "ROLE_" + role);
+			UsernamePasswordAuthenticationToken auth=new UsernamePasswordAuthenticationToken(
+                    dto,	
+                    null,
+                    List.of(authority)
+            );
 			SecurityContextHolder.getContext().setAuthentication(auth);
 			log.info("add sec ctx ");
 			

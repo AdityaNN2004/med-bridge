@@ -15,6 +15,7 @@ import com.medibridge.dtos.ListedMedicineInAreaDto;
 import com.medibridge.dtos.MedicineCategoryPercentageDto;
 import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.ServiceAreaDto;
+import com.medibridge.dtos.ServiceAreaUpdateDto;
 import com.medibridge.dtos.ViewStatusDtoDonarId;
 import com.medibridge.entities.ngo.Ngo;
 import com.medibridge.entities.ngo.ServiceArea;
@@ -185,6 +186,29 @@ public class NgoController {
     	Long count=ngoService.rejectedngos(medicine_id);
     	
     	return ResponseEntity.ok(count);
+    }
+    
+    @GetMapping("/getNgoDetails/{ngo_id}")
+    public ResponseEntity<?> getNgoDetails(@PathVariable Long ngo_id){
+    	return ResponseEntity.ok(ngoService.getNgoDetails(ngo_id));
+    }
+    
+    @PutMapping("/updateServiceRadius/{ngo_id}/{service_radius}")
+    public ResponseEntity<?> updateServiceRadius(@PathVariable Long ngo_id,@PathVariable Long service_radius)
+    {
+    	return ResponseEntity.ok(ngoService.updateServiceRadius(ngo_id,service_radius));
+    	
+    }
+    
+    @PutMapping("/updateServiceArea/{ngo_id}")
+    public ResponseEntity<?> updateServiceArea(@PathVariable Long ngo_id,@RequestBody ServiceAreaUpdateDto request){
+    	
+    	return ResponseEntity.ok(ngoService.updateServiceArea(ngo_id,request));
+    }
+
+    @GetMapping("/getServiceArea/{ngo_id}")
+    public ResponseEntity<?> getServiceArea(@PathVariable Long ngo_id){
+    	return ResponseEntity.ok(ngoService.getServiceAreaOfNgo(ngo_id));
     }
 
 

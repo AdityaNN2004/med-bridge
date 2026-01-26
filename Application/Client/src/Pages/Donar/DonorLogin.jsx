@@ -1,12 +1,47 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function DonorLogin() {
   const navigate = useNavigate();
+  const [email , setEmail] = useState("");
+  const [password , setPassword] = useState("");
+  const [error , setError] = useState("");  
 
-  const goNext = () => {
-    navigate("/donor/dashboard");
-  };
+
+const handleLogin = async () => {
+  try {
+    const response = await axios.post(
+      "http://localhost:9090/user/sign-in",
+      { email, password }
+    );
+
+    const token = response.data.jwtString;
+    console.log("TOKEN:", token);
+    localStorage.setItem("donorToken", token);
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+    // ✅ correct JWT decoding
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(base64));
+
+    console.log("PAYLOAD:", payload);
+
+    const role = payload.role;
+    console.log("ROLE:", role);
+
+    if (role === "ROLE_DONAR") {
+      navigate("/donor/dashboard");
+    } else {
+      setError("Unauthorized access. Please use a donor account.");
+    }
+
+  } catch (err) {
+    console.error(err);
+    setError("Invalid email or password");
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f0f7f1] px-4">
@@ -27,7 +62,9 @@ function DonorLogin() {
             <input
               type="email"
               placeholder="Email Address"
+              value={email}
               required
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 rounded-lg border border-[#b7d5b2] bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
             />
           </div>
@@ -37,7 +74,9 @@ function DonorLogin() {
             <input
               type="password"
               placeholder="Password"
+              value={password}
               required
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 rounded-lg border border-[#b7d5b2] bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
             />
           </div>
@@ -54,7 +93,7 @@ function DonorLogin() {
           {/* Login Button */}
           <button
             type="button"
-            onClick={goNext}
+            onClick={handleLogin}
             className="w-full py-3 bg-blue-800 text-white text-sm font-medium rounded-lg shadow-md hover:bg-blue-700 transition"
           >
             Login
