@@ -20,8 +20,9 @@ public class Medicine extends BaseEntity {
   private LocalDate expiry_date;
   @Column(name="quantity", length = 20)
   private String quantity;
-  @Lob
-  private byte[] medicineImage;
+  @Column(length = 500)
+  private String medicineImageUrl;
+
   
   @Enumerated(EnumType.STRING)
   private MedicineCategory medicinecategory;
@@ -37,13 +38,13 @@ public class Medicine extends BaseEntity {
   @JoinColumn(name= "donar_id",nullable = false)
   private Donar donar;
   
-  public Medicine(String medicineName, LocalDate expiry_date, String quantity, byte[] medicineImage,
+  public Medicine(String medicineName, LocalDate expiry_date, String quantity, String medicineImage,
 		MedicineCategory medicinecategory, Donar donar) {
 	super();
 	this.medicineName = medicineName;
 	this.expiry_date = expiry_date;
 	this.quantity = quantity;
-	this.medicineImage = medicineImage;
+	this.medicineImageUrl = medicineImage;
 	this.medicinecategory = medicinecategory;
 	this.donar = donar;
   }

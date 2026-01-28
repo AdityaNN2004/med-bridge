@@ -1,11 +1,45 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function NGOLogin() {
   const navigate = useNavigate();
 
-  const goNext = () => {
-    navigate("/ngo/dashboard");
+  // ✅ logic only (no UI change)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const goNext = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:9090/user/sign-in",
+        { email, password }
+      );
+
+      const token = response.data.jwtString;
+
+      // ✅ store token
+      localStorage.setItem("authToken", token);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+      // ✅ decode JWT (simple + safe)
+      const base64Url = token.split(".")[1];
+      const payload = JSON.parse(atob(base64Url));
+
+      console.log("JWT PAYLOAD:", payload);
+
+      // ✅ role check
+      if (payload.role === "ROLE_NGO") {
+        navigate("/ngo/dashboard");
+      } else {
+        setError("Unauthorized access. Please use an NGO account.");
+      }
+
+    } catch (err) {
+      console.error(err);
+      setError("Invalid email or password");
+    }
   };
 
   return (
@@ -28,6 +62,7 @@ function NGOLogin() {
               type="email"
               placeholder="Email Address"
               required
+              onChange={(e) => setEmail(e.target.value)}   // ✅
               className="w-full px-4 py-3 rounded-lg border border-[#b7d5b2] bg-[#f8fff9] text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
             />
           </div>
@@ -38,6 +73,7 @@ function NGOLogin() {
               type="password"
               placeholder="Password"
               required
+              onChange={(e) => setPassword(e.target.value)} // ✅
               className="w-full px-4 py-3 rounded-lg border border-[#b7d5b2] bg-[#f8fff9] text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
             />
           </div>
@@ -54,12 +90,17 @@ function NGOLogin() {
           {/* Login Button */}
           <button
             type="button"
-            onClick={goNext}
+            onClick={goNext}   // ✅
             className="w-full py-3 bg-green-600 text-white text-sm font-medium rounded-lg shadow-md hover:bg-green-700 transition"
           >
             Login
           </button>
         </form>
+
+        {/* Error */}
+        {error && (
+          <p className="mt-3 text-sm text-red-600 text-center">{error}</p>
+        )}
 
         {/* Register Link */}
         <p className="mt-4 text-center text-sm text-gray-600">

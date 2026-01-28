@@ -4,50 +4,44 @@ import axios from "axios";
 
 function DonorLogin() {
   const navigate = useNavigate();
-  const [email , setEmail] = useState("");
-  const [password , setPassword] = useState("");
-  const [error , setError] = useState("");  
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:9090/user/sign-in",
+        { email, password }
+      );
 
-const handleLogin = async () => {
-  try {
-    const response = await axios.post(
-      "http://localhost:9090/user/sign-in",
-      { email, password }
-    );
+      const token = response.data.jwtString;
 
-    const token = response.data.jwtString;
-    console.log("TOKEN:", token);
-    localStorage.setItem("donorToken", token);
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      // ✅ unified token name
+      localStorage.setItem("authToken", token);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-    // ✅ correct JWT decoding
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const payload = JSON.parse(atob(base64));
+      // ✅ decode JWT
+      const base64Url = token.split(".")[1];
+      const payload = JSON.parse(atob(base64Url));
 
-    console.log("PAYLOAD:", payload);
+      console.log("JWT PAYLOAD:", payload);
 
-    const role = payload.role;
-    console.log("ROLE:", role);
+      if (payload.role === "ROLE_DONAR") {
+        navigate("/donor/dashboard");
+      } else {
+        setError("Unauthorized access. Please use a donor account.");
+      }
 
-    if (role === "ROLE_DONAR") {
-      navigate("/donor/dashboard");
-    } else {
-      setError("Unauthorized access. Please use a donor account.");
+    } catch (err) {
+      console.error(err);
+      setError("Invalid email or password");
     }
-
-  } catch (err) {
-    console.error(err);
-    setError("Invalid email or password");
-  }
-};
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f0f7f1] px-4">
-      {/* LOGIN CARD */}
       <div className="w-full max-w-md p-10 rounded-2xl bg-white/85 backdrop-blur-md shadow-xl animate-fadeIn">
-        {/* Title */}
         <h2 className="text-2xl font-bold text-blue-800 text-center mb-1">
           Donor Login
         </h2>
@@ -55,9 +49,7 @@ const handleLogin = async () => {
           Welcome back! Continue making an impact.
         </p>
 
-        {/* Form */}
         <form className="space-y-4">
-          {/* Email */}
           <div>
             <input
               type="email"
@@ -69,7 +61,6 @@ const handleLogin = async () => {
             />
           </div>
 
-          {/* Password */}
           <div>
             <input
               type="password"
@@ -81,16 +72,11 @@ const handleLogin = async () => {
             />
           </div>
 
-          {/* Remember Me */}
           <div className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
+            <input type="checkbox" className="w-4 h-4" />
             <label>Remember Me</label>
           </div>
 
-          {/* Login Button */}
           <button
             type="button"
             onClick={handleLogin}
@@ -100,7 +86,10 @@ const handleLogin = async () => {
           </button>
         </form>
 
-        {/* Register Link */}
+        {error && (
+          <p className="text-red-600 text-sm text-center mt-3">{error}</p>
+        )}
+
         <p className="mt-4 text-center text-sm text-gray-600">
           Don't have an account?{" "}
           <a href="/donor/register" className="text-blue-800 font-semibold hover:underline">
@@ -109,7 +98,6 @@ const handleLogin = async () => {
         </p>
       </div>
 
-      {/* Tailwind Animation */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(25px); }

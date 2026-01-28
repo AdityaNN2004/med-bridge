@@ -1,74 +1,65 @@
-import axios from 'axios';
-const BASE_URL = 'http://localhost:9090/donar';
+import axiosInstance from "../utils/axiosInstance ";
 
+const BASE_URL = "/donar";
 
-export const getAllMedicines = () =>
-{
-   return axios.get("http://localhost:9090/donar/getallmedicines/1");
-}
+export const getAllMedicines = (donar_id) =>
+  axiosInstance.get(`${BASE_URL}/getallmedicines/${donar_id}`);
 
-export const getAllUnListedMedicines = () =>
-{
-   return axios.get(`${BASE_URL}/getunlistedmedicines/1`);
-}
+export const getAllUnListedMedicines = (donar_id) =>
+  axiosInstance.get(`${BASE_URL}/getunlistedmedicines/${donar_id}`);
 
-export const getAllListedMedicines = () =>
-{
-   return axios.get(`${BASE_URL}/getlistedmedicines/1`);
-}
+export const getAllListedMedicines = (donar_id) =>
+  axiosInstance.get(`${BASE_URL}/getlistedmedicines/${donar_id}`);
 
-export const getExpiredMedicines = () =>
-{
-   return axios.get(`${BASE_URL}/getexpiredmedicines/1`);
-}
+export const getExpiredMedicines = (donar_id) =>
+  axiosInstance.get(`${BASE_URL}/getexpiredmedicines/${donar_id}`);
 
-export const getCloseToExpiredMedicines = () =>
-{
-   return axios.get(`${BASE_URL}/getclosetoexpiredmedicines/1`);
-}
+export const getCloseToExpiredMedicines = (donar_id) =>
+  axiosInstance.get(`${BASE_URL}/getclosetoexpiredmedicines/${donar_id}`);
 
-export const getActiveMedicines = () =>
-{
-   return axios.get(`${BASE_URL}/getactivemedicines/1`);
-}
+export const getActiveMedicines = (donar_id) =>
+  axiosInstance.get(`${BASE_URL}/getactivemedicines/${donar_id}`);
 
 export const getMedicineDetails = (medicine_id) =>
-{
-   return axios.get(`${BASE_URL}/getmedicinedetails/${medicine_id}`);
-}
+  axiosInstance.get(`${BASE_URL}/getmedicinedetails/${medicine_id}`);
 
 export const deleteMedicine = (medicine_id) =>
-{
-   return axios.get(`${BASE_URL}/deletemedicine/${medicine_id}`);
-}
+  axiosInstance.get(`${BASE_URL}/deletemedicine/${medicine_id}`);
 
+export const ChangeListingStatusToListed = (medicine_id) =>
+  axiosInstance.get(`${BASE_URL}/changelistingstatustoislistedmedicine/${medicine_id}`);
 
-export const ChangeListingStatusToListed = (medicne_id) =>
-{
-   return axios.get(`${BASE_URL}/changelistingstatustoislistedmedicine/${medicne_id}`);
-}
-export const ChangeListingStatusNotListed = (medicne_id) =>
-{
-   return axios.get(`${BASE_URL}/changelistingstatustonotlisted/${medicne_id}`);
-}
+export const ChangeListingStatusNotListed = (medicine_id) =>
+  axiosInstance.get(`${BASE_URL}/changelistingstatustonotlisted/${medicine_id}`);
 
-export const getRequestedNgosForMedicine = (medicineId) => {
-  return axios.get(`${BASE_URL}/getrequestedngosformedicine/${medicineId}`);
-};
+export const getRequestedNgosForMedicine = (medicineId) =>
+  axiosInstance.get(`${BASE_URL}/getrequestedngosformedicine/${medicineId}`);
 
-export const isMedicineDonationInProgress = (medicine_id) => {
-  return axios.get(`${BASE_URL}/ismedicinedonationinprogress/${medicine_id}`);
-};
+export const isMedicineDonationInProgress = (medicine_id) =>
+  axiosInstance.get(`${BASE_URL}/ismedicinedonationinprogress/${medicine_id}`);
 
+export const addMedicine = (
+  medicineName,
+  expiry_date,
+  quantity,
+  medicineImage,
+  medicinecategory,
+  donar_id
+) => {
+  const body = {
+    medicineName,
+    expiry_date,
+    quantity,
+    medicineImage,
+    medicinecategory,
+  };
 
-export const addMedicine = ( medicineName,  expiry_date,  quantity, medicineImage,  medicinecategory) => {
-   const body =
-   {
-       medicineName,  expiry_date,  quantity, medicineImage,  medicinecategory
-   }
-  return axios.post(`${BASE_URL}/addmedicine/${1}`, body, {
+  console.log(body);
+ 
+  return axiosInstance.post(`${BASE_URL}/addmedicine/${donar_id}`, body,{
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "multipart/form-data",
     },
-  });
+  }
+  );
 };

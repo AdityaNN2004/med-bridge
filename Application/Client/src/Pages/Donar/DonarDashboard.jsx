@@ -39,8 +39,7 @@ import {
   getpendingRequests
 } from "../../Services/DonarServices";
 
-// Import JWT utility functions
-import { getDonarIdFromToken, isTokenExpired } from "../../utils/jwtUtils";
+import { getEntityId,isTokenExpired } from "../../utils/jwtUtils";
 
 function DonorDashboard() {
   const navigate = useNavigate();
@@ -60,7 +59,7 @@ function DonorDashboard() {
 
   useEffect(() => {
     // Check if token exists and is valid
-    const token = localStorage.getItem('donorToken');
+    const token = localStorage.getItem('authToken');
     if (!token || isTokenExpired()) {
       console.error('No valid token found, redirecting to login');
       navigate('/donor/login');
@@ -75,7 +74,7 @@ function DonorDashboard() {
       setLoading(true);
       
       // Get donarId from token
-      const donarId = getDonarIdFromToken();
+      const donarId = getEntityId();
       
       if (!donarId) {
         console.error('No donarId found in token');

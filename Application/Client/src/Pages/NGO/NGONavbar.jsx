@@ -22,7 +22,13 @@ const NGONavbar = () => {
 
       {/* Logo */}
       <Logo />
-
+  <NavItem
+          icon={<UserCircle className="w-4 h-4" />}
+          active={isActive("/ngo/profile")}
+          onClick={() => navigate("/ngo/profile")}
+        >
+          Profile
+        </NavItem>
       {/* Links */}
       <div className="flex items-center gap-1 px-2">
         <NavItem
@@ -57,13 +63,7 @@ const NGONavbar = () => {
           Listed Medicines in Area
         </NavItem>
 
-        <NavItem
-          icon={<UserCircle className="w-4 h-4" />}
-          active={isActive("/ngo/profile")}
-          onClick={() => navigate("/ngo/profile")}
-        >
-          Profile
-        </NavItem>
+      
 
         <LogoutButton onClick={() => navigate("/")} />
       </div>

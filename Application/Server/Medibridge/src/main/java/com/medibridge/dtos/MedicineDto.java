@@ -21,8 +21,9 @@ public class MedicineDto {
     private String medicineName;
     private LocalDate expiry_date;
     private String quantity;
-    private byte[] medicineImage;
+    private String  medicineImageUrl;
     private MedicineCategory medicinecategory;
+    
     private Long donarid;
     // getters and setters
 }

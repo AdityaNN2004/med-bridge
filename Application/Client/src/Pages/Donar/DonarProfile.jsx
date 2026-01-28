@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getEntityId,isTokenExpired } from "../../utils/jwtUtils";
 import {
   User,
   Mail,
@@ -26,7 +27,7 @@ import {
 
 function DonorProfile() {
   const navigate = useNavigate();
-  const donorId = 1; // TODO: make dynamic later
+  const donorId = getEntityId(); // TODO: make dynamic later
 
   const [donor, setDonor] = useState(null);
   const [addresses, setAddresses] = useState([]);
@@ -67,7 +68,7 @@ function DonorProfile() {
           mobile: donorData.user?.mobile || "",
         });
 
-        const addressesRes = await getAddresses();
+        const addressesRes = await getAddresses(donorId);
         setAddresses(addressesRes.data);
         setSelectedAddress(
           addressesRes.data.find((a) => a.active) || addressesRes.data[0] || null

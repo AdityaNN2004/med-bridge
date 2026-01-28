@@ -26,8 +26,10 @@ import {
   Loader2
 } from "lucide-react";
 import DonorNavbar from "./DonorNavbar";
-
+import { getEntityId,isTokenExpired } from "../../utils/jwtUtils";
 const DUMMY_IMAGE = "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae";
+
+const donar_id =getEntityId();
 
 function ViewMedicine() {
   const navigate = useNavigate();
@@ -49,17 +51,17 @@ function ViewMedicine() {
 
       switch (selectedFilter) {
         case "expired":
-          response = await getExpiredMedicines();
+          response = await getExpiredMedicines(donar_id);
           break;
         case "close":
-          response = await getCloseToExpiredMedicines();
+          response = await getCloseToExpiredMedicines(donar_id);
           break;
         case "active":
-          response = await getActiveMedicines();
+          response = await getActiveMedicines(donar_id);
           break;
         case "all":
         default:
-          response = await getAllUnListedMedicines();
+          response = await getAllUnListedMedicines(donar_id);
       }
 
       const mapped =
@@ -71,7 +73,6 @@ function ViewMedicine() {
       setMedicines(mapped);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to load medicines");
       setMedicines([]);
     } finally {
       setLoading(false);

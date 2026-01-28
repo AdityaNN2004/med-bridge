@@ -39,8 +39,9 @@ public class CustomJwtFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
-		
+		//token arrived 
 		String headerValue = request.getHeader("Authorization");
+		
 		if (headerValue != null && headerValue.startsWith("Bearer ")) {
 			String jwt = headerValue.substring(7);
 			log.info("jwt found {} ", jwt);

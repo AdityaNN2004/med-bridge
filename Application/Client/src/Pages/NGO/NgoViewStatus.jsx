@@ -2,10 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
-import NgoNavbar from "./NgoNavbar";
+import NgoNavbar from "./NGONavbar";
 import RoutesMap from "../../Compoments/RoutesMap";
 import NGOChatbot from "../../Compoments/NGOChatbot";
-
+import { getEntityId } from "../../utils/jwtUtils";
+import { ToastContainer, toast } from "react-toastify";
 import { getMedicineDetails } from "../../Services/MedicineServices";
 import {
   getDonorWithAddressByNgoAndMedicineNative,
@@ -16,7 +17,7 @@ function NgoViewStatus() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const ngoId = 1; // 🔴 replace later
+  const ngoId = getEntityId(); // 🔴 replace later
 
   const [medicine, setMedicine] = useState(null);
   const [donor, setDonor] = useState(null);

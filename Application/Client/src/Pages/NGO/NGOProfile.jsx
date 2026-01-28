@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getEntityId } from "../../utils/jwtUtils";
 import {
   getNgoDetails,
   getServiceArea,
@@ -10,7 +11,7 @@ import {
 
 function NGOProfile() {
   const navigate = useNavigate();
-  const ngoId = 1; // TODO: make dynamic later
+  const ngoId = getEntityId(); // TODO: make dynamic later
 
   const [ngo, setNgo] = useState(null);
   const [serviceArea, setServiceArea] = useState(null);

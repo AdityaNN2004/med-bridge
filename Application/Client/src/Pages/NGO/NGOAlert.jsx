@@ -8,7 +8,7 @@ import {
   FindRejectedRequestMedicines,
   getListMedicinesInServiceRadius
 } from "../../Services/NgoServices";
-
+import { getEntityId } from "../../utils/jwtUtils";
 /* ---------------- SAFE DATE HELPERS ---------------- */
 
 // Extract date safely from ANY API response
@@ -71,10 +71,10 @@ const getExactTimeLabel = (dateString) => {
 const NGOAlert = () => {
   const [alerts, setAlerts] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
-
+  const ngo_id = getEntityId();
   /* ---------------- LOAD NOTIFICATIONS ---------------- */
   useEffect(() => {
-    const loadNotifications = async (ngo_id = 1) => {
+    const loadNotifications = async () => {
       try {
         const [
           pendingRes,

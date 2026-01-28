@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.medibridge.dtos.DonationsDto;
 import com.medibridge.entities.Donations;
 import com.medibridge.entities.donar.Medicine;
 
@@ -18,6 +19,18 @@ public interface DonationsRepository extends JpaRepository<Donations, Long> {
       
       @Query(value = "SELECT m.* FROM donations d JOIN medicine m ON d.medicine_id = m.medicine_id WHERE d.ngo_id = :ngoId AND d.donationstatus = 'Completed'", nativeQuery = true)
       List<Medicine> getAllCompletedMedicinesByNgoId(@Param("ngoId") Long ngoId);
-
+      
+      @Query("""
+    		    SELECT new com.medibridge.dtos.DonationsDto(
+    		        d.donar.id,
+    		        d.ngo.id,
+    		        d.medicine.id
+    		    )
+    		    FROM Donations d
+    		    WHERE d.medicine.id = :medicineId
+    		""")
+    		DonationsDto getDonationDtoByMedicineId(@Param("medicineId") Long medicineId);
+     
+     
 }
 

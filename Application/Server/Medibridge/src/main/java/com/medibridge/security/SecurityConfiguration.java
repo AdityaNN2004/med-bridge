@@ -29,11 +29,11 @@ public class SecurityConfiguration {
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception
   {
-	  httpSecurity.csrf(csrf -> csrf.disable());
-	  httpSecurity.cors(cors -> {});
-	  httpSecurity.authorizeHttpRequests(auth -> auth
-	            .anyRequest().permitAll()
-		        );
+//	  httpSecurity.csrf(csrf -> csrf.disable());
+//	  httpSecurity.cors(cors -> {});
+//	  httpSecurity.authorizeHttpRequests(auth -> auth
+//	            .anyRequest().permitAll()
+//		        );
 //	  
 //	  httpSecurity.sessionManagement(
 //			  sessionConfig ->
@@ -45,27 +45,29 @@ public class SecurityConfiguration {
 //      .formLogin(form -> form.disable());
 //  
 //	  
-//	  httpSecurity
-//	  .cors(cors -> {})                 // ✅ ENABLE CORS
-//      .csrf(csrf -> csrf.disable())     // ✅ DISABLE CSRF (JWT based)
-//      .sessionManagement(session ->
-//      session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//  )
-//      .authorizeHttpRequests( request ->
-//	  request.requestMatchers("/swagger-ui/**",
-//			  "/v3/api-docs/**",
-//			  "/user/sign-in",
-//			  "/admin/**",
-//			  "/donar/sign-up",
-//			  "/users/pwd-encryption"
-//			  ).permitAll()
-//	           .requestMatchers(HttpMethod.OPTIONS).permitAll()
-//	           .requestMatchers("/donar/**").hasRole("DONAR")
-//              .requestMatchers("/ngo/**").hasRole("NGO")
-//              .requestMatchers("/admin/**").hasRole("ADMIN")
-//           .anyRequest().authenticated())
-//	           .addFilterBefore(customJwtFilter, UsernamePasswordAuthenticationFilter.class);
-//	  
+	  httpSecurity
+	  .cors(cors -> {})                 // ✅ ENABLE CORS
+      .csrf(csrf -> csrf.disable())     // ✅ DISABLE CSRF (JWT based)
+      .sessionManagement(session ->
+      session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+       )
+      .authorizeHttpRequests( request ->
+	  request.requestMatchers("/swagger-ui/**",
+			  "/v3/api-docs/**",
+			  "/user/sign-in",
+			  "/admin/**",
+			  "/donar/sign-up",
+			  "ngo/register1",
+			  "ngo/${ngoId}/documents",
+			  "/users/pwd-encryption"
+			  ).permitAll()
+	           .requestMatchers(HttpMethod.OPTIONS).permitAll()
+	           .requestMatchers("/donar/**").hasRole("DONAR")
+              .requestMatchers("/ngo/**").hasRole("NGO")
+              .requestMatchers("/admin/**").hasRole("ADMIN")
+              .anyRequest().authenticated())
+	          .addFilterBefore(customJwtFilter, UsernamePasswordAuthenticationFilter.class);
+	  
 	  return httpSecurity.build();
 	  
   }

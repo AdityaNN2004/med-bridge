@@ -38,7 +38,7 @@ public interface NgoRepository extends JpaRepository<Ngo, Long> {
 
 
     @Query(value = "SELECT DISTINCT m.* FROM medicine m JOIN viewstatus_ngo v ON v.medicine_id = m.medicine_id WHERE v.ngo_id = :ngoId AND m.donar_id = :donarId AND v.donarapproval = 'Donar_Rejected' AND v.donation_status_ngo = 'DonationProcessNotStarted'", nativeQuery = true)
-    List<Medicine> findRejectedRequestMedicines(@Param("ngoId") Long ngoId, @Param("donarId") Long donarId);
+    List<Medicine> findRejectedRequestMedicines(@Param("ngoId") Long ngoId);
     
     @Query(value = "SELECT DISTINCT m.* FROM medicine m JOIN viewstatus_ngo v ON v.medicine_id = m.medicine_id WHERE v.ngo_id = :ngoId AND m.donar_id = :donarId AND v.donarapproval = 'Donar_Approved' AND v.donation_status_ngo = 'DonationProcessStarted'", nativeQuery = true)
     List<Medicine> findOnGoingRequestMedicines(@Param("ngoId") Long ngoId, @Param("donarId") Long donarId);

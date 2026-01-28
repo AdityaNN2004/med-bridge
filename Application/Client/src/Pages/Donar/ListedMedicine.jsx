@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Clock, CheckCircle, XCircle } from "lucide-react";
 import DonorNavbar from "./DonorNavbar";
+import { getEntityId,isTokenExpired } from "../../utils/jwtUtils";
+import { ToastContainer, toast } from "react-toastify";
 import {
   getAllListedMedicines,
   ChangeListingStatusNotListed,
@@ -15,7 +17,7 @@ const DEFAULT_MEDICINE_IMAGE =
 
 function ListedMedicine() {
   const navigate = useNavigate();
-
+  const donar_id = getEntityId();
   const [medicines, setMedicines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,7 +34,7 @@ function ListedMedicine() {
   /* ================= FETCH LISTED MEDICINES ================= */
   const fetchListedMedicines = async () => {
     try {
-      const response = await getAllListedMedicines();
+      const response = await getAllListedMedicines(donar_id);
 
       const updated = await Promise.all(
         response.data.map(async (med) => {
@@ -86,7 +88,8 @@ function ListedMedicine() {
       setMedicines((prev) => prev.filter((m) => m.id !== medicineId));
     } catch (err) {
       console.error(err);
-      alert("Failed to unlist medicine");
+     toast.error("Failed to unlist medicine");
+
     } finally {
       setUnlistingId(null);
     }
@@ -103,12 +106,12 @@ function ListedMedicine() {
   const handleApproveNgo = async (ngoId) => {
     try {
       await ApproveNgo(activeMedicine.id, ngoId);
-      alert("NGO Approved ✅");
+       toast.success("NGO Approved");
       setActiveMedicine(null);
       fetchListedMedicines();
     } catch (err) {
       console.error(err);
-      alert("Failed to approve NGO ❌");
+       toast.success("Failed to approve NGO");
     }
   };
 
@@ -116,11 +119,11 @@ function ListedMedicine() {
   const handleRejectNgo = async (ngoId) => {
     try {
       await RejectNgo(activeMedicine.id, ngoId);
-      alert("NGO Rejected ❌");
+       toast.success("NGO Rejected");
       setRequestedNgos((prev) => prev.filter((n) => n.ngo_id !== ngoId));
     } catch (err) {
       console.error(err);
-      alert("Failed to reject NGO ❌");
+    toast.error("Fail to Rejected");
     }
   };
 

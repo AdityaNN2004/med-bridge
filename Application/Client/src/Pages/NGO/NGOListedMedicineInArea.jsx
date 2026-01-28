@@ -5,9 +5,12 @@ import {
   RequestMedicine,
   FindOnGoingRequestMedicines,
   FindPendingRequestMedicinesByNgoId,
-  FindRejectedRequestMedicines
+  FindRejectedRequestMedicines,
+  updateServiceArea,
+  getServiceAreaOfNgo,
 } from "../../Services/NgoServices";
-
+import { getEntityId } from "../../utils/jwtUtils";
+import { ToastContainer, toast } from "react-toastify";
 import {
   Search,
   Package,
@@ -81,10 +84,28 @@ const NGOListedMedicineInArea = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("available");
 
+  // 🔹 map-related
+  const [radiusKm, setRadiusKm] = useState(10);
+  const [refreshMapKey, setRefreshMapKey] = useState(0);
+
   const searchRef = useRef(null);
   const navigate = useNavigate();
-  const NGO_ID = 1;
+  const NGO_ID = getEntityId();
 
+  /* -------- LOAD CURRENT RADIUS -------- */
+  useEffect(() => {
+    const loadRadius = async () => {
+      try {
+        const res = await getServiceAreaOfNgo(NGO_ID);
+        setRadiusKm(res.data.serviceRadius || 10);
+      } catch (e) {
+        console.error("Failed to load radius", e);
+      }
+    };
+    loadRadius();
+  }, []);
+
+  /* -------- FETCH MEDICINES -------- */
   const fetchMedicinesByStatus = async (status) => {
     setLoading(true);
     try {
@@ -113,21 +134,35 @@ const NGOListedMedicineInArea = () => {
     fetchMedicinesByStatus(statusFilter);
   }, [statusFilter]);
 
+  /* -------- UPDATE RADIUS -------- */
+  const handleUpdateRadius = async () => {
+    try {
+      await updateServiceArea(NGO_ID, radiusKm);
+   toast.success("Service radius updated");
+      setRefreshMapKey((k) => k + 1); // force map reload
+      fetchMedicinesByStatus(statusFilter);
+    } catch {
+     toast.error("Failed to update radius");
+    }
+  };
+
   const handleRequestMedicine = async (medicineId) => {
     try {
       await RequestMedicine({ ngoId: NGO_ID, medicineId });
-      alert("Requested Successfully ✅");
+    toast.success("Requested Successfully ");
       setStatusFilter("pending");
     } catch {
-      alert("Failed to request medicine ❌");
+        toast.error("Failed to request medicine ");
     }
   };
 
   const filteredMedicines = medicines.filter((med) => {
     const brand = med.brandName?.toLowerCase() ?? "";
     const generic = med.genericName?.toLowerCase() ?? "";
-    return brand.includes(searchTerm.toLowerCase()) ||
-           generic.includes(searchTerm.toLowerCase());
+    return (
+      brand.includes(searchTerm.toLowerCase()) ||
+      generic.includes(searchTerm.toLowerCase())
+    );
   });
 
   return (
@@ -138,7 +173,7 @@ const NGOListedMedicineInArea = () => {
         {/* HEADER */}
         <div className="flex items-center gap-3 mb-6">
           <Package className="w-7 h-7 text-teal-700" />
-          <h1 className="text-2xl font-bold">Medicines</h1>
+          <h1 className="text-2xl font-bold">Medicines Near Me</h1>
         </div>
 
         {/* SEARCH + TABS */}
@@ -172,14 +207,31 @@ const NGOListedMedicineInArea = () => {
         </div>
 
         {/* MAP + LIST */}
-        <div className="flex gap-6 h-[480px]">
-          
-          {/* MAP (45%) */}
-          <div className="w-[45%] bg-white rounded-xl border overflow-hidden">
-            <MapWithRadius />
+        <div className="flex gap-6 h-[470px]">
+          {/* MAP */}
+          <div className="w-[45%] bg-white rounded-xl border p-4">
+            {/* UPDATE RADIUS BOX */}
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-sm font-medium">Service Radius (km)</span>
+              <input
+                type="number"
+                min="1"
+                value={radiusKm}
+                onChange={(e) => setRadiusKm(e.target.value)}
+                className="w-20 border rounded-md px-2 py-1 text-sm"
+              />
+              <button
+                onClick={handleUpdateRadius}
+                className="bg-teal-700 text-white px-4 py-1.5 rounded-md text-xs"
+              >
+                Update
+              </button>
+            </div>
+
+            <MapWithRadius key={refreshMapKey} />
           </div>
 
-          {/* MEDICINE LIST (55% SCROLLABLE) */}
+          {/* MEDICINE LIST */}
           <div className="w-[55%] overflow-y-auto pr-2 space-y-4">
             {loading && (
               <div className="flex justify-center items-center h-full">
@@ -218,7 +270,11 @@ const NGOListedMedicineInArea = () => {
                   </div>
 
                   <div className="flex justify-between items-center mt-3">
-                    <span className={`px-3 py-1 rounded-full text-xs ${getStatusColor(med.status)}`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs ${getStatusColor(
+                        med.status
+                      )}`}
+                    >
                       {getStatusIcon(med.status)} {med.status}
                     </span>
 
@@ -233,7 +289,9 @@ const NGOListedMedicineInArea = () => {
 
                     {med.status === "ongoing" && (
                       <button
-                        onClick={() => navigate(`/ngo/viewstatus/${med.id}`)}
+                        onClick={() =>
+                          navigate(`/ngo/viewstatus/${med.id}`)
+                        }
                         className="text-xs border px-3 py-1 rounded-lg text-emerald-700 border-emerald-700 hover:bg-emerald-700 hover:text-white"
                       >
                         View Status

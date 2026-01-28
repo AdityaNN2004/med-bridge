@@ -1,5 +1,5 @@
 package com.medibridge.entities.donar;
 
 public enum ListingStatus {
-   IsListed , NotListed
+   IsListed , NotListed , Donated
 }

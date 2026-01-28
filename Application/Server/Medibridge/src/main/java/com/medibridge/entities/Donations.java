@@ -36,7 +36,7 @@ public class Donations extends BaseEntity{
     @JoinColumn(name = "ngo_id", nullable = false)
     private Ngo ngo;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "medicine_id", nullable = false)
     private Medicine medicine;
     

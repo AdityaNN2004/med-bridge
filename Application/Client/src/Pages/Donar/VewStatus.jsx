@@ -1,39 +1,78 @@
 import React, { useEffect, useState } from "react";
+import {
+  markRequestAsCompleted,
+  markRequestAsDiscarded,
+} from "../../Services/DonarServices"
+import { ArrowLeft, CheckCircle, XCircle } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ToastContainer, toast } from "react-toastify";
 
 import DonorNavbar from "./DonorNavbar";
 import RoutesMap from "../../Compoments/RoutesMap";
 import DonarChatbot from "../../Compoments/DonarChatbot";
 
 import { getMedicineDetails } from "../../Services/MedicineServices";
-import { getDonarAddress } from "../../Services/DonarServices";
-import { getServiceAreaOfNgo } from "../../Services/NgoServices";
+import {
+  getDonarAddress,
+  getDonationDtoByMedicineId,getNgoDetailsForARequestedMedicineByMedicineIdApprovedByDonar
+} from "../../Services/DonarServices";
 
 function ViewStatus() {
-  const { id } = useParams();
+  const { id } = useParams(); // medicineId
   const navigate = useNavigate();
-
-  const donorId = 1; // 🔴 replace later
-  const ngoId = 1;   // 🔴 replace later
 
   const [medicine, setMedicine] = useState(null);
   const [donor, setDonor] = useState(null);
   const [ngo, setNgo] = useState(null);
+  const [donationInfo, setDonationInfo] = useState(null);
 
   useEffect(() => {
     loadData();
   }, [id]);
 
+  const handleCompleted = async () => {
+    try {
+      await markRequestAsCompleted(id);
+       toast.success("Donation Completed");
+      navigate(-1); // go back after success (optional)
+    } catch (err) {
+      console.error(err);
+       toast.error("Donation Failed");
+    }
+  };
+
+  const handleDiscarded = async () => {
+    try {
+      await markRequestAsDiscarded(id);
+      alert("Request marked as Discarded");
+      navigate(-1); // go back after success (optional)
+    } catch (err) {
+      console.error(err);
+      alert("Failed to discard request");
+    }
+  };
+
+
   const loadData = async () => {
-    const medRes = await getMedicineDetails(id);
-    setMedicine(medRes.data);
+    try {
+      // 1️⃣ Get donation DTO (donorId + ngoId)
+      const dto = await getDonationDtoByMedicineId(id);
+      setDonationInfo(dto);
 
-    const donorRes = await getDonarAddress(donorId);
-    setDonor(donorRes.data);
+      // 2️⃣ Medicine details
+      const medRes = await getMedicineDetails(id);
+      setMedicine(medRes.data);
 
-    const ngoRes = await getServiceAreaOfNgo(ngoId);
-    setNgo(ngoRes.data);
+      // 3️⃣ Donor address
+      const donorRes = await getDonarAddress(dto.donar_id);
+      setDonor(donorRes.data);
+
+      // 4️⃣ NGO address
+      const ngoRes = await getNgoDetailsForARequestedMedicineByMedicineIdApprovedByDonar(id);
+      setNgo(ngoRes.data);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
   };
 
   /* ADDRESS STRINGS */
@@ -80,21 +119,45 @@ function ViewStatus() {
           {/* RIGHT PANEL */}
           <div className="lg:col-span-4 bg-white rounded-xl shadow flex flex-col h-[520px] overflow-hidden">
 
-            {/* NGO DETAILS (COMPACT) */}
-            <div className="px-4 py-3 border-b bg-gray-50">
+            {/* NGO DETAILS */}
+             <div className="px-4 py-3 border-b bg-gray-50">
               <h3 className="text-sm font-semibold text-gray-800 mb-1">
                 NGO Details
               </h3>
+
               {ngo ? (
-                <p className="text-xs text-gray-600 leading-snug">
-                  {ngoFullAddress}
-                </p>
+                <>
+                  <p className="text-xs text-gray-600 leading-snug mb-3">
+                    {ngoFullAddress}
+                  </p> 
+
+            {/* ACTION BUTTONS */}
+             <div className="flex gap-2">
+                    <button onClick={handleCompleted}
+                      className="flex items-center justify-center gap-1 flex-1
+                     bg-green-600 hover:bg-green-700 text-white
+                     text-xs font-medium py-2 rounded-lg transition"
+                    >
+                      <CheckCircle size={14} />
+                      Completed
+                    </button>
+
+                    <button onClick={handleDiscarded}
+                      className="flex items-center justify-center gap-1 flex-1
+                     bg-red-600 hover:bg-red-700 text-white
+                     text-xs font-medium py-2 rounded-lg transition"
+                    >
+                      <XCircle size={14} />
+                      Discard
+                    </button>
+                  </div>
+                </>
               ) : (
                 <p className="text-xs text-gray-400">Loading NGO details…</p>
               )}
-            </div>
+            </div> 
 
-            {/* MEDICINE DETAILS (COMPACT) */}
+            {/* MEDICINE DETAILS */}
             <div className="px-4 py-3 border-b">
               <h3 className="text-sm font-semibold text-gray-800 mb-1">
                 Medicine Details
@@ -111,12 +174,14 @@ function ViewStatus() {
               )}
             </div>
 
-            {/* CHATBOT (≈65–70% HEIGHT) */}
+            {/* CHATBOT */}
             <div className="flex-1 overflow-hidden">
-              <DonarChatbot
-                ngoId={ngoId}
-                donarId={donorId}
-              />
+              {donationInfo && (
+                <DonarChatbot
+                  ngoId={donationInfo.ngo_id}
+                  donarId={donationInfo.donar_id}
+                />
+              )}
             </div>
 
           </div>

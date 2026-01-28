@@ -37,7 +37,6 @@ public class S3ServiceImpl implements S3Service {
                 software.amazon.awssdk.core.sync.RequestBody.fromBytes(file.getBytes())
         );
 
-        return "https://" + bucketName + ".s3.ap-south-1.amazonaws.com/" + key;
+        return "https://" + bucketName + ".s3.eu-north-1.amazonaws.com/" + key;
     }
 }
-

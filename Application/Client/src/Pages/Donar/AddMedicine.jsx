@@ -4,7 +4,7 @@ import { Camera, Calendar, Package, Plus } from "lucide-react";
 import DonorNavbar from "./DonorNavbar";
 import { toast } from "react-toastify";
 import { addMedicine } from "../../Services/MedicineServices";
-
+import { getEntityId } from "../../utils/jwtUtils";
 function AddMedicine() {
   const navigate = useNavigate();
 
@@ -12,10 +12,10 @@ function AddMedicine() {
   const [medicineName, setMedicineName] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [numberOfUnits, setNumberOfUnits] = useState("");
-  const [photoUrl, setPhotoUrl] = useState("");
-
+  const [photo , setPhoto]= useState(null);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const d_id =getEntityId();
 
   // 🔹 Validation
   const validate = () => {
@@ -35,29 +35,50 @@ function AddMedicine() {
   };
 
   // 🔹 Submit handler
-  const handleSubmit = async () => {
-    if (!validate()) return;
+const handleSubmit = async () => {
+  if (!validate()) return;
 
-    const payload = {
-      medicineName,
-      expiry_date: expiryDate,
-      quantity: numberOfUnits,
-      medicineImage: null, 
-      medicinecategory: "ANTIBIOTIC",
-    };
+  if (!photo) {
+    toast.error("Please upload a medicine image");
+    return;
+  }
 
-    try {
-      setLoading(true);
-      await addMedicine( medicineName, expiryDate, numberOfUnits, null,  "ANTIBIOTIC",);
-      toast.success("Medicine added successfully");
-      navigate("/donor/view-medicine");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to add medicine");
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+
+    const formData = new FormData();
+     console.log(d_id)
+    // JSON part
+    formData.append(
+      "medicine",
+      new Blob(
+        [
+          JSON.stringify({
+            medicineName,
+            expiry_date: expiryDate,
+            quantity: numberOfUnits,
+            medicinecategory: "ANTIBIOTIC",
+             d_id,
+          })
+        ],
+        { type: "application/json" }
+      )
+    );
+
+    // FILE part (name MUST match backend)
+    formData.append("image", photo);
+
+    await addMedicine(formData);
+
+    toast.success("Medicine added successfully");
+    navigate("/donor/view-medicine");
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to add medicine");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-150 font-poppins">
@@ -143,15 +164,14 @@ function AddMedicine() {
             {/* Photo URL (optional – not sent) */}
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
-                <Camera className="w-4 h-4" />
-                Photo URL (optional)
+               <input type="file" accept="image/*" onChange={(e) => setPhoto(e.target.files[0])}/>
               </label>
-              <input
-                type="text"
-                value={photoUrl}
-                onChange={(e) => setPhotoUrl(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-xl"
-              />
+             <input
+  type="file"
+  accept="image/*"
+  onChange={(e) => setPhoto(e.target.files[0])}
+/>
+
             </div>
 
             <button

@@ -1,9 +1,12 @@
 package com.medibridge.service;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.NgoWithServiceAreaDto;
@@ -12,6 +15,8 @@ import com.medibridge.dtos.AddressDto;
 import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.DonarDashboardDto;
 import com.medibridge.dtos.DonarDto;
+import com.medibridge.dtos.DonarRegistrationDto;
+import com.medibridge.dtos.DonationsDto;
 import com.medibridge.dtos.MedicineCategoryPercentageDto;
 import com.medibridge.entities.User;
 import com.medibridge.*;
@@ -20,10 +25,12 @@ import com.medibridge.entities.donar.Donar;
 import com.medibridge.entities.donar.Medicine;
 import com.medibridge.entities.donar.MedicineCategory;
 import com.medibridge.entities.ngo.Ngo;
+
+
 @Service
 public interface DonarService {
 		    
-		String signUp(Donar donar);
+		String signUp(DonarRegistrationDto donar);
 		
 		Donar getDonarDetails(Long donar_id);
 		
@@ -33,7 +40,7 @@ public interface DonarService {
 		
 		String deleteDonarDetails(Long donar_id);
 		
-		ApiResponse addMedicine(MedicineDto medicinedto);
+		 ApiResponse addMedicine(MedicineDto medicinedto ,  MultipartFile image) throws IOException;
 		
 		MedicineDto getMedicineDetails(Long medicne_id);	
 		
@@ -70,7 +77,7 @@ public interface DonarService {
 		List<AddressDto> getListOfActiveAddress();
 		
 		void switchAddress(Long address_id);
-		
+		void adddonarAddress(AddressDto addressdto);
 		List<RequestedNgos> getRequestedNgoByMedicineid(Long medicine_id);
 		
 		int getMedicineCount(Long donar_id);
@@ -94,5 +101,9 @@ public interface DonarService {
 		int completedDonations(Long donar_id);
 
 		int requestedMedicinesCount(Long donar_id);
+		DonationsDto getDonationDtoByMedicineId(Long medicineId);
 
+		void markRequestAsCompleted(Long medicine_id);
+
+		void markRequestAsDiscarded(Long medicine_id);
 }

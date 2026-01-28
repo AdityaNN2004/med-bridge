@@ -1,5 +1,6 @@
 package com.medibridge.service;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.transaction.Transactional;
 
@@ -17,12 +19,17 @@ import com.medibridge.custom_exceptions.ResourceNotFoundException;
 import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.NgoWithServiceAreaDto;
 import com.medibridge.dtos.RequestedNgos;
+import com.medibridge.dtos.UserDto;
 import com.medibridge.dtos.AddressDto;
 import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.DonarDashboardDto;
 import com.medibridge.dtos.DonarDto;
+import com.medibridge.dtos.DonarRegistrationDto;
+import com.medibridge.dtos.DonationsDto;
 import com.medibridge.dtos.MedicineCategoryPercentageDto;
 import com.medibridge.entities.User;
+import com.medibridge.entities.userRole;
+import com.medibridge.entities.chat.ChatRoom;
 import com.medibridge.entities.donar.Address;
 import com.medibridge.entities.donar.Donar;
 import com.medibridge.entities.donar.ListingStatus;
@@ -30,10 +37,13 @@ import com.medibridge.entities.donar.Medicine;
 import com.medibridge.entities.donar.MedicineCategory;
 import com.medibridge.entities.ngo.Ngo;
 import com.medibridge.entities.ngo.ServiceArea;
+import com.medibridge.repository.ChatRoomRepository;
 import com.medibridge.repository.DonarAddressRepository;
 import com.medibridge.repository.DonarRepository;
+import com.medibridge.repository.DonationsRepository;
 import com.medibridge.repository.MedicineRepository;
 import com.medibridge.repository.NgoRepository;
+import com.medibridge.repository.UserRepository;
 import com.medibridge.repository.ViewStatusNgoRepository;
 @Service
 @Transactional
@@ -52,21 +62,66 @@ public class DonarServiceImpl implements DonarService{
     private  PasswordEncoder passwordEncoder;
     @Autowired
     private ModelMapper modelMapper;
-    
+    @Autowired
+    private DonationsRepository donationsrepo;
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private ViewStatusNgoRepository viewStatusNgoRepository;
+    @Autowired
+    private S3Service s3Service;
+    @Autowired
+    private ChatRoomRepository chatrepo;
     
-	@Override
-	public String signUp(Donar donar) {
-		donar.getUser().setPassword(passwordEncoder.encode(
-				  donar.getUser().getPassword()));
-		donarRepository.save(donar);
-		return null;
-	}
+    @Override
+    public String signUp(DonarRegistrationDto dto) {
+
+        /* =======================
+           1️⃣ CREATE USER
+           ======================= */
+        UserDto userDto = dto.getUser();
+
+        // Optional but recommended: check email uniqueness
+        if (userRepository.existsByEmail(userDto.getEmail())) {
+            throw new RuntimeException("Email already registered");
+        }
+
+        User user = new User();
+        user.setEmail(userDto.getEmail());
+        user.setMobile(userDto.getMobile());
+        user.setUserRole(userRole.valueOf(userDto.getUserRole()));
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+
+        userRepository.save(user);
+
+        Donar donar = new Donar();
+        donar.setFirstName(userDto.getFirstName());
+        donar.setLastName(userDto.getLastName());
+        donar.setUser(user);
+
+        donarRepository.save(donar); // donar_id generated here
+
+     
+        AddressDto addressDto = dto.getAddress();
+
+        Address address = new Address();
+        address.setFullAddress(addressDto.getFullAddress());
+        address.setCity(addressDto.getCity());
+        address.setState(addressDto.getState());
+        address.setPincode(addressDto.getPincode());
+        address.setActive(true);
+        address.setDonar(donar);
+
+        donarAddressRepository.save(address);
+
+
+        return "Donor registered successfully";
+    }
+
 
 	@Override
 	public Donar getDonarDetails(Long user_id) {
-		return donarRepository.findByUser_Id(user_id).orElseThrow(() -> new ResourceNotFoundException("Invalid user id !!!"));
+		return donarRepository.findById(user_id).orElseThrow(() -> new ResourceNotFoundException("Invalid user id !!!"));
 	}
 
 	@Override
@@ -112,28 +167,30 @@ public class DonarServiceImpl implements DonarService{
 
 
 	@Override
-	public ApiResponse addMedicine(MedicineDto medicinedto) {
+	public ApiResponse addMedicine(MedicineDto medicinedto ,  MultipartFile image) throws IOException {
 		
         	
 		if(medicineRepository.existsBymedicineName(medicinedto.getMedicineName()))
 		{
 			throw new ApiException("medicine already exists!!!!!!!");
 		}
-		Donar donar = donarRepository.getById(medicinedto.getDonarid());		
+		Donar donar = donarRepository.getById(medicinedto.getDonarid());
+		String imageURL =	s3Service.uploadFile(image, "medicine-images/donar_" + donar.getId());	
 		Medicine medicine = new Medicine();
 		medicine.setDonar(donar);
 		medicine.setExpiry_date(medicinedto.getExpiry_date());
 		medicine.setMedicinecategory(medicinedto.getMedicinecategory());
 		medicine.setMedicineName(medicinedto.getMedicineName());
-		medicine.setMedicineImage(medicinedto.getMedicineImage());
+		medicine.setMedicineImageUrl(imageURL);
 		medicine.setListingStatus(ListingStatus.NotListed);
+		medicine.setQuantity(medicinedto.getQuantity()); 
 		Medicine medicineSave = medicineRepository.save(medicine);
 		return new ApiResponse("New medicne added with ID=" + medicineSave.getId(), "Success");
 	}
-
+	
 	@Override
 	public List<Address> getAllDonarAddress(Long donar_id) {
-		 return donarAddressRepository.findAll();
+		 return donarAddressRepository.findByDonarId(donar_id);
 		 }
 
 	@Override
@@ -343,6 +400,21 @@ public class DonarServiceImpl implements DonarService{
 	@Override
 	public ApiResponse changeDonarApprovalToApproved(Long medicine_id , Long ngo_id) {
 		int res = viewStatusNgoRepository.updateDonationStatusToApproved(medicine_id, ngo_id);
+		Long donar_id= medicineRepository.getDonarId(medicine_id);
+		int added=viewStatusNgoRepository.updateDonation(donar_id, medicine_id, ngo_id);
+		
+		ChatRoom chatroom = chatrepo.CheckIfChatRoomExist(ngo_id, donar_id);
+		if(chatroom == null)
+		{
+			Donar d = donarRepository.getById(donar_id);
+			Ngo n = ngoRepository.getById(ngo_id);
+			ChatRoom  ch = new ChatRoom();	
+			ch.setDonar(d);
+			ch.setNgo(n);
+			chatrepo.save(ch);
+		}
+		
+		
 		if (res == 1) {
 			return new ApiResponse("Changes are done" , "Success");
 		}
@@ -406,6 +478,51 @@ public class DonarServiceImpl implements DonarService{
 		return requestedMedicinesCount;
 	}
 
+	@Override
+	public void adddonarAddress(AddressDto addressdto) {
+
+	    // 1️⃣ Fetch Donar
+	    Donar donar = donarRepository.findById(addressdto.getDonarId())
+	            .orElseThrow(() -> 
+	                new RuntimeException("Donar not found with id : " + addressdto.getDonarId())
+	            );
+
+	    // 2️⃣ Create Address entity
+	    Address address = new Address();
+	    address.setFullAddress(addressdto.getFullAddress());
+	    address.setCity(addressdto.getCity());
+	    address.setState(addressdto.getState());
+	    address.setPincode(addressdto.getPincode());
+	    address.setActive(addressdto.isActive());
+
+	    // 3️⃣ Set relationship
+	    address.setDonar(donar);
+
+	    // 4️⃣ Save address
+	    donarAddressRepository.save(address);
+	}
+
+
+	@Override
+	public DonationsDto getDonationDtoByMedicineId(Long medicineId) {
+		DonationsDto  dto = donationsrepo.getDonationDtoByMedicineId(medicineId);
+		return dto;
+	}
+
+
+	@Override
+	public void markRequestAsCompleted(Long medicine_id) {
+		viewStatusNgoRepository.markAsDonatedCompleted(medicine_id);
+		viewStatusNgoRepository.markAsDonationCompleted(medicine_id);
+		medicineRepository.markAsDonated(medicine_id);	
+	}
+
+
+	@Override
+	public void markRequestAsDiscarded(Long medicine_id) {
+		viewStatusNgoRepository.markAsDiscarded(medicine_id);
+		viewStatusNgoRepository.markAsDonationDiscarded(medicine_id);	
+	}
 	
 	
 

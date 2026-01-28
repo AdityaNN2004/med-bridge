@@ -1,4 +1,5 @@
 package com.medibridge.controller;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -14,7 +15,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.medibridge.entities.donar.MedicineCategory;
 import com.medibridge.entities.donar.Donar;
@@ -22,15 +25,19 @@ import com.medibridge.entities.User;
 import com.medibridge.entities.donar.Address;
 import com.medibridge.entities.donar.Medicine;
 import com.medibridge.service.DonarService;
+import com.medibridge.service.NgoService;
 
 import io.micrometer.core.ipc.http.HttpSender.Response;
 
 import com.medibridge.dtos.MedicineDto;
 import com.medibridge.dtos.NgoWithServiceAreaDto;
 import com.medibridge.dtos.RequestedNgos;
+import com.medibridge.dtos.ServiceAreaDto;
 import com.medibridge.dtos.AddressDto;
 import com.medibridge.dtos.ApiResponse;
 import com.medibridge.dtos.DonarDto;
+import com.medibridge.dtos.DonarRegistrationDto;
+import com.medibridge.dtos.DonationsDto;
 import com.medibridge.dtos.MedicineCategoryPercentageDto;
 
 @CrossOrigin(origins = "http://localhost:5173")
@@ -40,7 +47,9 @@ import com.medibridge.dtos.MedicineCategoryPercentageDto;
 public class DonarController {
 	@Autowired
   private DonarService donarService;
-  
+	 @Autowired
+	 private NgoService ngoService;
+
   @GetMapping("/getallmedicines/{donar_id}")
   public ResponseEntity<?> getAllMedicine(@PathVariable Long donar_id)
   {
@@ -146,24 +155,25 @@ public class DonarController {
    }
   
   
-  @GetMapping("/addresses")
-  public ResponseEntity<?> getAllDonarAddresses()
+  @GetMapping("/addresses/{donar_id}")
+  public ResponseEntity<?> getAllDonarAddresses(@PathVariable Long donar_id)
   {
 	  
-	List<Address> addresslist = donarService.getAllDonarAddress(1L);
+	List<Address> addresslist = donarService.getAllDonarAddress(donar_id);
 	if(addresslist.isEmpty())
 	{
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 	return ResponseEntity.ok(addresslist);
    }
+  
   @PostMapping("/addmedicine/{donar_id}")
-  public ResponseEntity<?> addNewMedicine(@RequestBody MedicineDto req,@PathVariable Long donar_id)
+  public ResponseEntity<?> addNewMedicine(@PathVariable Long donar_id , @RequestPart("medicine")   MedicineDto req , @RequestPart("image") MultipartFile image) throws IOException
   {
 	try
-	{	
+	{		
 		req.setDonarid(donar_id);
-		return ResponseEntity.status(HttpStatus.CREATED).body(donarService.addMedicine(req));
+		return ResponseEntity.status(HttpStatus.CREATED).body(donarService.addMedicine(req , image));
 
 	}
 	catch(RuntimeException e)
@@ -171,6 +181,13 @@ public class DonarController {
 		System.out.println(e);
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(e.getMessage(), "Failed"));
 	}
+  }
+  
+  @PostMapping("/addaddress")
+  public void addNewMedicine(@RequestBody AddressDto dto)
+  {
+         donarService.adddonarAddress(dto);
+	
   }
   
   @GetMapping("/getdonardetails/{user_id}")
@@ -193,6 +210,14 @@ public class DonarController {
 	  }
    }
   
+  @GetMapping("/getdonationsinfobymedicineid/{medicine_id}")
+  public DonationsDto getDonationDtoByMedicineId(@PathVariable Long medicine_id)
+  {	  
+		  
+		  DonationsDto dto = donarService.getDonationDtoByMedicineId(medicine_id);
+		return dto;  
+   }
+  
   @PutMapping("/{user_id}")
   public ResponseEntity<?> updateDonarDetails(@PathVariable Long user_id, @RequestBody DonarDto donardto)
   {
@@ -205,7 +230,7 @@ public class DonarController {
   }
   
   @PostMapping("/sign-up")
-  public ResponseEntity<?> donarSignup( @RequestBody Donar donar)
+  public ResponseEntity<?> donarSignup( @RequestBody DonarRegistrationDto donar)
   {
 	  return ResponseEntity.ok(donarService.signUp(donar));
   }
@@ -353,6 +378,17 @@ public class DonarController {
 	 }
 	 return ResponseEntity.ok(completedDonation);
   }
+  @GetMapping("/getserviceareaofngo/{ngoId}")
+  public ResponseEntity<?> getServiceAreaOfNgo(@PathVariable Long ngoId) {
+      
+      ServiceAreaDto result =  ngoService.getServiceAreaOfNgo(ngoId);
+             
+      if (result == null) {
+          return ResponseEntity.noContent().build();
+       }
+
+      return ResponseEntity.ok(result);
+  }
   
   @GetMapping("/requestedMedicines/{donar_id}")
   public ResponseEntity<?> requestedMedicinesCount(@PathVariable Long donar_id){
@@ -363,4 +399,17 @@ public class DonarController {
 	 return ResponseEntity.ok(requestedMedicinesCount);
   }
   
+  @PutMapping("/markRequestAsCompleted/{medicine_id}")
+  public ResponseEntity<?> markRequestAsCompleted(@PathVariable Long medicine_id){
+	 
+	  donarService.markRequestAsCompleted(medicine_id);
+	  return ResponseEntity.ok("Request marked as Completed");
+  }
+  
+  @PutMapping("/markRequestAsDiscarded/{medicine_id}")
+  public ResponseEntity<?> markRequestAsDiscarded(@PathVariable Long medicine_id){
+	  donarService.markRequestAsDiscarded(medicine_id);
+	  return ResponseEntity.ok("Request marked as Discarded");
+  }
+ 
 }

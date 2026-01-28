@@ -23,7 +23,7 @@ import com.medibridge.entities.ngo.ServiceArea;
 import com.medibridge.service.NgoService;
 
 import jakarta.validation.Valid;
-//http://localhost:5173/ngo/register
+
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/ngo")

@@ -5,12 +5,13 @@ import {
   useJsApiLoader,
 } from "@react-google-maps/api";
 
+
 const RoutesMap = ({ originAddress, destinationAddress }) => {
   const [directions, setDirections] = useState(null);
   const [distance, setDistance] = useState(null);
 
   const { isLoaded } = useJsApiLoader({
-    // googleMapsApiKey: "AIzaSyCz5BYROEEeoaccHJLX0agc13U_JE6jgbE",
+    googleMapsApiKey: "AIzaSyCz5BYROEEeoaccHJLX0agc13U_JE6jgbE",
   });
 
   useEffect(() => {

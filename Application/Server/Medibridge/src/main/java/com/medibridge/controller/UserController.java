@@ -63,9 +63,11 @@ public class UserController {
   public ResponseEntity<?> authenticateUser(@RequestBody AuthRequest dto)
   {
       System.out.println("in sign in -" + dto);
+      
       Authentication fullyAuthenticated = authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword())
       );
+      
       System.out.println("is user authenticated " + fullyAuthenticated.isAuthenticated());
       System.out.println(fullyAuthenticated.getPrincipal().getClass());
       

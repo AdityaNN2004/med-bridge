@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { animate, useInView, motion } from "framer-motion";
 import { getAllDonatedMedicinesByNgoId } from "../../Services/NgoServices";
+import { getEntityId } from "../../utils/jwtUtils";
 
 /* ---------------- HELPERS ---------------- */
 const getDaysLeft = (date) =>
@@ -83,7 +84,7 @@ const InventoryManagement = () => {
   const [tab, setTab] = useState("all");
   const searchRef = useRef(null);
 
-  const NGO_ID = 1;
+  const NGO_ID = getEntityId();
 
   useEffect(() => {
     searchRef.current?.focus();
