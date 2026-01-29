@@ -44,11 +44,11 @@ function ViewStatus() {
   const handleDiscarded = async () => {
     try {
       await markRequestAsDiscarded(id);
-      alert("Request marked as Discarded");
+      toast.success("Request Discarded");
       navigate(-1); // go back after success (optional)
     } catch (err) {
       console.error(err);
-      alert("Failed to discard request");
+       toast.error("failed to Discard Request");
     }
   };
 

@@ -26,8 +26,16 @@ public interface MedicineRepository extends JpaRepository<Medicine, Long>{
 	 @Query(value = "SELECT * FROM medicine WHERE donar_id = :donarId AND listing_status = 'isListed'", nativeQuery = true)
 	 List<Medicine> findlistedMedicinesByDonar(@Param("donarId") Long donarId);
 	 
-	 @Query(value = "SELECT DISTINCT m.* FROM medicine m LEFT JOIN viewstatus_ngo v ON v.medicine_id = m.medicine_id WHERE m.donar_id =  :donarId  AND m.listing_status = 'isListed' AND v.medicine_id IS NULL", nativeQuery = true)
-	 List<Medicine> findlistedMedicinesByDonarAvailableToNgo(@Param("donarId") Long donarId);
+	 @Query(value = "SELECT DISTINCT m.*\r\n"
+		 		+ "FROM medicine m\r\n"
+		 		+ "LEFT JOIN viewstatus_ngo v\r\n"
+		 		+ "       ON v.medicine_id = m.medicine_id\r\n"
+		 		+ "       AND v.ngo_id = :ngoId\r\n"
+		 		+ "WHERE m.donar_id = :donarId\r\n"
+		 		+ "  AND m.listing_status = 'IsListed'\r\n"
+		 		+ "  AND v.medicine_id IS NULL; ", nativeQuery = true)
+		 List<Medicine> findlistedMedicinesByDonarAvailableToNgo(@Param("donarId") Long donarId,@Param("ngoId") Long ngoId);
+		
 	
 	 @Query(value = "UPDATE medicne SET listing_status = 'isListed' WHERE donar_id = :donarId", nativeQuery = true)
 	 void ChangeMedicneStatusToListed(@Param("donarId") Long donarId);

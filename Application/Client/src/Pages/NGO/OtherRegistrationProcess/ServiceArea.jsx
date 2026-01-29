@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-
+import { getEntityId , getToken} from "../../../utils/jwtUtils";
 export default function ServiceArea() {
   const ngoId = localStorage.getItem("ngoId");
-
+  const token = getToken();
   const [formData, setFormData] = useState({
     companyName: "",
     streetAddress: "",
@@ -45,6 +45,7 @@ export default function ServiceArea() {
         {
           method: "POST",
           headers: {
+         Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(formData),

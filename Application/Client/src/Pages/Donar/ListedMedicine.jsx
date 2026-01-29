@@ -94,6 +94,7 @@ function ListedMedicine() {
       setUnlistingId(medicineId);
       await ChangeListingStatusNotListed(medicineId);
       setMedicines((prev) => prev.filter((m) => m.id !== medicineId));
+       toast.success("medicine unlisted");
     } catch (err) {
       console.error(err);
      toast.error("Failed to unlist medicine");

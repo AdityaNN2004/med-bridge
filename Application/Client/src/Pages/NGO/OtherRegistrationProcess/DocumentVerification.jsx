@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-
+import { getEntityId , getToken} from "../../../utils/jwtUtils";
 export default function DocumentVerification() {
   const ngoId = localStorage.getItem("ngoId"); // saved after registration
-
+  const token = getToken();
   const [files, setFiles] = useState({
     registrationCertificate: null,
     taxExemptionCertificate: null,
@@ -42,7 +42,11 @@ export default function DocumentVerification() {
       const response = await fetch(
         `http://localhost:9090/ngo/${ngoId}/documents`,
         {
+         
           method: "POST",
+           headers: {
+         Authorization: `Bearer ${token}`,
+           },
           body: formData, // ❗ DO NOT set Content-Type manually
         }
       );

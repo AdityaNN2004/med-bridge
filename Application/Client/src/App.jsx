@@ -14,14 +14,16 @@ function App() {
     {DonorRoutes}
     {NGORoutes}
   </Routes>
-  <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        closeOnClick
-        pauseOnHover
-        draggable
-      />
+ <ToastContainer
+  position="top-right"
+  autoClose={3000}
+  hideProgressBar={false}
+  closeOnClick
+  pauseOnHover
+  draggable
+  toastStyle={{ zIndex: 99999 }}
+/>
+
 </div>
   )
 }

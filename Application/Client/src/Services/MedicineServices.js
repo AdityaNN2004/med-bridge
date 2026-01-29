@@ -1,7 +1,7 @@
 import axiosInstance from "../utils/axiosInstance ";
-
+import { getEntityId , getToken} from "../utils/jwtUtils";
 const BASE_URL = "/donar";
-
+const token = getToken();
 export const getAllMedicines = (donar_id) =>
   axiosInstance.get(`${BASE_URL}/getallmedicines/${donar_id}`);
 
@@ -44,6 +44,7 @@ export const addMedicine = (formData, donar_id) => {
     formData,
     {
       headers: {
+         Authorization: `Bearer ${token}`,
         "Content-Type": "multipart/form-data",
       },
     }

@@ -19,7 +19,6 @@ public interface DonationsRepository extends JpaRepository<Donations, Long> {
       
       @Query(value = "SELECT m.* FROM donations d JOIN medicine m ON d.medicine_id = m.medicine_id WHERE d.ngo_id = :ngoId AND d.donationstatus = 'Completed'", nativeQuery = true)
       List<Medicine> getAllCompletedMedicinesByNgoId(@Param("ngoId") Long ngoId);
-      
       @Query("""
     		    SELECT new com.medibridge.dtos.DonationsDto(
     		        d.donar.id,
@@ -28,9 +27,10 @@ public interface DonationsRepository extends JpaRepository<Donations, Long> {
     		    )
     		    FROM Donations d
     		    WHERE d.medicine.id = :medicineId
+    		      AND d.donationstatus = 'Pending'
     		""")
     		DonationsDto getDonationDtoByMedicineId(@Param("medicineId") Long medicineId);
-     
+
      
 }
 

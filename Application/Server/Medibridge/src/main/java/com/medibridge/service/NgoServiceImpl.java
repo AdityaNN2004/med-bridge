@@ -306,7 +306,7 @@ public class NgoServiceImpl implements NgoService{
 
 	        List<Medicine> medicineList =
 	                medicineRepository.findlistedMedicinesByDonarAvailableToNgo(
-	                        address.getDonar().getId()
+	                        address.getDonar().getId(), ngoId
 	                );
 
 	        for (Medicine medicine : medicineList) {
