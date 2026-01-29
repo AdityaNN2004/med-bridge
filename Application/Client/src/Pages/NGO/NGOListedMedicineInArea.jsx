@@ -194,12 +194,19 @@ const NGOListedMedicineInArea = () => {
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
-                className={`px-5 py-3 rounded-xl text-sm capitalize ${
+                className={`px-5 py-3 rounded-xl text-sm font-medium capitalize flex items-center gap-2 transition-all duration-200 ${
                   statusFilter === status
-                    ? "bg-teal-700 text-white"
-                    : "bg-gray-100"
+                    ? status === "available"
+                      ? "bg-blue-600 text-white shadow-lg shadow-blue-200"
+                      : status === "ongoing"
+                      ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200"
+                      : status === "pending"
+                      ? "bg-amber-600 text-white shadow-lg shadow-amber-200"
+                      : "bg-red-600 text-white shadow-lg shadow-red-200"
+                    : "bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:shadow-md"
                 }`}
               >
+                {getStatusIcon(status)}
                 {status}
               </button>
             ))}
@@ -271,7 +278,7 @@ const NGOListedMedicineInArea = () => {
 
                   <div className="flex justify-between items-center mt-3">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs ${getStatusColor(
+                      className={`px-3 py-1 rounded-full text-xs flex items-center gap-1.5 ${getStatusColor(
                         med.status
                       )}`}
                     >
@@ -307,4 +314,4 @@ const NGOListedMedicineInArea = () => {
   );
 };
 
-export default NGOListedMedicineInArea;
+export default NGOListedMedicineInArea; 

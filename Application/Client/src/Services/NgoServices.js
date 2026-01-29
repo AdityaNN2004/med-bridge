@@ -31,10 +31,13 @@ export const getServiceAreaOfNgo = (ngoid) =>
   axiosInstance.get(`${BASE_URL}/getserviceareaofngo/${ngoid}`);
 
 export const updateServiceArea = (ngo_id, service_radius) =>
-  axiosInstance.put(`${BASE_URL}/updateServiceRadius/${ngo_id}/${service_radius}`);
+  axiosInstance.put(`${BASE_URL}/updateServiceArea/${ngo_id}` , service_radius);
 
 export const getNgoDetails = (ngoId) =>
   axiosInstance.get(`${BASE_URL}/getNgoDetails/${ngoId}`);
 
 export const getServiceArea = (ngoId) =>
   axiosInstance.get(`${BASE_URL}/getServiceArea/${ngoId}`);
+
+export const getMedicineDetails = (medicine_id) =>
+  axiosInstance.get(`${BASE_URL}/getmedicinedetails/${medicine_id}`);

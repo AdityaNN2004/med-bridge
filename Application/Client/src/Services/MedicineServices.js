@@ -38,28 +38,15 @@ export const getRequestedNgosForMedicine = (medicineId) =>
 export const isMedicineDonationInProgress = (medicine_id) =>
   axiosInstance.get(`${BASE_URL}/ismedicinedonationinprogress/${medicine_id}`);
 
-export const addMedicine = (
-  medicineName,
-  expiry_date,
-  quantity,
-  medicineImage,
-  medicinecategory,
-  donar_id
-) => {
-  const body = {
-    medicineName,
-    expiry_date,
-    quantity,
-    medicineImage,
-    medicinecategory,
-  };
-
-  console.log(body);
- 
-  return axiosInstance.post(`${BASE_URL}/addmedicine/${donar_id}`, body,{
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  }
+export const addMedicine = (formData, donar_id) => {
+  return axiosInstance.post(
+    `/donar/addmedicine/${donar_id}`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
   );
 };
+

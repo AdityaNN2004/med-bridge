@@ -27,7 +27,7 @@ function NGOLogin() {
       const base64Url = token.split(".")[1];
       const payload = JSON.parse(atob(base64Url));
 
-      console.log("JWT PAYLOAD:", payload);
+
 
       // ✅ role check
       if (payload.role === "ROLE_NGO") {

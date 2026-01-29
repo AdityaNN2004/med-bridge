@@ -102,23 +102,57 @@ function ViewMedicine() {
     setShowConfirm(true);
   };
 
-  const confirmListMedicine = async () => {
-    if (!selectedMedicine) return;
+  // const confirmListMedicine = async () => {
+  //   if (!selectedMedicine) return;
 
-    try {
-      setListingId(selectedMedicine.id);
-      await ChangeListingStatusToListed(selectedMedicine.id);
-      toast.success("Medicine listed successfully!");
-      setMedicines((prev) => prev.filter((m) => m.id !== selectedMedicine.id));
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to list medicine");
-    } finally {
-      setListingId(null);
-      setShowConfirm(false);
-      setSelectedMedicine(null);
+  //   try {
+  //     setListingId(selectedMedicine.id);
+  //     const res =  await ChangeListingStatusToListed(selectedMedicine.id);
+  //     console.log(res);
+  //     toast.success("Medicine listed successfully!");
+  //     setMedicines((prev) => prev.filter((m) => m.id !== selectedMedicine.id));
+  //   } catch (error) {
+  //     console.error(error);
+  //     toast.error("Failed to list medicine");
+  //   } finally {
+  //     setListingId(null);
+  //     setShowConfirm(false);
+  //     setSelectedMedicine(null);
+  //   }
+  // };
+
+  const confirmListMedicine = async () => {
+  if (!selectedMedicine) return;
+
+  try {
+    setListingId(selectedMedicine.id);
+
+    const res = await ChangeListingStatusToListed(selectedMedicine.id);
+
+    // 👇 IMPORTANT: check backend response
+    if (res?.data?.status === "Failure") {
+      toast.error(res.data.message || "Cannot list expired medicine");
+      return;
     }
-  };
+
+    toast.success( "Medicine listed successfully!");
+
+    // remove from list only if success
+    setMedicines((prev) =>
+      prev.filter((m) => m.id !== selectedMedicine.id)
+    );
+
+  } catch (error) {
+    console.error(error);
+    toast.error(
+      error?.response?.data?.message || "Failed to list medicine"
+    );
+  } finally {
+    setListingId(null);
+    setShowConfirm(false);
+    setSelectedMedicine(null);
+  }
+};
 
   const cancelListMedicine = () => {
     setShowConfirm(false);
@@ -263,7 +297,7 @@ function ViewMedicine() {
                       <div className="relative flex-shrink-0">
                         <div className="w-24 h-24 rounded-xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100 border-2 border-white shadow-md">
                           <img
-                            src={med.photoUrl || DUMMY_IMAGE}
+                            src={med.medicineImageUrl || DUMMY_IMAGE}
                             onError={(e) => (e.target.src = DUMMY_IMAGE)}
                             alt={med.medicineName}
                             className="w-full h-full object-cover"

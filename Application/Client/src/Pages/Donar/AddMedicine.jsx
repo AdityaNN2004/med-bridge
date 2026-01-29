@@ -58,7 +58,7 @@ const handleSubmit = async () => {
             expiry_date: expiryDate,
             quantity: numberOfUnits,
             medicinecategory: "ANTIBIOTIC",
-             d_id,
+            d_id,
           })
         ],
         { type: "application/json" }
@@ -67,8 +67,8 @@ const handleSubmit = async () => {
 
     // FILE part (name MUST match backend)
     formData.append("image", photo);
-
-    await addMedicine(formData);
+    console.log(formData);
+    await addMedicine(formData ,d_id);
 
     toast.success("Medicine added successfully");
     navigate("/donor/view-medicine");

@@ -36,6 +36,13 @@ function ListedMedicine() {
     try {
       const response = await getAllListedMedicines(donar_id);
 
+      // Check if response data exists and is an array
+      if (!response.data || !Array.isArray(response.data)) {
+        setMedicines([]);
+        setLoading(false);
+        return;
+      }
+
       const updated = await Promise.all(
         response.data.map(async (med) => {
           try {
@@ -64,6 +71,7 @@ function ListedMedicine() {
       setMedicines(updated);
     } catch (err) {
       console.error(err);
+      // Only set error if it's an actual error, not just empty data
       setError("Failed to load listed medicines");
     } finally {
       setLoading(false);
@@ -142,7 +150,42 @@ function ListedMedicine() {
         <h1 className="text-3xl font-bold mb-8">Listed Medicines</h1>
 
         {loading && <p>Loading medicines...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {error && medicines.length === 0 && !loading && (
+          <p className="text-red-500">{error}</p>
+        )}
+
+        {/* ================= EMPTY STATE ================= */}
+        {!loading && !error && medicines.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 px-4">
+            <div className="bg-indigo-50 rounded-full p-6 mb-6">
+              <svg
+                className="w-24 h-24 text-indigo-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              No Medicines Listed Yet
+            </h2>
+            <p className="text-gray-500 text-center mb-6 max-w-md">
+              You haven't listed any medicines for donation. Start making a difference by listing your unused medicines to help those in need.
+            </p>
+            <button
+              onClick={() => navigate("/donor/add-medicine")}
+              className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition"
+            >
+              List Your First Medicine
+            </button>
+          </div>
+        )}
 
         {!loading && medicines.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -152,27 +195,51 @@ function ListedMedicine() {
               return (
                 <div
                   key={med.id}
-                  className="relative bg-white border rounded-xl shadow-sm hover:shadow-xl transition"
+                  className="relative bg-white border border-gray-200 rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden group"
                 >
-                  <img
-                    src={med.photoUrl || DEFAULT_MEDICINE_IMAGE}
-                    alt={med.medicineName}
-                    className="w-full h-40 object-cover"
-                  />
+                  {/* Image Container */}
+                  <div className="relative h-48 overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50">
+                    <img
+                      src={med.medicineImageUrl || DEFAULT_MEDICINE_IMAGE}
+                      alt={med.medicineName}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    {/* Status Badge */}
+                    {med.donationInProgress && (
+                      <div className="absolute top-3 right-3 bg-indigo-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg">
+                        In Progress
+                      </div>
+                    )}
+                    {!med.donationInProgress && med.hasRequests && (
+                      <div className="absolute top-3 right-3 bg-emerald-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+                        <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                        Requests
+                      </div>
+                    )}
+                  </div>
 
-                  <div className="p-4">
-                    <h3 className="font-semibold text-sm truncate">
+                  {/* Content */}
+                  <div className="p-5">
+                    <h3 className="font-bold text-base text-gray-800 mb-2 truncate">
                       {med.medicineName}
                     </h3>
 
-                    <p className="text-xs text-gray-500 mb-3">
-                      {med.quantity}
-                    </p>
-
-                    <span className="text-xs flex items-center gap-1 mb-3">
-                      <Clock className="w-3 h-3" />
-                      {daysLeft > 0 ? `${daysLeft} days left` : "Expired"}
-                    </span>
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-sm text-gray-600 font-medium">
+                        Qty: {med.quantity}
+                      </p>
+                      
+                      <div className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg ${
+                        daysLeft > 30 
+                          ? 'bg-green-50 text-green-700' 
+                          : daysLeft > 7 
+                          ? 'bg-amber-50 text-amber-700' 
+                          : 'bg-red-50 text-red-700'
+                      }`}>
+                        <Clock className="w-3.5 h-3.5" />
+                        {daysLeft > 0 ? `${daysLeft}d` : "Expired"}
+                      </div>
+                    </div>
 
                     {/* ================= BUTTON LOGIC ================= */}
                     <div className="flex gap-2">
@@ -181,7 +248,7 @@ function ListedMedicine() {
                           onClick={() =>
                             navigate(`/donor/viewstatus/${med.id}`)
                           }
-                          className="w-full bg-indigo-50 text-indigo-600 py-2 rounded-lg text-xs font-semibold"
+                          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm"
                         >
                           View Status
                         </button>
@@ -190,9 +257,9 @@ function ListedMedicine() {
                       {!med.donationInProgress && med.hasRequests && (
                         <button
                           onClick={() => openRequestPopup(med)}
-                          className="flex-1 bg-emerald-50 text-emerald-600 py-2 rounded-lg text-xs font-semibold"
+                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm"
                         >
-                          NGO Request
+                          View Requests
                         </button>
                       )}
 
@@ -200,9 +267,9 @@ function ListedMedicine() {
                         <button
                           onClick={() => handleUnlist(med.id)}
                           disabled={unlistingId === med.id}
-                          className="flex-1 bg-red-50 text-red-600 py-2 rounded-lg text-xs font-semibold"
+                          className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 py-2.5 rounded-xl text-sm font-semibold transition-colors border border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          Unlist
+                          {unlistingId === med.id ? "Unlisting..." : "Unlist"}
                         </button>
                       )}
                     </div>

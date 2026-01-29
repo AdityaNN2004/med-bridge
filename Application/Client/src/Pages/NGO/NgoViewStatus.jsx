@@ -7,10 +7,10 @@ import RoutesMap from "../../Compoments/RoutesMap";
 import NGOChatbot from "../../Compoments/NGOChatbot";
 import { getEntityId } from "../../utils/jwtUtils";
 import { ToastContainer, toast } from "react-toastify";
-import { getMedicineDetails } from "../../Services/MedicineServices";
+
 import {
   getDonorWithAddressByNgoAndMedicineNative,
-  getServiceAreaOfNgo,
+  getServiceAreaOfNgo,getMedicineDetails
 } from "../../Services/NgoServices";
 
 function NgoViewStatus() {

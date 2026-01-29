@@ -14,7 +14,8 @@ import {
   ArrowLeft,
   Camera,
   Home,
-  CheckCircle
+  CheckCircle,
+  Plus
 } from "lucide-react";
 
 import {
@@ -23,6 +24,7 @@ import {
   getAddresses,
   updateAddress,
   makeAddressActive,
+  addAddress,
 } from "../../Services/DonarServices";
 
 function DonorProfile() {
@@ -37,6 +39,7 @@ function DonorProfile() {
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [showEditAddressModal, setShowEditAddressModal] = useState(false);
+  const [showAddAddressModal, setShowAddAddressModal] = useState(false);
 
   const [editProfileForm, setEditProfileForm] = useState({
     firstName: "",
@@ -47,6 +50,13 @@ function DonorProfile() {
 
   const [editAddressForm, setEditAddressForm] = useState({
     id: null,
+    fullAddress: "",
+    city: "",
+    state: "",
+    pincode: "",
+  });
+
+  const [newAddressForm, setNewAddressForm] = useState({
     fullAddress: "",
     city: "",
     state: "",
@@ -99,6 +109,40 @@ function DonorProfile() {
   const handleEditAddressClick = (address) => {
     setEditAddressForm(address);
     setShowEditAddressModal(true);
+  };
+
+  const handleAddNewAddress = () => {
+    setShowAddressModal(false);
+    setShowAddAddressModal(true);
+  };
+
+  const saveNewAddress = async () => {
+    try {
+      const payload = {
+        ...newAddressForm,
+        donarId: donorId,
+      };
+
+      const response = await addAddress(payload);
+      
+      // Refresh addresses list
+      const addressesRes = await getAddresses(donorId);
+      setAddresses(addressesRes.data);
+      
+      // Reset form
+      setNewAddressForm({
+        fullAddress: "",
+        city: "",
+        state: "",
+        pincode: "",
+      });
+      
+      setShowAddAddressModal(false);
+      toast.success("Address added successfully!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to add address!");
+    }
   };
 
   const saveEditedProfile = async () => {
@@ -361,11 +405,20 @@ function DonorProfile() {
       {/* Address Selection Modal */}
       {showAddressModal && (
         <Modal onClose={() => setShowAddressModal(false)}>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
-              <Home className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+                <Home className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900">Select Address</h3>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900">Select Address</h3>
+            <button
+              onClick={handleAddNewAddress}
+              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              Add New
+            </button>
           </div>
           
           <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
@@ -412,6 +465,70 @@ function DonorProfile() {
               className="w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
             >
               Close
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Add New Address Modal */}
+      {showAddAddressModal && (
+        <Modal onClose={() => setShowAddAddressModal(false)}>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-green-600 rounded-xl flex items-center justify-center">
+              <Plus className="w-6 h-6 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900">Add New Address</h3>
+          </div>
+          
+          <div className="space-y-4">
+            <InputField
+              label="Full Address"
+              icon={<MapPin className="w-5 h-5 text-gray-400" />}
+              value={newAddressForm.fullAddress}
+              onChange={(e) =>
+                setNewAddressForm({ ...newAddressForm, fullAddress: e.target.value })
+              }
+            />
+            <InputField
+              label="City"
+              icon={<Home className="w-5 h-5 text-gray-400" />}
+              value={newAddressForm.city}
+              onChange={(e) =>
+                setNewAddressForm({ ...newAddressForm, city: e.target.value })
+              }
+            />
+            <InputField
+              label="State"
+              icon={<MapPin className="w-5 h-5 text-gray-400" />}
+              value={newAddressForm.state}
+              onChange={(e) =>
+                setNewAddressForm({ ...newAddressForm, state: e.target.value })
+              }
+            />
+            <InputField
+              label="Pincode"
+              icon={<MapPin className="w-5 h-5 text-gray-400" />}
+              value={newAddressForm.pincode}
+              onChange={(e) =>
+                setNewAddressForm({ ...newAddressForm, pincode: e.target.value })
+              }
+            />
+          </div>
+          
+          <div className="mt-8 flex gap-3">
+            <button
+              onClick={() => setShowAddAddressModal(false)}
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+            >
+              <X className="w-4 h-4" />
+              Cancel
+            </button>
+            <button
+              onClick={saveNewAddress}
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
+            >
+              <Save className="w-4 h-4" />
+              Add Address
             </button>
           </div>
         </Modal>

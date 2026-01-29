@@ -59,7 +59,7 @@ export const getpendingRequests = async (donar_id) =>
 
 /* ---------- ADD ADDRESS ---------- */
 export const addAddress = (payload) =>
-  axiosInstance.post(`${BASE_URL}/address`, payload);
+  axiosInstance.post(`${BASE_URL}/addaddress`, payload);
 
 
 export const getDonationDtoByMedicineId = async (med_id) =>
