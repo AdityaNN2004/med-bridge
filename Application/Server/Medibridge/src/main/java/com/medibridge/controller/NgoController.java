@@ -19,7 +19,7 @@ import com.medibridge.dtos.ServiceAreaUpdateDto;
 import com.medibridge.dtos.ViewStatusDtoDonarId;
 import com.medibridge.entities.ngo.Ngo;
 import com.medibridge.entities.ngo.ServiceArea;
-
+import com.medibridge.service.DonarService;
 import com.medibridge.service.NgoService;
 
 import jakarta.validation.Valid;
@@ -32,6 +32,19 @@ public class NgoController {
     @Autowired
     private NgoService ngoService;
 
+    @Autowired
+    private DonarService donarService;
+    @GetMapping("/getmedicinedetails/{medicine_id}")
+    public ResponseEntity<?> getMedicinedetails(@PathVariable Long medicine_id)
+    {
+  	MedicineDto medicine = donarService.getMedicineDetails(medicine_id);
+  	if(medicine == null )
+  	{
+  		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+  	}
+  	return ResponseEntity.ok(medicine);
+     }
+    
     // STEP 1 – Register NGO + User
     @PostMapping("/register1")
     public ResponseEntity<Ngo> registerNGO(@RequestBody Ngo ngo) {

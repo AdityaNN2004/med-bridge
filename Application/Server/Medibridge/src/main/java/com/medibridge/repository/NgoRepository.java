@@ -68,6 +68,10 @@ public interface NgoRepository extends JpaRepository<Ngo, Long> {
     @Transactional
     @Query(value="UPDATE service_area sa INNER JOIN ngo n ON n.service_area_id = sa.service_area_id SET sa.service_radius = :serviceRadius WHERE n.ngo_id = :ngoId",nativeQuery = true)
     int updateServiceDetails(@Param("ngoId") Long ngo_id,@Param("serviceRadius") Long service_radius);
+	
+    @Query(value = "SELECT DISTINCT m.* FROM medicine m JOIN viewstatus_ngo v ON v.medicine_id = m.medicine_id WHERE v.ngo_id = :ngoId AND v.donarapproval = 'Donar_Rejected' AND v.donation_status_ngo = 'DonationProcessNotStarted'", nativeQuery = true)
+    List<Medicine> findRejectedRequestMedicinesByNgoId(@Param("ngoId") Long ngoId);
+
     
     
 }

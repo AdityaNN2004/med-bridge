@@ -452,12 +452,27 @@ public class DonarServiceImpl implements DonarService{
 
 	@Override
 	public ApiResponse ChangeListingStatusToisListed(Long medicine_id) {
-		// TODO Auto-generated method stub
-		Medicine medicine =  medicineRepository.getById(medicine_id);
-		medicine.setListingStatus(ListingStatus.IsListed);
-		medicineRepository.save(medicine);
-		return  new ApiResponse("Medicine ListingStatus Changed", "Success");
+
+	    Medicine medicine = medicineRepository.findById(medicine_id)
+	        .orElseThrow(() -> new RuntimeException("Medicine not found"));
+
+	    // 🔒 Expiry validation
+	    if (medicine.getExpiry_date().isBefore(LocalDate.now())) {
+	        return new ApiResponse(
+	            "Cannot list medicine. Medicine is expired.",
+	            "Failure"
+	        );
+	    }
+
+	    medicine.setListingStatus(ListingStatus.IsListed);
+	    medicineRepository.save(medicine);
+
+	    return new ApiResponse(
+	        "Medicine ListingStatus Changed",
+	        "Success"
+	    );
 	}
+
 
 	@Override
 	public NgoWithServiceAreaDto getNgoDetailsForARequestedMedicineByMedicineIdApprovedByDonar(Long medicine_id) {

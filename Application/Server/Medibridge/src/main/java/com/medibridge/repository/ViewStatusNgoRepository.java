@@ -60,7 +60,7 @@ public interface ViewStatusNgoRepository
        int markAsDonationCompleted(@Param("medicineId") Long medicine_id);
        
        @Modifying
-       @Query(value="UPDATE viewstatus_ngo SET donationstatus=\"Donar_Rejected\" AND donation_status_ngo=\"DonationProcessStarted\" WHERE medicine_id=:medicineId",nativeQuery = true)
+       @Query(value="UPDATE viewstatus_ngo SET donarapproval=\"Donar_Rejected\" , donation_status_ngo=\"DonationProcessStarted\" WHERE medicine_id=:medicineId",nativeQuery = true)
        int markAsDonationDiscarded(@Param("medicineId") Long medicine_id);
        
        @Modifying

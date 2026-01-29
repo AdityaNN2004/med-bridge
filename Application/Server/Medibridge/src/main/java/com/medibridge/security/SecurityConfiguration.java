@@ -58,7 +58,8 @@ public class SecurityConfiguration {
 			  "/admin/**",
 			  "/donar/sign-up",
 			  "ngo/register1",
-			  "ngo/${ngoId}/documents",
+			  "ngo/*/documents",
+			  "ngo/*/service-area",
 			  "/users/pwd-encryption"
 			  ).permitAll()
 	           .requestMatchers(HttpMethod.OPTIONS).permitAll()

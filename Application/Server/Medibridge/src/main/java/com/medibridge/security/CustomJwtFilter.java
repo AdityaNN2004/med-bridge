@@ -30,7 +30,7 @@ public class CustomJwtFilter extends OncePerRequestFilter {
 		String path = request.getServletPath();
 
 	    return request.getMethod().equalsIgnoreCase("OPTIONS")
-	        || path.startsWith("/user/")
+	        || path.startsWith("/user/*")
 	        || path.startsWith("/swagger-ui/")
 	        || path.startsWith("/v3/api-docs/");
 	}
