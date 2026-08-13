@@ -16,8 +16,9 @@ pipeline {
 
         stage('Build Frontend (React)') {
             steps {
-                // Navigates into Application folder to find React files
-                dir('Application') {
+                // Navigates deep into your frontend directory where package.json lives
+                // Change 'frontend' to match your actual folder name if it is named differently
+                dir('Application/frontend') {
                     echo 'Installing React dependencies...'
                     bat 'npm install'
 
@@ -30,8 +31,9 @@ pipeline {
         stage('Build Backend (Spring Boot)') {
             steps {
                 echo 'Building application...'
-                // Navigates into Application folder to find Maven/Java files
-                dir('Application') {
+                // Navigates deep into your backend directory where pom.xml lives
+                // Change 'backend' to match your actual folder name if it is named differently
+                dir('Application/backend') {
                     echo 'Compiling Java application...'
                     bat 'mvn clean package -DskipTests'
                 }
