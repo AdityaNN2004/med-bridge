@@ -31,7 +31,7 @@ pipeline {
             steps {
                 echo 'Building application...'
                 // Corrected path matching your Server folder exactly
-                dir('Application/Server') {
+                dir('Application/Server/MediBridge') {
                     echo 'Compiling Java application...'
                     bat 'mvn clean package -DskipTests'
                 }
