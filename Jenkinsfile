@@ -1,9 +1,5 @@
 // Connected to ngrok
-// testing comment 1 for ngok
-// testing comment 2 for ngok
-// testing comment 3 for ngok
-// Testing connection between ngrok jenkins and github
-// Test comment 6
+
 pipeline {
     agent any
 
@@ -19,7 +15,7 @@ pipeline {
                 checkout scm
             }
         }
-        // test comment 7
+
         stage('Build Frontend (React)') {
             steps {
                 // Corrected path matching your Client folder exactly
@@ -61,4 +57,4 @@ pipeline {
         }
     }
 }
-// End of Jenkinsfile (Testing comment 4)
+
