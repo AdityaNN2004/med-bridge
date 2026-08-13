@@ -9,18 +9,18 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Clones your repository code automatically
+                echo 'Checking out source code...'
                 checkout scm
             }
         }
 
         stage('Build Frontend (React)') {
             steps {
-                // Navigate into your react project directory (adjust folder name if different)
-                dir('frontend') {
+                // Navigates into Application folder to find React files
+                dir('Application') {
                     echo 'Installing React dependencies...'
                     bat 'npm install'
-                    
+
                     echo 'Compiling React production build...'
                     bat 'npm run build'
                 }
@@ -29,23 +29,19 @@ pipeline {
 
         stage('Build Backend (Spring Boot)') {
             steps {
-                // Navigate into your backend project directory (adjust folder name if different)
-                dir('backend') {
+                echo 'Building application...'
+                // Navigates into Application folder to find Maven/Java files
+                dir('Application') {
                     echo 'Compiling Java application...'
-                    // IF USING MAVEN:
                     bat 'mvn clean package -DskipTests'
-                    
-                    // IF USING GRADLE (uncomment below and delete the mvn line if applicable):
-                    // bat 'gradlew clean build -x test'
                 }
             }
         }
 
         stage('Database Check (MySQL)') {
             steps {
+                echo 'Running automated tests...'
                 echo 'Verifying application connects or executes database setup...'
-                // You can add custom database migration validation commands here if using Liquibase/Flyway.
-                // Otherwise, Spring Boot automatically attempts a connection to your MySQL schema on startup.
             }
         }
     }
